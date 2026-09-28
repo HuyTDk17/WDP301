@@ -1,16 +1,17 @@
-# React + Vite
+# Sport Field Booking & Management System — Frontend
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+React 18 + Vite + React Router + Redux Toolkit + Axios + MUI. Giao diện chỉ tiếng Việt.
 
-Currently, two official plugins are available:
+```bash
+cp .env.example .env
+npm install
+npm run dev      # http://localhost:5173
+npm run build
+npm run lint
+```
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
-
-## React Compiler
-
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
-
-## Expanding the ESLint configuration
-
-If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and [`typescript-eslint`](https://typescript-eslint.io) in your project.
+- Sidebar và route của Customer/Owner/Admin sinh từ `src/constants/roleMenus.jsx`. Trang chưa làm dùng `ComingSoon`;
+  khi hiện thực trang thật, thêm `element` vào mục menu tương ứng.
+- Trạng thái (booking, payment, field, ...) định nghĩa một chỗ ở `src/constants/status.js`, hiển thị qua `<StatusChip type status />`.
+- Thông báo hệ thống tiếng Việt: `src/constants/messages.js` (mã MSG-* của SRS).
+- Giả định API: xem `API_CONTRACT.md`.
