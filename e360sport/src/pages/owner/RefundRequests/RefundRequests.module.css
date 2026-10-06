@@ -1,0 +1,18 @@
+.page { padding-bottom: var(--space-10); }
+.loading { display: flex; justify-content: center; padding: var(--space-16) 0; }
+
+.list { display: flex; flex-direction: column; gap: var(--space-3); }
+
+.item {
+  display: flex; justify-content: space-between; align-items: flex-start;
+  gap: var(--space-5); flex-wrap: wrap;
+  background: var(--bg-surface); border: 1px solid var(--border);
+  border-radius: var(--radius-md); padding: var(--space-5); box-shadow: var(--shadow-sm);
+}
+.info { flex: 1; min-width: 260px; }
+.topRow { display: flex; align-items: center; gap: var(--space-3); flex-wrap: wrap; margin-bottom: var(--space-2); }
+.amount { font-size: var(--text-xl); font-weight: var(--weight-bold); color: var(--text-primary); }
+.booking { font-size: var(--text-sm); color: var(--text-secondary); }
+.reason { font-size: var(--text-xs); color: var(--text-muted); margin-top: var(--space-1); line-height: var(--leading-relaxed); }
+.meta { font-size: var(--text-xs); color: var(--text-muted); margin-top: var(--space-2); }
+.actions { display: flex; gap: var(--space-2); flex-wrap: wrap; }

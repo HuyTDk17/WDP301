@@ -1,0 +1,11 @@
+.header { display: flex; flex-direction: column; gap: var(--space-2); margin-bottom: var(--space-6); }
+.breadcrumb { display: flex; align-items: center; gap: 2px; }
+.crumb { display: flex; align-items: center; gap: 2px; }
+.sep { color: var(--text-muted); font-size: var(--text-sm); margin: 0 2px; }
+.crumbLink { font-size: var(--text-sm); color: var(--primary); text-decoration: none; }
+.crumbText { font-size: var(--text-sm); color: var(--text-muted); }
+.crumbActive { font-size: var(--text-sm); color: var(--text-secondary); font-weight: var(--weight-medium); }
+.row { display: flex; align-items: flex-end; justify-content: space-between; gap: var(--space-4); flex-wrap: wrap; }
+.title { font-family: var(--font-display); font-size: var(--text-2xl); font-weight: var(--weight-extrabold); color: var(--text-primary); line-height: 1.2; }
+.subtitle { font-size: var(--text-sm); color: var(--text-muted); margin-top: var(--space-1); }
+.actions { display: flex; align-items: center; gap: var(--space-2); flex-wrap: wrap; }

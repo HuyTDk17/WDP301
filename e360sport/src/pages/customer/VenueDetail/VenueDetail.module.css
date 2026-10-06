@@ -1,0 +1,70 @@
+.page { padding-bottom: var(--space-16); }
+.loadingPage { min-height: 60vh; display: flex; align-items: center; justify-content: center; }
+.noReviews { font-size: var(--text-sm); color: var(--text-muted); padding: var(--space-6) 0; text-align: center; }
+.bookingCardTitle { font-family: var(--font-display); font-size: var(--text-lg); font-weight: var(--weight-bold); margin-bottom: var(--space-2); }
+.breadcrumb { display: flex; align-items: center; gap: 6px; padding: var(--space-4) 0; font-size: var(--text-sm); color: var(--text-muted); }
+.breadLink { color: var(--text-muted); text-decoration: none; }
+.breadLink:hover { color: var(--primary); }
+.breadSep { color: var(--border-strong); flex-shrink: 0; }
+.gallery { display: grid; grid-template-columns: 2fr 1fr; grid-template-rows: 100%; gap: var(--space-2); height: 420px; margin-bottom: var(--space-8); }
+.galleryMain { position: relative; border-radius: var(--radius-lg); overflow: hidden; aspect-ratio: 16 / 9; }
+.galleryMainImg { width: 100%; height: 100%; object-fit: cover; display: block; }
+.favBtnLarge { position: absolute; top: var(--space-4); right: var(--space-4); width: 44px; height: 44px; border-radius: 50%; background: rgba(255,255,255,0.95); backdrop-filter: blur(4px); border: none; cursor: pointer; display: flex; align-items: center; justify-content: center; color: var(--text-secondary); box-shadow: var(--shadow); transition: all var(--duration-fast) var(--ease-out); }
+.favBtnLarge:hover { transform: scale(1.08); color: #E11D48; }
+.favBtnLarge.favActive { color: #E11D48; }
+.galleryThumbs { display: grid; grid-template-rows: repeat(4, 1fr); gap: var(--space-2); overflow: hidden; }
+.thumb { border: 2px solid transparent; border-radius: var(--radius); overflow: hidden; cursor: pointer; padding: 0; display: block; width: 100%; aspect-ratio: 3 / 2; }
+.thumb img { width: 100%; height: 100%; object-fit: cover; display: block; }
+.thumbActive { border-color: var(--primary); }
+.body { display: grid; grid-template-columns: 1fr 380px; gap: var(--space-10); align-items: start; }
+.header { margin-bottom: var(--space-6); }
+.title { font-family: var(--font-display); font-size: var(--text-3xl); font-weight: var(--weight-extrabold); margin: var(--space-3) 0; }
+.meta { display: flex; align-items: center; gap: var(--space-2); flex-wrap: wrap; }
+.metaDot { color: var(--text-muted); }
+.metaText { display: inline-flex; align-items: center; gap: 4px; font-size: var(--text-sm); color: var(--text-muted); }
+.metaIcon { flex-shrink: 0; }
+.quickInfo { display: grid; grid-template-columns: repeat(4, 1fr); gap: var(--space-4); padding: var(--space-5); background: var(--bg-surface); border: 1px solid var(--border); border-radius: var(--radius-lg); margin-bottom: var(--space-8); }
+.quickInfoItem { display: flex; align-items: center; gap: var(--space-3); }
+.quickInfoIcon { display: flex; align-items: center; justify-content: center; width: 40px; height: 40px; border-radius: var(--radius-md); background: var(--primary-subtle); color: var(--primary); flex-shrink: 0; }
+.quickInfoLabel { font-size: 11px; color: var(--text-muted); }
+.quickInfoValue { font-size: var(--text-sm); font-weight: var(--weight-semibold); color: var(--text-primary); }
+.section { margin-bottom: var(--space-10); }
+.sectionTitle { font-family: var(--font-display); font-size: var(--text-xl); font-weight: var(--weight-bold); margin-bottom: var(--space-4); }
+.description { font-size: var(--text-base); color: var(--text-secondary); line-height: var(--leading-relaxed); }
+.amenitiesGrid { display: grid; grid-template-columns: repeat(2, 1fr); gap: var(--space-3); }
+.amenityItem { display: flex; align-items: center; gap: var(--space-2); font-size: var(--text-sm); color: var(--text-secondary); }
+.amenityCheck { display: flex; align-items: center; justify-content: center; width: 20px; height: 20px; border-radius: 50%; background: var(--success-subtle); color: var(--success); flex-shrink: 0; }
+.showMoreBtn { display: inline-flex; align-items: center; gap: 4px; margin-top: var(--space-3); font-size: var(--text-sm); color: var(--primary); background: none; border: none; cursor: pointer; font-weight: var(--weight-semibold); }
+.rulesList { display: flex; flex-direction: column; gap: var(--space-2); }
+.ruleItem { display: flex; gap: var(--space-2); font-size: var(--text-sm); color: var(--text-secondary); }
+.ruleDot { color: var(--warning); }
+.reviewsHeader { margin-bottom: var(--space-5); }
+.reviewSummary { display: flex; align-items: center; gap: var(--space-2); margin-top: var(--space-2); }
+.reviewScore { font-family: var(--font-display); font-size: var(--text-2xl); font-weight: var(--weight-extrabold); }
+.reviewTotal { font-size: var(--text-sm); color: var(--text-muted); }
+.reviewsList { display: flex; flex-direction: column; gap: var(--space-5); }
+.reviewCard { padding-bottom: var(--space-5); border-bottom: 1px solid var(--border); }
+.reviewHeader { display: flex; gap: var(--space-3); margin-bottom: var(--space-3); }
+.reviewName { font-size: var(--text-sm); font-weight: var(--weight-semibold); }
+.reviewRatingRow { display: flex; align-items: center; gap: var(--space-2); margin-top: 2px; }
+.reviewDate { font-size: var(--text-xs); color: var(--text-muted); }
+.reviewComment { font-size: var(--text-sm); color: var(--text-secondary); line-height: var(--leading-relaxed); margin-bottom: var(--space-2); }
+.helpfulBtn { font-size: var(--text-xs); color: var(--text-muted); background: var(--bg-base); border: 1px solid var(--border); border-radius: var(--radius-full); padding: var(--space-1) var(--space-3); cursor: pointer; }
+.bookingPanel { position: sticky; top: calc(var(--navbar-height) + var(--space-4)); }
+.bookingCard { background: var(--bg-surface); border: 1px solid var(--border); border-radius: var(--radius-lg); padding: var(--space-5); box-shadow: var(--shadow-md); display: flex; flex-direction: column; gap: var(--space-4); }
+.bookingPrice { display: flex; align-items: baseline; gap: var(--space-1); }
+.bookingPriceAmount { font-family: var(--font-display); font-size: var(--text-2xl); font-weight: var(--weight-extrabold); color: var(--primary); }
+.bookingPriceUnit { color: var(--text-muted); font-size: var(--text-sm); }
+.bookingField { display: flex; flex-direction: column; gap: var(--space-2); }
+.bookingLabel { display: flex; align-items: center; gap: 6px; font-size: var(--text-sm); font-weight: var(--weight-semibold); color: var(--text-primary); }
+.datePicker { padding: var(--space-2) var(--space-3); border: 1.5px solid var(--border); border-radius: var(--radius); font-size: var(--text-sm); }
+.priceSummary { background: var(--bg-base); border-radius: var(--radius); padding: var(--space-3); display: flex; flex-direction: column; gap: var(--space-2); }
+.summaryRow { display: flex; justify-content: space-between; font-size: var(--text-sm); color: var(--text-secondary); }
+.summaryTotal { font-weight: var(--weight-bold); color: var(--text-primary); padding-top: var(--space-2); border-top: 1px solid var(--border); }
+.bookingNote { display: flex; align-items: center; justify-content: center; gap: 5px; font-size: 11px; color: var(--text-muted); text-align: center; }
+.ownerCard { display: flex; align-items: center; gap: var(--space-3); padding-top: var(--space-3); border-top: 1px solid var(--border); }
+.ownerInfo { flex: 1; }
+.ownerName { font-size: var(--text-sm); font-weight: var(--weight-semibold); }
+.ownerStats { font-size: 11px; color: var(--text-muted); }
+@media (max-width: 1024px) { .body { grid-template-columns: 1fr; } .bookingPanel { position: static; } }
+@media (max-width: 768px) { .gallery { grid-template-columns: 1fr; grid-template-rows: none; height: auto; } .galleryMain { aspect-ratio: 4 / 3; } .galleryThumbs { grid-template-rows: unset; grid-template-columns: repeat(5, 1fr); height: auto; } .thumb { aspect-ratio: 1 / 1; } .quickInfo { grid-template-columns: repeat(2, 1fr); } }

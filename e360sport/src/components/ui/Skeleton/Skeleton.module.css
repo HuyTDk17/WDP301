@@ -1,0 +1,5 @@
+.skeleton { display: block; background: linear-gradient(90deg, var(--bg-base) 25%, var(--border) 50%, var(--bg-base) 75%); background-size: 200% 100%; animation: shimmer 1.5s infinite; border-radius: var(--radius-sm); }
+.rounded { border-radius: var(--radius-full); }
+.circle { border-radius: 50%; }
+.stack { display: flex; flex-direction: column; gap: var(--space-2); }
+@keyframes shimmer { 0% { background-position: 200% 0; } 100% { background-position: -200% 0; } }

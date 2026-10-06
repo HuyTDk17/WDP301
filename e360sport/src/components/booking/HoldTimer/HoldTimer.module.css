@@ -1,0 +1,38 @@
+.timer {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  padding: var(--space-3) var(--space-4);
+  background: var(--warning-subtle);
+  border: 1px solid rgba(245, 158, 11, 0.3);
+  border-radius: var(--radius);
+  font-size: var(--text-sm);
+  color: var(--text-secondary);
+  animation: fadeIn var(--duration-base) var(--ease-out);
+}
+
+.icon {
+  display: flex;
+  flex-shrink: 0;
+  color: var(--warning);
+}
+
+.urgent .icon {
+  color: var(--error);
+}
+
+.text strong {
+  font-family: var(--font-display);
+  color: var(--warning);
+  font-weight: var(--weight-bold);
+}
+
+.urgent {
+  background: var(--error-subtle);
+  border-color: rgba(239, 68, 68, 0.3);
+  animation: pulse 1s infinite;
+}
+
+.urgent .text strong {
+  color: var(--error);
+}

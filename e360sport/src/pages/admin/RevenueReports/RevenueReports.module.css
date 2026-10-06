@@ -1,0 +1,10 @@
+.page { display: flex; flex-direction: column; gap: var(--space-6); }
+.summaryCards { display: grid; grid-template-columns: repeat(3, 1fr); gap: var(--space-4); }
+.chartCard { background: var(--bg-surface); border: 1px solid var(--border); border-radius: var(--radius-lg); padding: var(--space-6); }
+@media (max-width: 900px) { .summaryCards { grid-template-columns: 1fr 1fr; } }
+.loadingState { display: flex; align-items: center; justify-content: center; min-height: 50vh; }
+.monthlyTable { background: var(--bg-surface); border: 1px solid var(--border); border-radius: var(--radius-lg); padding: var(--space-6); }
+.monthlyTable h3 { font-family: var(--font-display); font-size: var(--text-lg); font-weight: var(--weight-bold); margin-bottom: var(--space-4); }
+.monthlyList { display: flex; flex-direction: column; gap: var(--space-2); }
+.monthlyRow { display: flex; justify-content: space-between; align-items: center; padding: var(--space-3); background: var(--bg-base); border-radius: var(--radius); font-size: var(--text-sm); }
+.bookingCount { color: var(--text-muted); font-size: var(--text-xs); }

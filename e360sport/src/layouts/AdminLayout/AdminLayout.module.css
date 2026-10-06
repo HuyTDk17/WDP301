@@ -1,0 +1,61 @@
+/* Bảng màu riêng cho khu vực Admin — xanh rêu (emerald) + nền xám lạnh,
+   khác với tông cam/xanh navy dùng ở phần Customer/Owner. Định nghĩa dưới
+   dạng CSS custom properties scoped vào .layout để không ảnh hưởng layout khác. */
+.layout {
+  --admin-accent: #1F7A5C;
+  --admin-accent-hover: #17624A;
+  --admin-accent-light: #34A67F;
+  --admin-accent-subtle: #DCEEE6;
+  --admin-bg: #F2F5F4;
+  --admin-sidebar-bg: #14181A;
+  --admin-sidebar-border: #262B2C;
+  --admin-sidebar-hover: #1D2222;
+  --admin-text-muted: #8B948F;
+  --admin-text-hover: #E7EDEA;
+  --admin-border: #DCE3E0;
+  display: flex; min-height: 100vh; background: var(--admin-bg);
+}
+.sidebar { width: 256px; background: var(--admin-sidebar-bg); display: flex; flex-direction: column; position: fixed; top: 0; left: 0; height: 100vh; z-index: 200; transition: width var(--duration-base) var(--ease-out); overflow: hidden; border-right: 1px solid var(--admin-sidebar-border); }
+.collapsed .sidebar { width: 72px; }
+.sidebarHeader { display: flex; align-items: center; justify-content: space-between; padding: 18px 16px; border-bottom: 1px solid var(--admin-sidebar-border); flex-shrink: 0; min-height: 64px; }
+.logo { display: flex; align-items: center; text-decoration: none; white-space: nowrap; overflow: hidden; }
+.logoImg { display: block; height: 30px; width: auto; }
+.logoMark { display: block; width: 36px; height: auto; flex-shrink: 0; }
+/* Sidebar thu gọn chỉ rộng 72px: xếp dọc logo (chữ E) và nút thu gọn để logo không bị bóp méo. */
+.collapsed .sidebarHeader { flex-direction: column; justify-content: center; gap: 10px; padding: 14px 8px; }
+.collapseBtn { width: 26px; height: 26px; border-radius: 6px; background: var(--admin-sidebar-hover); border: 1px solid var(--admin-sidebar-border); color: var(--admin-text-muted); cursor: pointer; display: flex; align-items: center; justify-content: center; transition: all var(--duration-fast); flex-shrink: 0; }
+.collapseBtn:hover { background: var(--admin-accent); color: white; border-color: var(--admin-accent); }
+.ownerCard { display: flex; align-items: center; gap: 10px; padding: 14px 16px; border-bottom: 1px solid var(--admin-sidebar-border); flex-shrink: 0; overflow: hidden; background: linear-gradient(180deg, rgba(31,122,92,0.12), transparent); }
+.ownerAvatar { width: 36px; height: 36px; background: var(--admin-accent); color: white; border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: var(--text-base); font-weight: var(--weight-extrabold); font-family: var(--font-display); flex-shrink: 0; }
+.ownerInfo { min-width: 0; }
+.ownerName { font-size: var(--text-sm); font-weight: var(--weight-semibold); color: var(--admin-text-hover); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.ownerRole { display: flex; align-items: center; gap: 5px; font-size: 11px; color: var(--admin-accent-light); margin-top: 1px; }
+.nav { flex: 1; overflow-y: auto; padding: 12px 8px; display: flex; flex-direction: column; gap: 4px; }
+.navGroup { display: flex; flex-direction: column; gap: 2px; margin-bottom: 8px; }
+.groupLabel { font-size: 10px; font-weight: var(--weight-bold); color: #4E5654; text-transform: uppercase; letter-spacing: 0.1em; padding: 4px 10px 2px; white-space: nowrap; }
+.navItem { display: flex; align-items: center; gap: 10px; padding: 9px 10px; border-radius: 8px; color: var(--admin-text-muted); text-decoration: none; font-size: var(--text-sm); font-weight: var(--weight-medium); font-family: var(--font-body); border: none; background: none; cursor: pointer; width: 100%; text-align: left; transition: all var(--duration-fast); white-space: nowrap; overflow: hidden; }
+.navItem:hover { background: var(--admin-sidebar-hover); color: var(--admin-text-hover); }
+.navItemActive { background: rgba(31,122,92,0.18); color: var(--admin-accent-light); font-weight: var(--weight-semibold); }
+.navIcon { display: flex; align-items: center; justify-content: center; flex-shrink: 0; width: 20px; }
+.navLabel { flex: 1; }
+.sidebarFooter { padding: 8px; border-top: 1px solid var(--admin-sidebar-border); display: flex; flex-direction: column; gap: 2px; flex-shrink: 0; }
+.logoutItem:hover { background: rgba(239,68,68,0.1); color: #F87171; }
+.main { flex: 1; margin-left: 256px; display: flex; flex-direction: column; min-height: 100vh; min-width: 0; transition: margin-left var(--duration-base) var(--ease-out); }
+.collapsed .main { margin-left: 72px; }
+.topbar { position: sticky; top: 0; z-index: 100; background: rgba(247,250,249,0.96); backdrop-filter: blur(12px); border-bottom: 1px solid var(--admin-border); height: 64px; padding: 0 24px; display: flex; align-items: center; justify-content: space-between; gap: 16px; flex-shrink: 0; }
+.topbarLeft { display: flex; align-items: center; gap: 12px; }
+.mobileMenuBtn { display: none; background: none; border: none; cursor: pointer; color: var(--text-secondary); padding: 4px; align-items: center; }
+.breadcrumb { display: flex; align-items: center; gap: 6px; }
+.breadHome { font-size: var(--text-sm); color: var(--text-muted); text-decoration: none; }
+.breadSep { color: var(--text-muted); font-size: var(--text-sm); }
+.breadCurrent { font-size: var(--text-sm); font-weight: var(--weight-semibold); color: var(--text-primary); }
+.topbarRight { display: flex; align-items: center; gap: 10px; }
+.adminChip { display: inline-flex; align-items: center; gap: 6px; padding: 5px 12px; background: var(--admin-accent-subtle); color: var(--admin-accent-hover); border-radius: var(--radius-full); font-size: 11px; font-weight: var(--weight-bold); text-transform: uppercase; letter-spacing: 0.06em; white-space: nowrap; }
+.notifBtn { position: relative; width: 38px; height: 38px; background: var(--bg-surface); border: 1.5px solid var(--admin-border); border-radius: var(--radius); display: flex; align-items: center; justify-content: center; cursor: pointer; text-decoration: none; color: var(--text-secondary); transition: all var(--duration-fast); }
+.notifBtn:hover { border-color: var(--admin-accent); color: var(--admin-accent); }
+.notifDot { position: absolute; top: 2px; right: 2px; min-width: 16px; height: 16px; padding: 0 4px; display: flex; align-items: center; justify-content: center; background: var(--admin-accent); color: white; border-radius: var(--radius-full); border: 2px solid var(--bg-surface); font-size: 9px; font-weight: var(--weight-bold); line-height: 1; }
+.topbarAvatar { width: 36px; height: 36px; background: var(--admin-sidebar-bg); color: white; border-radius: 10px; display: flex; align-items: center; justify-content: center; font-weight: var(--weight-extrabold); font-family: var(--font-display); cursor: pointer; }
+.content { flex: 1; padding: 24px; animation: fadeIn var(--duration-slow) var(--ease-out); }
+.mobileOverlay { position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 199; backdrop-filter: blur(2px); }
+.sidebarOpen { transform: translateX(0) !important; }
+@media (max-width: 768px) { .sidebar { transform: translateX(-100%); width: 256px !important; box-shadow: var(--shadow-xl); } .main { margin-left: 0 !important; } .mobileMenuBtn { display: flex; } }
