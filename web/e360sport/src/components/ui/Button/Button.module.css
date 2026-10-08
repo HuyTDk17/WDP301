@@ -1,0 +1,25 @@
+.btn { display: inline-flex; align-items: center; justify-content: center; gap: var(--space-2); font-family: var(--font-body); font-weight: var(--weight-semibold); border: 2px solid transparent; border-radius: var(--radius); cursor: pointer; transition: all var(--duration-base) var(--ease-out); white-space: nowrap; position: relative; overflow: hidden; letter-spacing: 0.01em; }
+.btn::after { content: ''; position: absolute; inset: 0; background: rgba(255,255,255,0.08); opacity: 0; transition: opacity var(--duration-fast); }
+.btn:hover::after { opacity: 1; }
+.btn:active { transform: scale(0.98); }
+.btn:disabled { opacity: 0.55; cursor: not-allowed; transform: none; }
+.primary { background: var(--primary); color: var(--text-inverse); box-shadow: var(--shadow-primary); }
+.primary:hover:not(:disabled) { background: var(--primary-dark); transform: translateY(-1px); }
+.secondary { background: var(--secondary); color: var(--text-inverse); box-shadow: var(--shadow-secondary); }
+.secondary:hover:not(:disabled) { background: var(--secondary-dark); transform: translateY(-1px); }
+.outline { background: transparent; border-color: var(--border-strong); color: var(--text-primary); }
+.outline:hover:not(:disabled) { border-color: var(--primary); color: var(--primary); background: var(--primary-subtle); }
+.ghost { background: transparent; border-color: transparent; color: var(--text-secondary); }
+.ghost:hover:not(:disabled) { background: var(--bg-base); color: var(--text-primary); }
+.danger { background: var(--error); color: var(--text-inverse); }
+.danger:hover:not(:disabled) { background: #DC2626; transform: translateY(-1px); }
+.success { background: var(--success); color: var(--text-inverse); }
+.white { background: var(--text-inverse); color: var(--primary); border-color: transparent; }
+.xs { padding: var(--space-1) var(--space-3); font-size: var(--text-xs); border-radius: var(--radius-sm); }
+.sm { padding: var(--space-2) var(--space-4); font-size: var(--text-sm); }
+.md { padding: 0.625rem var(--space-5); font-size: var(--text-base); }
+.lg { padding: var(--space-3) var(--space-8); font-size: var(--text-lg); border-radius: var(--radius-md); }
+.xl { padding: var(--space-4) var(--space-10); font-size: var(--text-xl); border-radius: var(--radius-md); }
+.fullWidth { width: 100%; }
+.iconLeft, .iconRight { display: flex; align-items: center; font-size: 1.1em; }
+.loading { pointer-events: none; }

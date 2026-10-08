@@ -1,0 +1,26 @@
+.page { display: flex; flex-direction: column; gap: var(--space-5); }
+.ownerCell { display: flex; align-items: center; gap: var(--space-3); }
+.avatar { width: 34px; height: 34px; background: var(--secondary-subtle); color: var(--secondary-dark); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: var(--weight-bold); }
+.name { font-weight: var(--weight-semibold); font-size: var(--text-sm); }
+.business { font-size: var(--text-xs); color: var(--text-muted); }
+.noAction { color: var(--text-muted); font-size: var(--text-sm); }
+.loadingState { display: flex; align-items: center; justify-content: center; min-height: 40vh; }
+.actions { display: flex; align-items: center; gap: var(--space-2); }
+.detail { display: flex; flex-direction: column; gap: var(--space-4); }
+.detailGrid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--space-3); }
+.detailGrid div, .note, .docs { display: flex; flex-direction: column; gap: 4px; padding: var(--space-3); background: var(--bg-base); border-radius: var(--radius); }
+.detailGrid span, .note span, .docs span, .rejectBox span { font-size: var(--text-xs); color: var(--text-muted); font-weight: var(--weight-semibold); text-transform: uppercase; letter-spacing: 0.04em; }
+.detailGrid strong { font-size: var(--text-sm); color: var(--text-primary); }
+.note p, .docs p { font-size: var(--text-sm); color: var(--text-secondary); }
+.docs a { color: var(--primary); font-size: var(--text-sm); text-decoration: none; }
+.docs a:hover { text-decoration: underline; }
+.docLink { background: none; border: none; padding: 0; font: inherit; text-align: left; cursor: pointer; color: var(--primary); font-size: var(--text-sm); text-decoration: none; }
+.docLink:hover { text-decoration: underline; }
+.confirmBox { display: flex; align-items: flex-start; gap: var(--space-2); padding: var(--space-3); background: var(--primary-subtle); border: 1px solid var(--primary); border-radius: var(--radius); font-size: var(--text-sm); color: var(--text-primary); cursor: pointer; }
+.confirmBox input { margin-top: 3px; flex-shrink: 0; cursor: pointer; }
+.docsMissingWarning { padding: var(--space-3); background: var(--error-subtle); border: 1px solid var(--error); border-radius: var(--radius); font-size: var(--text-sm); color: #991B1B; margin: 0; }
+.reviewedMeta { display: flex; align-items: center; gap: 6px; color: var(--success, #16A34A); }
+.rejectBox { display: flex; flex-direction: column; gap: var(--space-2); }
+.rejectBox textarea { width: 100%; border: 1.5px solid var(--border); border-radius: var(--radius); padding: var(--space-3); font-family: var(--font-body); resize: vertical; }
+.modalActions { display: flex; justify-content: flex-end; gap: var(--space-2); flex-wrap: wrap; }
+@media (max-width: 720px) { .detailGrid { grid-template-columns: 1fr; } }

@@ -1,0 +1,82 @@
+# ============================================================
+# ESPORT360 — TOÀN BỘ HỆ THỐNG
+#
+#   docker compose up -d --build
+#
+# Ba dịch vụ: MongoDB (replica set một nút), backend API, frontend tĩnh.
+# Nginx ngoài cùng (reverse proxy + HTTPS) chạy TRÊN MÁY CHỦ, không nằm trong
+# compose — xem deploy/nginx/esport360.conf và DEPLOY.md.
+# ============================================================
+
+services:
+  mongo:
+    image: mongo:7
+    restart: unless-stopped
+    # ⚠️ --replSet là bắt buộc, không phải tuỳ chọn. Giao dịch của MongoDB chỉ
+    # hoạt động trên replica set, mà nghiệp vụ chuyển sân đụng tiền của ba bên
+    # nên backend sẽ từ chối khởi động nếu MONGO_URI không có replicaSet.
+    # Một nút vẫn đủ để có giao dịch (không có dự phòng, nhưng đúng đắn về dữ liệu).
+    command: ["mongod", "--replSet", "rs0", "--bind_ip_all"]
+    volumes:
+      - mongo_data:/data/db
+      - ./deploy/mongo/init-rs.js:/scripts/init-rs.js:ro
+    # KHÔNG mở cổng ra ngoài. MongoDB không có mật khẩu trong cấu hình này, nên
+    # để lộ 27017 ra Internet là mất sạch dữ liệu trong vài giờ — đây là cách phổ
+    # biến nhất khiến cơ sở dữ liệu bị tống tiền.
+    expose:
+      - "27017"
+    healthcheck:
+      test: ["CMD", "mongosh", "--quiet", "--eval", "rs.status().ok || rs.initiate({_id:'rs0',members:[{_id:0,host:'mongo:27017'}]}).ok"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 20s
+    networks: [esport360]
+
+  api:
+    build:
+      context: ./backend
+    restart: unless-stopped
+    env_file:
+      - ./backend/.env
+    environment:
+      NODE_ENV: production
+      # Ghi đè để trỏ vào service mongo trong mạng nội bộ của compose.
+      MONGO_URI: mongodb://mongo:27017/esport360?replicaSet=rs0&directConnection=true
+    depends_on:
+      mongo:
+        condition: service_healthy
+    volumes:
+      # Ảnh upload phải nằm ngoài container, nếu không mỗi lần deploy lại là mất
+      # sạch ảnh địa điểm và giấy tờ hồ sơ chủ sân.
+      - uploads_data:/app/uploads
+    ports:
+      # Chỉ lắng nghe trên localhost của máy chủ; nginx ngoài cùng sẽ proxy vào.
+      - "127.0.0.1:9999:9999"
+    networks: [esport360]
+
+  web:
+    build:
+      context: ./e360sport
+      args:
+        # Đường dẫn API mà trình duyệt sẽ gọi. Vite nhúng giá trị này vào bundle
+        # lúc build nên phải truyền ở đây, đổi sau khi build là vô tác dụng.
+        VITE_API_URL: https://api.esport360.vn/api
+        # Cùng giá trị với GOOGLE_CLIENT_ID trong backend/.env. Đặt biến môi trường
+        # VITE_GOOGLE_CLIENT_ID trước khi chạy `docker compose build` (hoặc ghi vào
+        # file .env cạnh docker-compose.yml). Để trống = ẩn nút đăng nhập Google.
+        VITE_GOOGLE_CLIENT_ID: ${VITE_GOOGLE_CLIENT_ID:-}
+    restart: unless-stopped
+    depends_on:
+      - api
+    ports:
+      - "127.0.0.1:8080:80"
+    networks: [esport360]
+
+volumes:
+  mongo_data:
+  uploads_data:
+
+networks:
+  esport360:
+    driver: bridge
