@@ -28,6 +28,8 @@ export const bookingService = {
   createBooking: (data) => api.post('/bookings', data),
 
   getMyBookings: (params = {}) => api.get('/bookings/my', { params }),
+  // Hóa đơn của lượt đặt đã xác nhận/hoàn tất (chỉ chính khách xem được)
+  getInvoice: (id) => api.get(`/bookings/${id}/invoice`),
   getBookingById: (id) => api.get(`/bookings/${id}`),
   /** Xem trước số tiền được hoàn / bị mất TRƯỚC khi thực sự huỷ. */
   previewCancellation: (id) => api.get(`/bookings/${id}/cancel-preview`),

@@ -167,6 +167,7 @@ exports.updatePlatformSettings = asyncHandler(async (req, res) => {
     }
 
     if (req.body.transferEnabled !== undefined) settings.transferEnabled = !!req.body.transferEnabled;
+    if (req.body.transferNetworkRequired !== undefined) settings.transferNetworkRequired = !!req.body.transferNetworkRequired;
     if (req.body.commissionAutoIssueEnabled !== undefined) settings.commissionAutoIssueEnabled = !!req.body.commissionAutoIssueEnabled;
     if (req.body.commissionBlockEnabled !== undefined) settings.commissionBlockEnabled = !!req.body.commissionBlockEnabled;
     if (req.body.refundToCreditEnabled !== undefined) settings.refundToCreditEnabled = !!req.body.refundToCreditEnabled;

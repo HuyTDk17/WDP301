@@ -16,6 +16,17 @@ const STATUS_MAP = {
   banned:      { label: 'Bị khóa',     cls: 'banned'     },
   none:        { label: 'Chưa gửi',     cls: 'inactive'   },
   expired:     { label: 'Đã hết hạn',   cls: 'cancelled'  },
+  // Mạng lưới chuyển sân
+  none:        { label: 'Chưa tham gia', cls: 'inactive'  },
+  revoked:     { label: 'Đã gỡ',         cls: 'cancelled' },
+  // Sự kiện (trạng thái suy ra theo thời gian)
+  upcoming:    { label: 'Sắp diễn ra',  cls: 'pending'    },
+  ongoing:     { label: 'Đang diễn ra', cls: 'confirmed'  },
+  ended:       { label: 'Đã kết thúc',  cls: 'inactive'   },
+  // Khiếu nại
+  open:          { label: 'Chờ xử lý',     cls: 'pending'   },
+  investigating: { label: 'Đang xử lý',    cls: 'completed' },
+  resolved:      { label: 'Đã giải quyết', cls: 'confirmed' },
 }
 
 export default function StatusBadge({ status, dot = true }) {

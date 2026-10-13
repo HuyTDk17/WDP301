@@ -4,6 +4,7 @@ const { protect, authorize } = require('../middleware/auth');
 const { writeLimiter } = require('../middleware/rateLimiter');
 const bookingController = require('../controllers/bookingController');
 const transferController = require('../controllers/transferController');
+const invoiceController = require('../controllers/invoiceController');
 
 // Các route này là nghiệp vụ đặt sân của KHÁCH HÀNG — chủ sân/admin có luồng
 // riêng ở ownerRoutes.js (/owner/bookings) và adminRoutes.js (/admin/bookings).
@@ -23,6 +24,8 @@ router.get('/my', bookingController.getMyBookings);
 router.get('/stats', bookingController.getBookingStats);
 router.get('/:id', bookingController.getBookingById);
 router.get('/:id/cancel-preview', bookingController.previewCancellation);
+// Hóa đơn cho lượt đặt đã xác nhận / hoàn tất (khách xem, in hoặc lưu PDF từ trình duyệt)
+router.get('/:id/invoice', invoiceController.getInvoice);
 router.patch('/:id/cancel', writeLimiter, bookingController.cancelBooking);
 
 // ── Chuyển sân ──

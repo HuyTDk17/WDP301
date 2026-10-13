@@ -145,6 +145,10 @@ app.use('/api/favorites', favoriteRoutes);
 app.use('/api/owner', ownerRoutes);
 app.use('/api/admin', adminRoutes);
 app.use('/api/transfers', transferRoutes);
+app.use('/api/complaints', require('./routes/complaintRoutes'));
+app.use('/api', require('./routes/contentRoutes'));
+app.use('/api/events', require('./routes/eventRoutes'));
+app.use('/api/players', require('./routes/playerRoutes'));
 // Webhook ngân hàng → tự xác nhận chủ sân đã nộp phí dịch vụ (xác thực bằng BANK_WEBHOOK_SECRET)
 app.post('/api/webhooks/bank', require('./controllers/settlementController').bankWebhook);
 

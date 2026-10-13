@@ -19,6 +19,7 @@ import Booking from '@/pages/customer/Booking/Booking'
 import Payment from '@/pages/customer/Payment/Payment'
 import BookingHistory from '@/pages/customer/BookingHistory/BookingHistory'
 import TransferBooking from '@/pages/customer/TransferBooking/TransferBooking'
+import Invoice from '@/pages/customer/Invoice/Invoice'
 import TransferDetail from '@/pages/customer/TransferDetail/TransferDetail'
 import ClaimBooking from '@/pages/customer/ClaimBooking/ClaimBooking'
 import FavoriteVenues from '@/pages/customer/FavoriteVenues/FavoriteVenues'
@@ -37,6 +38,8 @@ import ManageBookings from '@/pages/owner/ManageBookings/ManageBookings'
 import Revenue from '@/pages/owner/Revenue/Revenue'
 import TransferRequests from '@/pages/owner/TransferRequests/TransferRequests'
 import Customers from '@/pages/owner/Customers/Customers'
+import OwnerReviews from '@/pages/owner/Reviews/Reviews'
+import Complaints from '@/pages/customer/Complaints/Complaints'
 import OwnerSettings from '@/pages/owner/OwnerSettings/OwnerSettings'
 
 import AdminDashboard from '@/pages/admin/AdminDashboard/AdminDashboard'
@@ -45,6 +48,19 @@ import VenueManagement from '@/pages/admin/VenueManagement/VenueManagement'
 import OwnerManagement from '@/pages/admin/OwnerManagement/OwnerManagement'
 import OwnerDetail from '@/pages/admin/OwnerDetail/OwnerDetail'
 import ReviewModeration from '@/pages/admin/ReviewModeration/ReviewModeration'
+import ComplaintManagement from '@/pages/admin/ComplaintManagement/ComplaintManagement'
+import BannerManagement from '@/pages/admin/BannerManagement/BannerManagement'
+import NewsManagement from '@/pages/admin/NewsManagement/NewsManagement'
+import PolicyManagement from '@/pages/admin/PolicyManagement/PolicyManagement'
+import SportCategoryManagement from '@/pages/admin/SportCategoryManagement/SportCategoryManagement'
+import NetworkManagement from '@/pages/admin/NetworkManagement/NetworkManagement'
+import NewsList from '@/pages/news/NewsList'
+import EventList from '@/pages/events/EventList'
+import PlayerList from '@/pages/players/PlayerList'
+import MyPlayers from '@/pages/players/MyPlayers'
+import EventDetail from '@/pages/events/EventDetail'
+import OwnerEvents from '@/pages/owner/Events/Events'
+import NewsDetail from '@/pages/news/NewsDetail'
 import CommissionReport from '@/pages/admin/CommissionReport/CommissionReport'
 import OwnerPendingBankPayments from '@/pages/owner/PendingBankPayments/PendingBankPayments'
 import OwnerCommission from '@/pages/owner/Commission/Commission'
@@ -99,17 +115,27 @@ export default function AppRoutes() {
         <Route path="/payment" element={<ProtectedRoute roles={['customer']}><Payment /></ProtectedRoute>} />
         <Route path="/bookings" element={<ProtectedRoute roles={['customer']}><BookingHistory /></ProtectedRoute>} />
         <Route path="/bookings/:bookingId/transfer" element={<ProtectedRoute roles={['customer']}><TransferBooking /></ProtectedRoute>} />
+        <Route path="/bookings/:bookingId/reschedule" element={<ProtectedRoute roles={['customer']}><TransferBooking mode="reschedule" /></ProtectedRoute>} />
+        <Route path="/bookings/:bookingId/invoice" element={<ProtectedRoute roles={['customer']}><Invoice /></ProtectedRoute>} />
         {/* Cũng là địa chỉ cổng thanh toán chuyển hướng về sau khi khách trả khoản chênh lệch */}
         <Route path="/transfers/:id" element={<ProtectedRoute roles={['customer']}><TransferDetail /></ProtectedRoute>} />
         {/* Nhận suất bằng mã sang tên. Dạng có sẵn mã để chia sẻ link trực tiếp. */}
         <Route path="/claim" element={<ProtectedRoute roles={['customer']}><ClaimBooking /></ProtectedRoute>} />
         <Route path="/claim/:code" element={<ProtectedRoute roles={['customer']}><ClaimBooking /></ProtectedRoute>} />
+        <Route path="/players" element={<ProtectedRoute roles={['customer']}><PlayerList /></ProtectedRoute>} />
+        <Route path="/players/mine" element={<ProtectedRoute roles={['customer']}><MyPlayers /></ProtectedRoute>} />
+        <Route path="/complaints" element={<ProtectedRoute roles={['customer']}><Complaints /></ProtectedRoute>} />
         <Route path="/favorites" element={<ProtectedRoute roles={['customer']}><FavoriteVenues /></ProtectedRoute>} />
         <Route path="/profile" element={<ProtectedRoute><Profile /></ProtectedRoute>} />
         <Route path="/notifications" element={<ProtectedRoute><Notifications /></ProtectedRoute>} />
         <Route path="/owner-application" element={<ProtectedRoute roles={['customer', 'owner']}><OwnerApplication /></ProtectedRoute>} />
         <Route path="/privacy-policy" element={<LegalPage type="privacy" />} />
         <Route path="/terms-of-service" element={<LegalPage type="terms" />} />
+        <Route path="/policies/:key" element={<LegalPage />} />
+        <Route path="/news" element={<NewsList />} />
+        <Route path="/news/:slug" element={<NewsDetail />} />
+        <Route path="/events" element={<EventList />} />
+        <Route path="/events/:id" element={<EventDetail />} />
         <Route path="/403" element={<Forbidden />} />
       </Route>
 
@@ -127,6 +153,8 @@ export default function AppRoutes() {
         <Route path="refunds" element={<OwnerRefundRequests />} />
         <Route path="transfers" element={<TransferRequests />} />
         <Route path="customers" element={<Customers />} />
+        <Route path="reviews" element={<OwnerReviews />} />
+        <Route path="events" element={<OwnerEvents />} />
         <Route path="revenue" element={<Revenue />} />
         <Route path="notifications" element={<Notifications />} />
         <Route path="settings" element={<OwnerSettings />} />
@@ -140,6 +168,12 @@ export default function AppRoutes() {
         <Route path="owners" element={<OwnerManagement />} />
         <Route path="owners/:id" element={<OwnerDetail />} />
         <Route path="reviews" element={<ReviewModeration />} />
+        <Route path="complaints" element={<ComplaintManagement />} />
+        <Route path="banners" element={<BannerManagement />} />
+        <Route path="news" element={<NewsManagement />} />
+        <Route path="policies" element={<PolicyManagement />} />
+        <Route path="sports" element={<SportCategoryManagement />} />
+        <Route path="network" element={<NetworkManagement />} />
         <Route path="commissions" element={<CommissionReport />} />
         <Route path="settlements" element={<AdminSettlements />} />
         <Route path="reports" element={<RevenueReports />} />

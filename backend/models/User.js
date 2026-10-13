@@ -38,6 +38,18 @@ const userSchema = new mongoose.Schema(
         legalRepresentative: { type: String, default: '' },
         licenseNumber: { type: String, default: '' },
         ownerApplicationStatus: { type: String, enum: ['none', 'pending', 'approved', 'rejected'], default: 'none' },
+        // Mạng lưới chuyển sân liên chủ sân (chỉ có nghĩa với chủ sân). Chỉ có tác dụng khi Admin bật
+        // PlatformSetting.transferNetworkRequired. status: none → pending → approved | rejected ; approved → revoked.
+        transferNetwork: {
+            status: { type: String, enum: ['none', 'pending', 'approved', 'rejected', 'revoked'], default: 'none' },
+            requestedAt: { type: Date, default: null },
+            reviewedAt: { type: Date, default: null },
+            reviewedBy: { type: mongoose.Schema.Types.ObjectId, ref: 'User', default: null },
+            note: { type: String, default: '' },
+        },
+        // Lần Admin đổi vai trò thủ công gần nhất (xem controllers/userController.changeUserRole)
+        roleChangedAt: { type: Date, default: null },
+        roleChangedBy: { type: mongoose.Schema.Types.ObjectId, ref: 'User', default: null },
         ownerApplicationDocuments: [{
             url: { type: String, required: true },
             name: { type: String, default: '' },

@@ -352,3 +352,8 @@
   .routeBox { grid-template-columns: 1fr; text-align: left; }
   .routeArrow { transform: rotate(90deg); justify-self: center; }
 }
+
+/* Đổi lịch: chỉ một thẻ, đặt giữa trang */
+.gridSingle { display: grid; grid-template-columns: minmax(0, 720px); justify-content: center; gap: var(--space-5); }
+.slotSummary { margin: var(--space-3) 0 0; font-size: var(--text-sm); color: var(--text-secondary); }
+.slotSummary strong { color: var(--primary-dark); }

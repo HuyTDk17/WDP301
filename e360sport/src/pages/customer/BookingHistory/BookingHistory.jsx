@@ -1,12 +1,13 @@
 import { useState, useEffect, useCallback } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
-import { Plus, ClipboardList, Trophy, Calendar, Clock, ChevronUp, ChevronDown, StickyNote, X, Star, XCircle, Repeat, ArrowUpRight, Gift, CreditCard, Hourglass } from 'lucide-react'
+import { Plus, ClipboardList, Trophy, Calendar, Clock, ChevronUp, ChevronDown, StickyNote, X, Star, XCircle, Repeat, ArrowUpRight, Gift, CreditCard, Hourglass, MessageSquareWarning, CalendarClock, FileText, UserPlus } from 'lucide-react'
 import Badge from '@/components/ui/Badge/Badge'
 import Button from '@/components/ui/Button/Button'
 import EmptyState from '@/components/ui/EmptyState/EmptyState'
 import Spinner from '@/components/ui/Spinner/Spinner'
 import ConfirmModal from '@/components/dashboard/ConfirmModal/ConfirmModal'
 import AssignBookingModal from '@/components/booking/AssignBookingModal/AssignBookingModal'
+import CreatePostModal from '@/components/players/CreatePostModal/CreatePostModal'
 import { bookingService, paymentService } from '@/services/bookingService'
 import { useToast } from '@/contexts/ToastContext'
 import { formatCurrency, formatDate, formatTime, BOOKING_STATUS } from '@/utils'
@@ -46,6 +47,7 @@ function DetailRow({ label, value, strong, negative }) {
 
 export default function BookingHistory() {
   const navigate = useNavigate()
+  const [playerBooking, setPlayerBooking] = useState(null)   // lượt đặt đang đăng bài tìm người
   const { toast } = useToast()
   const [tab, setTab] = useState('')
   const [bookings, setBookings] = useState([])
@@ -214,6 +216,11 @@ export default function BookingHistory() {
                           {/* Đặt TRƯỚC nút huỷ và làm nổi bật hơn: chuyển sân giữ
                               lại giá trị cho cả ba bên, huỷ thì mất hết. */}
                           {transferable && (
+                            <Link to={`/bookings/${booking._id}/reschedule`}>
+                              <Button size="sm" variant="outline" icon={<CalendarClock size={13} />}>Đổi lịch</Button>
+                            </Link>
+                          )}
+                          {transferable && (
                             <Link to={`/bookings/${booking._id}/transfer`}>
                               <Button size="sm" icon={<Repeat size={13} />}>Chuyển sân</Button>
                             </Link>
@@ -222,7 +229,20 @@ export default function BookingHistory() {
                             <Button variant="outline" size="sm" icon={<Gift size={13} />} onClick={() => setAssignTarget(booking)}>Sang tên</Button>
                           )}
                           {canCancelNow && <Button variant="danger" size="sm" icon={<X size={13} />} onClick={() => openCancel(booking)}>Hủy lượt đặt</Button>}
-                          {booking.status === 'completed' && <Button variant="outline" size="sm" icon={<Star size={13} />}>Đánh giá</Button>}
+                          {booking.status === 'completed' && <Button variant="outline" size="sm" icon={<Star size={13} />} onClick={() => navigate(`/venues/${booking.venueId?._id || booking.venueId}?review=1`)}>Đánh giá</Button>}
+                          {booking.status === 'confirmed' && booking.customerId && new Date(`${booking.date}T${booking.startTime}:00+07:00`) > new Date() && (
+                            <Button variant="outline" size="sm" icon={<UserPlus size={13} />} onClick={() => setPlayerBooking(booking)}>Tìm thêm người</Button>
+                          )}
+                          {['confirmed', 'completed'].includes(booking.status) && (
+                            <Link to={`/bookings/${booking._id}/invoice`}>
+                              <Button variant="outline" size="sm" icon={<FileText size={13} />}>Hóa đơn</Button>
+                            </Link>
+                          )}
+                          {['confirmed', 'completed', 'cancelled', 'no_show', 'transferred'].includes(booking.status) && (
+                            <Link to={`/complaints?bookingId=${booking._id}`}>
+                              <Button variant="ghost" size="sm" icon={<MessageSquareWarning size={13} />}>Khiếu nại</Button>
+                            </Link>
+                          )}
                           {booking.status === 'transferred' && booking.transferredToBookingId && (
                             <span className={styles.transferNote}>
                               <ArrowUpRight size={13} /> Đã chuyển sang lượt đặt khác
@@ -259,6 +279,14 @@ export default function BookingHistory() {
         isOpen={!!assignTarget}
         onClose={() => setAssignTarget(null)}
         onDone={loadBookings}
+      />
+
+      <CreatePostModal
+        key={playerBooking?._id || 'none'}
+        booking={playerBooking}
+        isOpen={!!playerBooking}
+        onClose={() => setPlayerBooking(null)}
+        onCreated={() => { setPlayerBooking(null); navigate('/players/mine') }}
       />
     </div>
   )

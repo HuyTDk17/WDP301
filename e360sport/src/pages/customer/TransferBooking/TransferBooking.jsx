@@ -16,6 +16,7 @@ import { venueService } from '@/services/venueService'
 import { useToast } from '@/contexts/ToastContext'
 import { useDebounce } from '@/hooks'
 import { formatCurrency, formatDate, formatTime, buildAvailableSlots, getNext30Days, toLocalISODate } from '@/utils'
+import { buildRescheduleSlots, durationMinutes } from '@/utils/rescheduleSlots'
 import styles from './TransferBooking.module.css'
 
 const toISODate = (d) => toLocalISODate(d)
@@ -27,7 +28,10 @@ const toISODate = (d) => toLocalISODate(d)
  *   2. Tìm và chọn sân/khung giờ đích.
  *   3. Xem bảng chi phí do máy chủ tính và xác nhận.
  */
-export default function TransferBooking() {
+export default function TransferBooking({ mode = 'transfer' }) {
+  // 'reschedule' = ĐỔI LỊCH: cố định địa điểm hiện tại, giữ nguyên độ dài lượt đặt, chỉ đổi ngày/giờ (hoặc sân
+  // trong cùng địa điểm). Dùng lại toàn bộ báo giá/giữ chỗ/thu chi của chuyển sân (loại T1/T2).
+  const isReschedule = mode === 'reschedule'
   const { bookingId } = useParams()
   const navigate = useNavigate()
   const { toast } = useToast()
@@ -69,6 +73,20 @@ export default function TransferBooking() {
       .finally(() => setLoading(false))
   }, [bookingId])
 
+  // Đổi lịch: không cần tìm địa điểm — mở thẳng địa điểm và sân của lượt đặt hiện tại.
+  useEffect(() => {
+    const bk = eligibility?.booking
+    if (!isReschedule || !bk?.venueId) return
+    venueService.getVenueById(bk.venueId)
+      .then((res) => {
+        const full = res.venue
+        setVenue(full)
+        const active = (full.courts || []).filter((c) => c.status === 'active')
+        setCourt(active.find((c) => String(c._id) === String(bk.courtId)) || active[0] || null)
+      })
+      .catch(() => toast.error('Không thể tải thông tin địa điểm'))
+  }, [isReschedule, eligibility])
+
   // ── Tìm địa điểm ────────────────────────────────────────
   const loadVenues = useCallback(() => {
     setSearching(true)
@@ -98,12 +116,27 @@ export default function TransferBooking() {
 
   const slots = useMemo(() => {
     if (!venue || !court) return []
+    if (isReschedule && eligibility?.booking) {
+      const bk = eligibility.booking
+      const now = new Date()
+      return buildRescheduleSlots({
+        open: venue.openHours?.open || '06:00',
+        close: venue.openHours?.close || '22:00',
+        durationMin: durationMinutes(bk.startTime, bk.endTime) || 60,
+        date,
+        courtId: court._id,
+        bookedSlots: slotsData?.bookedSlots || [],
+        original: { date: bk.date, courtId: bk.courtId, startTime: bk.startTime, endTime: bk.endTime },
+        today: toLocalISODate(),
+        nowMinutes: now.getHours() * 60 + now.getMinutes(),
+      })
+    }
     return buildAvailableSlots(
       venue.openHours?.open || '06:00',
       venue.openHours?.close || '22:00',
       60, date, slotsData?.bookedSlots || []
     )
-  }, [venue, court, date, slotsData])
+  }, [venue, court, date, slotsData, isReschedule, eligibility])
 
   const selectVenue = async (v) => {
     try {
@@ -133,7 +166,7 @@ export default function TransferBooking() {
       setQuote(res)
       setStep(3)
     } catch (err) {
-      toast.error(err?.message || 'Không thể tạo báo giá chuyển sân')
+      toast.error(err?.message || (isReschedule ? 'Không thể tạo báo giá đổi lịch' : 'Không thể tạo báo giá chuyển sân'))
     } finally {
       setQuoting(false)
     }
@@ -156,10 +189,10 @@ export default function TransferBooking() {
         navigate(`/transfers/${quote.transfer._id}`)
         return
       }
-      toast.success('Đã chuyển sân thành công')
+      toast.success(isReschedule ? 'Đã đổi lịch thành công' : 'Đã chuyển sân thành công')
       navigate('/bookings')
     } catch (err) {
-      toast.error(err?.message || 'Không thể hoàn tất chuyển sân')
+      toast.error(err?.message || (isReschedule ? 'Không thể hoàn tất đổi lịch' : 'Không thể hoàn tất chuyển sân'))
       // Báo giá hết hạn hoặc khung giờ bị mất — quay lại bước chọn sân
       if ([409, 410].includes(err?.status)) { setQuote(null); setStep(2) }
     } finally {
@@ -180,7 +213,7 @@ export default function TransferBooking() {
           <Link to="/bookings" className={styles.back}><ArrowLeft size={15} /> Quay lại lịch sử đặt sân</Link>
           <EmptyState
             icon={<AlertTriangle size={48} />}
-            title="Lượt đặt này không thể chuyển"
+            title={isReschedule ? 'Lượt đặt này không thể đổi lịch' : 'Lượt đặt này không thể chuyển'}
             description={eligibility.reasons.join('. ')}
             action={() => navigate('/bookings')}
             actionLabel="Về lịch sử đặt sân"
@@ -196,11 +229,11 @@ export default function TransferBooking() {
         <Link to="/bookings" className={styles.back}><ArrowLeft size={15} /> Quay lại lịch sử đặt sân</Link>
 
         <div className={styles.header}>
-          <h1 className={styles.title}>Chuyển sân</h1>
-          <p className={styles.sub}>Đổi sang sân hoặc địa điểm khác thay vì huỷ lượt đặt</p>
+          <h1 className={styles.title}>{isReschedule ? 'Đổi lịch' : 'Chuyển sân'}</h1>
+          <p className={styles.sub}>{isReschedule ? 'Đổi ngày hoặc giờ chơi trong cùng địa điểm thay vì huỷ lượt đặt' : 'Đổi sang sân hoặc địa điểm khác thay vì huỷ lượt đặt'}</p>
         </div>
 
-        <Stepper step={step} />
+        <Stepper step={step} reschedule={isReschedule} />
 
         {/* ══════════ BƯỚC 1 — CHÍNH SÁCH ══════════ */}
         {step === 1 && (
@@ -222,7 +255,7 @@ export default function TransferBooking() {
             </div>
 
             <div className={styles.card}>
-              <h2 className={styles.cardTitle}>Chi phí nếu chuyển bây giờ</h2>
+              <h2 className={styles.cardTitle}>{isReschedule ? 'Chi phí nếu đổi lịch bây giờ' : 'Chi phí nếu chuyển bây giờ'}</h2>
               <div className={styles.leadBox}>
                 <Clock size={18} />
                 <div>
@@ -237,17 +270,37 @@ export default function TransferBooking() {
                 compTiers={eligibility.feePolicy?.compensationTiers || []}
               />
 
+              {!isReschedule && eligibility.network?.required && (
+                <div className={styles.noteBox}>
+                  <Info size={15} />
+                  <p>
+                    {eligibility.network.fromOwnerMember
+                      ? <>Chuyển sang <strong>chủ sân khác</strong> chỉ áp dụng với các chủ sân thuộc mạng lưới chuyển sân. Nếu địa điểm bạn chọn chưa tham gia, hệ thống sẽ báo ở bước xem chi phí.</>
+                      : <>Chủ sân hiện tại của bạn <strong>chưa tham gia mạng lưới chuyển sân</strong>, nên bạn chỉ chuyển được trong cùng chủ sân (đổi giờ, đổi sân, hoặc sang địa điểm khác của chủ sân đó).</>}
+                  </p>
+                </div>
+              )}
+
               <div className={styles.noteBox}>
                 <Info size={15} />
+                {isReschedule ? (
+                  <p>
+                    Bạn giữ nguyên địa điểm và độ dài lượt đặt, chỉ đổi ngày hoặc giờ. Phí đổi lịch lấy theo cột
+                    {' '}<strong>&quot;Cùng địa điểm&quot;</strong> ở bảng trên (thường miễn phí khi còn nhiều thời gian), cộng thêm
+                    phần chênh lệch giá nếu giờ mới đắt hơn. Mỗi lượt đặt chỉ được đổi lịch hoặc chuyển sân
+                    {' '}<strong>{(eligibility.remainingTransfers ?? 1)} lần</strong> nữa.
+                  </p>
+                ) : (
                 <p>
                   Phí chuyển tính trên giá sân của lượt đặt hiện tại. Nếu chuyển sang địa điểm của chủ sân
                   khác và sát giờ, bạn còn phải trả thêm khoản bồi thường cho chủ sân cũ vì họ không kịp
                   bán lại khung giờ. Đổi giờ hoặc đổi sân trong cùng địa điểm thường <strong>miễn phí</strong>.
                 </p>
+                )}
               </div>
 
               <Button fullWidth iconRight={<ArrowRight size={16} />} onClick={() => setStep(2)}>
-                Tìm sân mới
+                {isReschedule ? 'Chọn giờ mới' : 'Tìm sân mới'}
               </Button>
             </div>
           </div>
@@ -255,7 +308,8 @@ export default function TransferBooking() {
 
         {/* ══════════ BƯỚC 2 — CHỌN SÂN ĐÍCH ══════════ */}
         {step === 2 && (
-          <div className={styles.grid2}>
+          <div className={isReschedule ? styles.gridSingle : styles.grid2}>
+            {!isReschedule && (
             <div className={styles.card}>
               <h2 className={styles.cardTitle}>Chọn địa điểm mới</h2>
               <div className={styles.filters}>
@@ -299,14 +353,26 @@ export default function TransferBooking() {
                 </div>
               )}
             </div>
+            )}
 
             <div className={styles.card}>
-              <h2 className={styles.cardTitle}>Chọn sân và khung giờ</h2>
+              <h2 className={styles.cardTitle}>{isReschedule ? 'Chọn ngày và giờ mới' : 'Chọn sân và khung giờ'}</h2>
 
               {!venue ? (
-                <p className={styles.emptyText}>Chọn một địa điểm ở bên trái để xem khung giờ trống</p>
+                isReschedule
+                  ? <div className={styles.loadingInline}><Spinner /></div>
+                  : <p className={styles.emptyText}>Chọn một địa điểm ở bên trái để xem khung giờ trống</p>
               ) : (
                 <>
+                  {isReschedule && (
+                    <div className={styles.noteBox}>
+                      <Info size={15} />
+                      <p>
+                        Lịch hiện tại: <strong>{formatDate(b.date)} · {formatTime(b.startTime)}–{formatTime(b.endTime)}</strong> tại {b.venueName}.
+                        Giờ mới giữ nguyên độ dài {Math.round((durationMinutes(b.startTime, b.endTime) / 60) * 10) / 10} giờ.
+                      </p>
+                    </div>
+                  )}
                   <div className={styles.fieldGroup}>
                     <label className={styles.label}>Sân</label>
                     <div className={styles.chips}>
@@ -355,6 +421,11 @@ export default function TransferBooking() {
                         loading={loadingSlots}
                         maxSlots={1}
                       />
+                      {isReschedule && slot && (
+                        <p className={styles.slotSummary}>
+                          Lịch mới: <strong>{formatDate(date)} · {formatTime(slot.start)}–{formatTime(slot.end)}</strong>
+                        </p>
+                      )}
                     </div>
                   )}
                 </>
@@ -368,7 +439,7 @@ export default function TransferBooking() {
                   onClick={requestQuote}
                   iconRight={<ArrowRight size={16} />}
                 >
-                  Xem chi phí chuyển
+                  {isReschedule ? 'Xem chi phí đổi lịch' : 'Xem chi phí chuyển'}
                 </Button>
               </div>
             </div>
@@ -378,6 +449,7 @@ export default function TransferBooking() {
         {/* ══════════ BƯỚC 3 — BẢNG CHI PHÍ ══════════ */}
         {step === 3 && quote && (
           <QuoteConfirm
+            reschedule={isReschedule}
             quote={quote}
             confirming={confirming}
             onBack={() => { setQuote(null); setStep(2) }}
@@ -397,8 +469,8 @@ export default function TransferBooking() {
 // THÀNH PHẦN PHỤ
 // ============================================================
 
-function Stepper({ step }) {
-  const steps = ['Chính sách phí', 'Chọn sân mới', 'Xác nhận']
+function Stepper({ step, reschedule }) {
+  const steps = reschedule ? ['Chi phí', 'Chọn giờ mới', 'Xác nhận'] : ['Chính sách phí', 'Chọn sân mới', 'Xác nhận']
   return (
     <div className={styles.stepper}>
       {steps.map((label, i) => (
@@ -449,7 +521,7 @@ function PolicyTable({ leadHours, feeTiers, compTiers }) {
 const pct = (r) => (r > 0 ? `${Math.round(r * 100)}%` : 'Miễn phí')
 
 /** Bảng chi phí cuối cùng. Mọi con số do máy chủ tính, ở đây chỉ vẽ lại. */
-function QuoteConfirm({ quote, confirming, onBack, onConfirm, onExpire }) {
+function QuoteConfirm({ quote, confirming, onBack, onConfirm, onExpire, reschedule = false }) {
   const { transfer, breakdown, requiresApproval } = quote
   const q = transfer.quote
   const needPay = q.settlement > 0
@@ -458,7 +530,7 @@ function QuoteConfirm({ quote, confirming, onBack, onConfirm, onExpire }) {
     <div className={styles.confirmWrap}>
       <div className={styles.card}>
         <div className={styles.confirmHead}>
-          <h2 className={styles.cardTitle}>Xác nhận chuyển sân</h2>
+          <h2 className={styles.cardTitle}>{reschedule ? 'Xác nhận đổi lịch' : 'Xác nhận chuyển sân'}</h2>
           <HoldTimer expiresAt={transfer.quoteExpiresAt} onExpire={onExpire} />
         </div>
 
@@ -509,7 +581,7 @@ function QuoteConfirm({ quote, confirming, onBack, onConfirm, onExpire }) {
 
         <div className={styles.safeBox}>
           <ShieldCheck size={15} />
-          <p>Nếu chuyển không thành công vì bất kỳ lý do gì, lượt đặt hiện tại của bạn <strong>vẫn còn nguyên hiệu lực</strong> và mọi khoản đã thu thêm được hoàn lại đầy đủ.</p>
+          <p>Nếu {reschedule ? 'đổi lịch' : 'chuyển'} không thành công vì bất kỳ lý do gì, lượt đặt hiện tại của bạn <strong>vẫn còn nguyên hiệu lực</strong> và mọi khoản đã thu thêm được hoàn lại đầy đủ.</p>
         </div>
 
         {needPay && (
@@ -525,7 +597,7 @@ function QuoteConfirm({ quote, confirming, onBack, onConfirm, onExpire }) {
         <div className={styles.actions}>
           <Button variant="outline" onClick={onBack} icon={<ArrowLeft size={15} />}>Chọn lại</Button>
           <Button loading={confirming} onClick={onConfirm}>
-            {needPay ? `Tiếp tục — ${formatCurrency(q.settlement)}` : 'Xác nhận chuyển sân'}
+            {needPay ? `Tiếp tục — ${formatCurrency(q.settlement)}` : (reschedule ? 'Xác nhận đổi lịch' : 'Xác nhận chuyển sân')}
           </Button>
         </div>
       </div>

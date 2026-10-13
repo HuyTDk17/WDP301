@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback } from 'react'
-import { useParams, Link, useNavigate } from 'react-router-dom'
-import { ChevronRight, Heart, MapPin, LayoutGrid, Clock, Check, ChevronUp, ChevronDown, CreditCard, Frown, Calendar } from 'lucide-react'
+import { useParams, Link, useNavigate, useSearchParams } from 'react-router-dom'
+import { ChevronRight, Heart, MapPin, LayoutGrid, Clock, Check, ChevronUp, ChevronDown, CreditCard, Frown, Calendar, Pencil, Trash2, CornerDownRight } from 'lucide-react'
 import Rating from '@/components/ui/Rating/Rating'
 import Badge from '@/components/ui/Badge/Badge'
 import Button from '@/components/ui/Button/Button'
@@ -9,6 +9,9 @@ import Spinner from '@/components/ui/Spinner/Spinner'
 import EmptyState from '@/components/ui/EmptyState/EmptyState'
 import TimeSlotPicker from '@/components/venue/TimeSlotPicker/TimeSlotPicker'
 import CourtPicker from '@/components/booking/CourtPicker/CourtPicker'
+import ReviewForm from '@/components/venue/ReviewForm/ReviewForm'
+import VenueEvents from '@/components/venue/VenueEvents/VenueEvents'
+import ConfirmModal from '@/components/dashboard/ConfirmModal/ConfirmModal'
 import { venueService } from '@/services/venueService'
 import { settingsService } from '@/services/settingsService'
 import { formatCurrency, formatDate, getSport, buildAvailableSlots, getAvatarPlaceholder, getImageUrl, previewCommission, toLocalISODate } from '@/utils'
@@ -28,6 +31,61 @@ export default function VenueDetail() {
   const [reviews, setReviews] = useState([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(null)
+
+  // ── Đánh giá: viết / sửa / xóa đánh giá của chính mình ──
+  const [searchParams, setSearchParams] = useSearchParams()
+  const [reviewFormOpen, setReviewFormOpen] = useState(false)
+  const [reviewSubmitting, setReviewSubmitting] = useState(false)
+  const [deleteReviewOpen, setDeleteReviewOpen] = useState(false)
+  const myId = String(user?._id || user?.id || '')
+  const myReview = myId ? reviews.find((r) => String(r.userId?._id) === myId) : null
+
+  // Tải lại danh sách + điểm trung bình sau khi thêm/sửa/xóa (điểm do máy chủ tính lại).
+  const refreshReviews = useCallback(async () => {
+    const [venueRes, reviewsRes] = await Promise.all([venueService.getVenueById(id), venueService.getVenueReviews(id)])
+    setVenueData((prev) => (prev ? { ...prev, rating: venueRes.venue?.rating, reviewCount: venueRes.venue?.reviewCount } : prev))
+    setReviews(reviewsRes.reviews || [])
+  }, [id])
+
+  const handleSubmitReview = async (data) => {
+    setReviewSubmitting(true)
+    try {
+      if (myReview) await venueService.updateReview(id, myReview._id, data)
+      else await venueService.addReview(id, data)
+      toast.success(myReview ? 'Đã cập nhật đánh giá của bạn' : 'Cảm ơn bạn đã đánh giá!')
+      setReviewFormOpen(false)
+      await refreshReviews()
+    } catch (err) {
+      toast.error(err?.message || 'Không thể lưu đánh giá, vui lòng thử lại')
+    } finally {
+      setReviewSubmitting(false)
+    }
+  }
+
+  const handleDeleteReview = async () => {
+    if (!myReview) return
+    setReviewSubmitting(true)
+    try {
+      await venueService.deleteReview(id, myReview._id)
+      toast.success('Đã xóa đánh giá của bạn')
+      setDeleteReviewOpen(false)
+      await refreshReviews()
+    } catch (err) {
+      toast.error(err?.message || 'Không thể xóa đánh giá')
+    } finally {
+      setReviewSubmitting(false)
+    }
+  }
+
+  // Từ nút "Đánh giá" ở lịch sử đặt sân (?review=1): mở sẵn form và cuộn tới mục đánh giá.
+  useEffect(() => {
+    if (loading || searchParams.get('review') !== '1') return
+    if (user?.role === 'customer' && !myReview) {
+      setReviewFormOpen(true)
+      document.getElementById('reviews')?.scrollIntoView({ behavior: 'smooth', block: 'start' })
+    }
+    setSearchParams({}, { replace: true })
+  }, [loading, searchParams, user, myReview, setSearchParams])
 
   const [activeImage, setActiveImage] = useState(0)
   const [showAllAmenities, setShowAllAmenities] = useState(false)
@@ -207,7 +265,9 @@ export default function VenueDetail() {
             </section>
           )}
 
-          <section className={styles.section}>
+          <VenueEvents venueId={id} />
+
+          <section className={styles.section} id="reviews">
             <div className={styles.reviewsHeader}>
               <div>
                 <h2 className={styles.sectionTitle}>Đánh giá</h2>
@@ -217,7 +277,13 @@ export default function VenueDetail() {
                   <span className={styles.reviewTotal}>({venue.reviewCount || 0} đánh giá)</span>
                 </div>
               </div>
+              {user?.role === 'customer' && !myReview && !reviewFormOpen && (
+                <Button size="sm" variant="outline" onClick={() => setReviewFormOpen(true)}>Viết đánh giá</Button>
+              )}
             </div>
+            {reviewFormOpen && user?.role === 'customer' && (
+              <ReviewForm initial={myReview} submitting={reviewSubmitting} onSubmit={handleSubmitReview} onCancel={() => setReviewFormOpen(false)} />
+            )}
             {reviews.length === 0 ? (
               <p className={styles.noReviews}>Chưa có đánh giá nào cho địa điểm này.</p>
             ) : (
@@ -228,14 +294,38 @@ export default function VenueDetail() {
                       <Avatar src={getAvatarPlaceholder(review.userId?.name || 'Khách')} name={review.userId?.name} size="md" />
                       <div className={styles.reviewMeta}>
                         <p className={styles.reviewName}>{review.userId?.name || 'Khách hàng'}</p>
-                        <div className={styles.reviewRatingRow}><Rating value={review.rating} size="sm" /><span className={styles.reviewDate}>{formatDate(review.createdAt)}</span></div>
+                        <div className={styles.reviewRatingRow}><Rating value={review.rating} size="sm" /><span className={styles.reviewDate}>{formatDate(review.createdAt)}{review.editedAt ? ' · đã chỉnh sửa' : ''}</span></div>
                       </div>
                     </div>
                     <p className={styles.reviewComment}>{review.comment}</p>
+                    {review.reply?.text && (
+                      <div className={styles.reviewReply}>
+                        <CornerDownRight size={15} className={styles.replyIcon} />
+                        <div>
+                          <p className={styles.replyAuthor}>Phản hồi từ chủ sân</p>
+                          <p className={styles.replyText}>{review.reply.text}</p>
+                        </div>
+                      </div>
+                    )}
+                    {myReview && review._id === myReview._id && !reviewFormOpen && (
+                      <div className={styles.reviewActions}>
+                        <button type="button" className={styles.reviewActionBtn} onClick={() => setReviewFormOpen(true)}><Pencil size={13} /> Sửa</button>
+                        <button type="button" className={`${styles.reviewActionBtn} ${styles.reviewActionDanger}`} onClick={() => setDeleteReviewOpen(true)}><Trash2 size={13} /> Xóa</button>
+                      </div>
+                    )}
                   </div>
                 ))}
               </div>
             )}
+            <ConfirmModal
+              isOpen={deleteReviewOpen}
+              onClose={() => setDeleteReviewOpen(false)}
+              onConfirm={handleDeleteReview}
+              loading={reviewSubmitting}
+              title="Xóa đánh giá"
+              message="Bạn có chắc muốn xóa đánh giá của mình? Bạn vẫn có thể viết lại đánh giá mới sau đó."
+              confirmLabel="Xóa đánh giá"
+            />
           </section>
         </div>
 

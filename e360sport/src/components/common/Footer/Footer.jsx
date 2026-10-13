@@ -42,7 +42,7 @@ export default function Footer() {
             {/* Chưa có trang Giới thiệu/Tuyển dụng/Blog/Liên hệ thật — xem ghi chú ở socials phía trên. */}
             <span className={`${styles.link} ${styles.comingSoon}`} title="Sắp ra mắt">Về chúng tôi</span>
             <span className={`${styles.link} ${styles.comingSoon}`} title="Sắp ra mắt">Tuyển dụng</span>
-            <span className={`${styles.link} ${styles.comingSoon}`} title="Sắp ra mắt">Bài viết</span>
+            <Link to="/news" className={styles.link}>Tin tức</Link>
             <span className={`${styles.link} ${styles.comingSoon}`} title="Sắp ra mắt">Liên hệ</span>
           </div>
           <div className={styles.col}>

@@ -303,6 +303,8 @@ exports.cancelBooking = asyncHandler(async (req, res) => {
 
     // Trả khung giờ về trạng thái trống ngay lập tức để chủ sân còn bán lại
     await slotLock.release(booking._id).catch(() => {});
+    // Đóng bài "tìm người chơi" gắn với lượt đặt này (nếu có) và báo người đã xin/đã được nhận
+    await require('../services/playerService').closeForBooking(booking._id, 'lượt đặt đã bị hủy');
 
     // Phần hoàn bằng TIỀN MẶT: tạo yêu cầu hoàn để CHỦ SÂN chuyển khoản
     // lại cho khách — chuyển khoản ngân hàng không có API hoàn tự động.
@@ -411,6 +413,7 @@ exports.updateBookingStatus = asyncHandler(async (req, res) => {
     // Huỷ hoặc không đến thì khung giờ được trả lại ngay
     if (['cancelled', 'no_show'].includes(status)) {
         await slotLock.release(booking._id).catch(() => {});
+        await require('../services/playerService').closeForBooking(booking._id, 'lượt đặt không còn hiệu lực');
     }
 
     if (isOwnerCancellingPaid && booking.customerId) {

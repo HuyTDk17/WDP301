@@ -14,7 +14,9 @@ const errorHandler = (err, req, res, next) => {
     }
     if (err.name === 'MulterError') {
         statusCode = 400;
-        message = err.code === 'LIMIT_FILE_SIZE' ? 'Ảnh quá lớn, tối đa 2MB' : 'Tải ảnh lên không thành công';
+        message = err.code === 'LIMIT_FILE_SIZE' ? 'Ảnh quá lớn, vui lòng chọn ảnh nhỏ hơn'
+            : err.code === 'LIMIT_FILE_COUNT' || err.code === 'LIMIT_UNEXPECTED_FILE' ? 'Số lượng ảnh vượt quá giới hạn cho phép'
+            : 'Tải ảnh lên không thành công';
     }
     if (err.name === 'JsonWebTokenError') { statusCode = 401; message = 'Token không hợp lệ'; }
     if (err.name === 'TokenExpiredError') { statusCode = 401; message = 'Token đã hết hạn'; }

@@ -32,6 +32,7 @@ export const userService = {
   getUsers: (params = {}) => api.get('/admin/users', { params }),
   getUserById: (id) => api.get(`/admin/users/${id}`),
   updateUserStatus: (id, status, reason = '') => api.patch(`/admin/users/${id}/status`, { status, reason }),
+  changeRole: (id, role, reason) => api.patch(`/admin/users/${id}/role`, { role, reason }),
   deleteUser: (id) => api.delete(`/admin/users/${id}`),
   getOwners: () => api.get('/admin/owners'),
   getOwnerDetail: (id) => api.get(`/admin/owners/${id}`),

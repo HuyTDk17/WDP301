@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { Outlet, NavLink, Link, useNavigate, useLocation } from 'react-router-dom'
 import Avatar from '@/components/ui/Avatar/Avatar'
-import { LayoutGrid, CalendarRange, Wallet, LandPlot, Trophy, ClipboardList, Users, Settings, Globe, LogOut, PanelLeftClose, PanelLeftOpen, Menu, Bell, Plus, Repeat, Landmark, Percent, Banknote } from 'lucide-react'
+import { LayoutGrid, CalendarRange, Wallet, LandPlot, Trophy, ClipboardList, Users, Settings, Globe, LogOut, PanelLeftClose, PanelLeftOpen, Menu, Bell, Plus, Repeat, Landmark, Percent, Banknote, Star, CalendarDays } from 'lucide-react'
 import { useAuth } from '@/contexts/authState'
 import { useUnreadNotifications } from '@/hooks/useUnreadNotifications'
 import ToastContainer from '@/components/ui/Toast/Toast'
@@ -24,6 +24,8 @@ const NAV_GROUPS = [
     { to: '/owner/refunds', icon: Banknote, label: 'Hoàn tiền cho khách' },
     { to: '/owner/transfers', icon: Repeat, label: 'Chuyển sân' },
     { to: '/owner/customers', icon: Users, label: 'Khách hàng' },
+    { to: '/owner/events', icon: CalendarDays, label: 'Sự kiện' },
+    { to: '/owner/reviews', icon: Star, label: 'Đánh giá' },
   ]},
   { label: 'Tài khoản', items: [
     { to: '/owner/settings', icon: Settings, label: 'Cài đặt' },

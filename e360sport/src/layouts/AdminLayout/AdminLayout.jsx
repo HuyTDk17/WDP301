@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { Outlet, NavLink, Link, useNavigate, useLocation } from 'react-router-dom'
 import Avatar from '@/components/ui/Avatar/Avatar'
-import { LayoutGrid, BarChart3, Users, Building2, LandPlot, CalendarClock, Star, Settings, Globe, LogOut, ShieldCheck, Bell, PanelLeftClose, PanelLeftOpen, Menu, Percent } from 'lucide-react'
+import { LayoutGrid, BarChart3, Users, Building2, LandPlot, CalendarClock, Star, Settings, Globe, LogOut, ShieldCheck, Bell, PanelLeftClose, PanelLeftOpen, Menu, Percent, MessageSquareWarning, Image, Newspaper, ScrollText, Tags, Network } from 'lucide-react'
 import { useAuth } from '@/contexts/authState'
 import { useUnreadNotifications } from '@/hooks/useUnreadNotifications'
 import ToastContainer from '@/components/ui/Toast/Toast'
@@ -20,6 +20,12 @@ const NAV_GROUPS = [
     { to: '/admin/commissions', icon: CalendarClock, label: 'Hoa hồng theo đơn' },
     { to: '/admin/settlements', icon: Percent, label: 'Đối soát hoa hồng' },
     { to: '/admin/reviews', icon: Star, label: 'Đánh giá' },
+    { to: '/admin/complaints', icon: MessageSquareWarning, label: 'Khiếu nại' },
+    { to: '/admin/banners', icon: Image, label: 'Banner' },
+    { to: '/admin/news', icon: Newspaper, label: 'Tin tức' },
+    { to: '/admin/policies', icon: ScrollText, label: 'Chính sách' },
+    { to: '/admin/sports', icon: Tags, label: 'Danh mục môn' },
+    { to: '/admin/network', icon: Network, label: 'Mạng lưới chuyển sân' },
   ]},
   { label: 'Hệ thống', items: [
     { to: '/admin/settings', icon: Settings, label: 'Cài đặt' },

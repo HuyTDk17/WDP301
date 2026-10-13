@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback } from 'react'
 import { Link } from 'react-router-dom'
-import { Users, UserCheck, Clock, Ban, Lightbulb, Lock, Unlock, ShieldCheck, ShieldAlert, ArrowRight } from 'lucide-react'
+import { Users, UserCheck, Clock, Ban, Lightbulb, Lock, Unlock, ShieldCheck, ShieldAlert, ArrowRight, UserCog } from 'lucide-react'
 import PageHeader from '@/components/dashboard/PageHeader/PageHeader'
 import DataTable from '@/components/dashboard/DataTable/DataTable'
 import StatCard from '@/components/dashboard/StatCard/StatCard'
@@ -25,6 +25,7 @@ export default function UserManagement() {
   const [total, setTotal] = useState(0)
   const [stats, setStats] = useState({ total: 0, active: 0, pending: 0, banned: 0 })
   const [banTarget, setBanTarget] = useState(null)
+  const [roleTarget, setRoleTarget] = useState(null)
 
   const loadUsers = useCallback((p = page, r = roleFilter, s = search) => {
     setLoading(true)
@@ -67,6 +68,20 @@ export default function UserManagement() {
   }
 
   const ROLE_LABEL = { customer: 'Khách hàng', owner: 'Chủ sân' }
+
+  // Đổi vai trò khách hàng ↔ chủ sân (bắt buộc nêu lý do; máy chủ chặn khi chủ sân còn lượt đặt chưa diễn ra)
+  const nextRole = (u) => (u?.role === 'owner' ? 'customer' : 'owner')
+  const changeRole = async (reason) => {
+    try {
+      await userService.changeRole(roleTarget._id, nextRole(roleTarget), reason)
+      toast.success(`Đã đổi vai trò của ${roleTarget.name} thành ${ROLE_LABEL[nextRole(roleTarget)]}`)
+      setRoleTarget(null)
+      loadUsers(page, roleFilter, search)
+      loadStats()
+    } catch (err) {
+      toast.error(err?.message || 'Không thể đổi vai trò')
+    }
+  }
 
   const columns = [
     { header: 'Người dùng', accessor: 'name', render: (val, row) => <div className={styles.userCell}><div className={styles.avatar}>{val?.[0] || '?'}</div><div><p className={styles.name}>{val}</p><p className={styles.email}>{row.email}</p></div></div> },
@@ -115,7 +130,29 @@ export default function UserManagement() {
         searchPlaceholder="Tìm theo tên, email..."
         emptyText="Chưa có người dùng nào"
         server={{ page, totalPages, total, pageSize: PAGE_SIZE, onPageChange: handlePageChange, onSearchChange: handleSearchChange }}
-        actions={(row) => <Button size="xs" variant={isBanned(row) ? 'success' : 'danger'} icon={isBanned(row) ? <Unlock size={13} /> : <Lock size={13} />} onClick={() => setBanTarget(row)}>{isBanned(row) ? 'Mở khóa' : 'Khóa'}</Button>}
+        actions={(row) => (
+          <>
+            {['customer', 'owner'].includes(row.role) && !isBanned(row) && (
+              <Button size="xs" variant="outline" icon={<UserCog size={13} />} onClick={() => setRoleTarget(row)}>Đổi vai trò</Button>
+            )}
+            <Button size="xs" variant={isBanned(row) ? 'success' : 'danger'} icon={isBanned(row) ? <Unlock size={13} /> : <Lock size={13} />} onClick={() => setBanTarget(row)}>{isBanned(row) ? 'Mở khóa' : 'Khóa'}</Button>
+          </>
+        )}
+      />
+
+      <ReasonModal
+        isOpen={!!roleTarget}
+        onClose={() => setRoleTarget(null)}
+        onConfirm={changeRole}
+        title={roleTarget?.role === 'owner' ? 'Hạ xuống Khách hàng' : 'Nâng lên Chủ sân'}
+        description={roleTarget?.role === 'owner'
+          ? `Gỡ quyền chủ sân của "${roleTarget?.name}"? Các địa điểm của họ sẽ tạm ẩn khỏi khách hàng. Không thực hiện được khi họ còn lượt đặt chưa diễn ra.`
+          : `Cấp quyền chủ sân cho "${roleTarget?.name}"? Họ có thể đăng địa điểm và nhận lượt đặt ngay. Chỉ nên cấp khi đã xác minh giấy phép kinh doanh.`}
+        confirmLabel="Đổi vai trò"
+        variant={roleTarget?.role === 'owner' ? 'danger' : 'primary'}
+        icon={<UserCog size={28} />}
+        reasonLabel="Lý do (gửi kèm thông báo cho người dùng)"
+        reasonPlaceholder="Ví dụ: Đã xác minh giấy phép kinh doanh qua điện thoại..."
       />
 
       <ReasonModal

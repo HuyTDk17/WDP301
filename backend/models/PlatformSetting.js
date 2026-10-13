@@ -34,6 +34,9 @@ const platformSettingSchema = new mongoose.Schema(
 
         // ===== CHUYỂN SÂN =====
         transferEnabled: { type: Boolean, default: true },
+        // Bật = chuyển sang CHỦ SÂN KHÁC (loại T4) chỉ cho phép khi cả hai chủ sân đã được Admin duyệt vào mạng lưới.
+        // Tắt (mặc định) = mọi chủ sân tự động tham gia như trước đây, không đổi hành vi hiện có.
+        transferNetworkRequired: { type: Boolean, default: false },
         // Dưới ngưỡng này chủ sân cũ không còn cơ hội bán lại khung giờ, nên
         // không cho chuyển nữa — khách phải dùng chính sách huỷ.
         transferMinLeadTimeHours: { type: Number, default: 2, min: 0 },

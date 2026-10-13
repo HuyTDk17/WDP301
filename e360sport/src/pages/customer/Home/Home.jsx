@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { Search, CalendarCheck, CreditCard, PartyPopper, Sparkles, LandPlot, Footprints, MapPinned, Star, ArrowRight } from 'lucide-react'
 import SearchBar from '@/components/common/SearchBar/SearchBar'
+import BannerCarousel from '@/components/home/BannerCarousel/BannerCarousel'
 import VenueCard from '@/components/venue/VenueCard/VenueCard'
 import Skeleton from '@/components/ui/Skeleton/Skeleton'
 import { useAuth } from '@/contexts/authState'
@@ -96,6 +97,8 @@ export default function Home() {
       </section>
 
       {/* THỐNG KÊ — số liệu THẬT, xem ghi chú ở STAT_META phía trên */}
+      <BannerCarousel />
+
       <section className={styles.statsBar}>
         <div className="container">
           <div className={styles.statsGrid}>

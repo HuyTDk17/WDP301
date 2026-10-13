@@ -5,6 +5,83 @@ Tài liệu này ghi lại toàn bộ thay đổi so với phiên bản gốc, k
 
 ---
 
+## Mạng lưới chuyển sân (Admin duyệt chủ sân)
+
+- **Chủ sân:** thẻ "Mạng lưới chuyển sân" ở đầu trang `/owner/transfers` hiện trạng thái (chưa tham gia / chờ duyệt / thành viên / bị từ chối / đã gỡ) và nút **xin tham gia** (`GET /api/owner/network`, `POST /api/owner/network/request`). Admin được báo khi có yêu cầu mới; hai lần bấm cùng lúc chỉ tạo một yêu cầu.
+- **Admin:** trang `/admin/network` (mục "Mạng lưới chuyển sân"): lọc theo trạng thái, tìm theo tên/email, **Duyệt** (cả khi chủ sân chưa xin, hoặc xem xét lại người bị từ chối/bị gỡ), **Từ chối** và **Gỡ** (bắt buộc nêu lý do, gửi kèm thông báo), **Duyệt tất cả đang chờ**. Công tắc bật/tắt nằm ở **Cài đặt → Chuyển sân** (`transferNetworkRequired`).
+- **Quy tắc:** mặc định **TẮT** → mọi chủ sân tự động tham gia, hành vi cũ không đổi (không cần di chuyển dữ liệu; chủ sân cũ chưa có trường `transferNetwork` được tính là "chưa tham gia"). Khi BẬT, **chỉ chuyển sang chủ sân khác (loại T4)** cần CẢ HAI chủ sân là thành viên; đổi giờ/đổi sân/chuyển giữa các địa điểm cùng chủ sân (T1–T3) và sang tên (T5) không bị ảnh hưởng.
+  Kiểm tra ở 3 điểm trong `transferService`: lúc báo giá (trước khi tính giá/giữ chỗ), lúc xác nhận, và sau khi chủ sân đích duyệt (trước khi thu tiền). Lượt đã sang bước thanh toán không bị hủy giữa chừng khi một chủ sân bị gỡ.
+  Trang chuyển sân của khách báo sớm nếu chủ sân hiện tại chưa là thành viên (`GET /bookings/:id/transfer/eligibility` trả thêm `network`).
+- Backend: `utils/transferNetwork.js`, `controllers/networkController.js`, trường `User.transferNetwork`, `PlatformSetting.transferNetworkRequired`. Test: `tests/transferNetwork.test.js` (NW-01…10), đã thêm vào `npm test`. `checkEligibility` giữ nguyên chữ ký (đang có test không cần CSDL).
+
+---
+
+## Tìm người chơi chung (kèm nút Zalo)
+
+- **Luồng:** khách có lượt đặt đã xác nhận, chưa diễn ra bấm **"Tìm thêm người"** ở lịch sử đặt sân → đăng bài (số người cần, trình độ, ghi chú). Khách khác vào **`/players`** lọc theo môn/ngày/trình độ và **xin tham gia** kèm lời nhắn. Chủ nhóm **nhận / từ chối** ở **`/players/mine`**; đủ người thì bài tự chuyển "đã đủ người".
+- **Liên lạc bằng số điện thoại + Zalo:** SAU KHI được nhận, hai bên mới thấy số điện thoại của nhau, kèm nút **Gọi**, **Sao chép** và **Nhắn Zalo** (`https://zalo.me/<số>`, xem `utils/zalo.js`). Danh sách công khai chỉ có tên + ảnh đại diện, **không bao giờ** có SĐT/email; yêu cầu bị từ chối/chờ cũng không lộ SĐT. Nhóm đóng thì hết hiển thị liên lạc.
+  Lưu ý: nhắn Zalo được hay không còn tùy cài đặt Zalo của người nhận (cho phép tìm bằng số điện thoại).
+- **Quy tắc:** chỉ đăng cho lượt đặt CỦA MÌNH, đã xác nhận, chưa bắt đầu; mỗi lượt đặt một bài (chỉ mục duy nhất một phần); tối đa 5 bài chưa diễn ra/người; mỗi người tối đa 10 yêu cầu đang chờ; không xin vào nhóm của mình, không xin trùng, bị từ chối thì không xin lại (rút lui thì xin lại được).
+  **Chấp nhận là giữ chỗ nguyên tử** — hai lần chấp nhận cùng lúc cho chỗ cuối chỉ một thành công. Người đã được nhận rút lui thì bài mở lại và chủ nhóm được báo. Cả hai bên phải có số điện thoại trong hồ sơ.
+- **Đóng bài tự động** khi lượt đặt mất hiệu lực: khách hủy, chủ sân hủy/không đến, hoặc chuyển sân (3 hook gọi `services/playerService.closeForBooking`, luôn nuốt lỗi để không làm hỏng luồng hủy/chuyển). Danh sách cũng tự ẩn bài có lượt đặt không còn "đã xác nhận" phòng khi hook lỗi. Bài hết hạn không cần job: quá giờ bắt đầu thì không còn được liệt kê hay nhận yêu cầu.
+- Backend: `models/PlayerPost.js`, `models/JoinRequest.js`, `controllers/playerController.js`, `services/playerService.js`, `routes/playerRoutes.js` (`/api/players`, chỉ khách hàng). Test: `tests/playerMatching.test.js` (PM-01…12), đã thêm vào `npm test`.
+
+---
+
+## Sự kiện của chủ sân (giải đấu / khuyến mãi)
+
+- **Chủ sân:** trang `/owner/events` — tạo, sửa, **hủy** sự kiện tại địa điểm của mình (tên, loại, mô tả, dòng nổi bật, thời gian, phí tham gia chỉ để thông tin, ảnh). Hủy cần nêu lý do.
+  Chỉ tạo ở địa điểm CỦA MÌNH; bắt đầu phải ở tương lai (≤ 1 năm), kéo dài ≤ 90 ngày, tối đa 20 sự kiện chưa kết thúc / chủ sân. Sự kiện đã hủy hoặc đã kết thúc không sửa/hủy lại được; sự kiện đang diễn ra vẫn sửa được nội dung.
+- **Khách:** trang công khai `/events` (lọc theo loại) và `/events/:id`; mục "Sự kiện sắp tới tại đây" ở trang địa điểm; link "Sự kiện" ở thanh menu. Link đã chia sẻ của sự kiện đã hủy/đã kết thúc vẫn mở được và báo đúng tình trạng.
+- **Hiển thị công khai** bám theo địa điểm (đã duyệt, đang bật, chủ sân không bị khóa phí dịch vụ) — địa điểm bị ẩn thì sự kiện cũng ẩn. Không lộ lý do hủy ra công khai.
+- Trạng thái "sắp diễn ra / đang diễn ra / đã kết thúc" được **suy ra từ thời gian** (`eventController.phaseOf`), không cần job cập nhật. Hệ thống KHÔNG nhận đăng ký tham gia hay thu phí sự kiện.
+- Backend: `models/Event.js`, `controllers/eventController.js`, `routes/eventRoutes.js` (+ nhóm `/api/owner/events` trong `ownerRoutes.js`). Test: `tests/events.test.js` (EV-01…11), đã thêm vào `npm test`.
+- Tách `form.module.css` dùng chung sang `components/dashboard/` (trước đây nằm trong `pages/admin/`).
+
+---
+
+## Admin: đổi vai trò · banner · tin tức · chính sách · danh mục môn
+
+- **Đổi vai trò (#13):** `PATCH /api/admin/users/:id/role` + nút "Đổi vai trò" ở Quản lý người dùng. Chỉ khách hàng ↔ chủ sân, **bắt buộc nêu lý do** (gửi kèm thông báo).
+  Chặn: tự đổi mình, đổi tài khoản admin, đổi tài khoản đang bị khóa. Hạ chủ sân xuống khách bị chặn khi còn lượt đặt chưa diễn ra; khi được phép thì ẩn địa điểm (cờ `suspendedByOwnerBan`), cấp lại quyền sẽ bật lại đúng những địa điểm đó.
+  Lưu `roleChangedAt/roleChangedBy` trên User.
+- **Banner (#14):** `/admin/banners`; công khai `GET /api/banners` → carousel ở trang chủ (tự chuyển, dừng khi rê chuột, tôn trọng "giảm chuyển động"). Hẹn giờ bắt đầu/kết thúc, thứ tự, bật/tắt.
+  Liên kết chỉ nhận đường dẫn nội bộ `/...` hoặc `http(s)://` (chặn `javascript:` và `//host`). Ảnh cũ bị xóa khi thay/xóa banner.
+- **Tin tức (#15):** `/admin/news` (nháp/đăng, ảnh bìa); công khai `/news`, `/news/:slug`. Slug tiếng Việt không dấu, cố định sau khi tạo. Nội dung là **văn bản thuần** (không HTML) nên không có XSS. Bản nháp không lộ ra công khai.
+- **Chính sách (#16):** `/admin/policies`; công khai `/policies/:key`. Trang `privacy`/`terms` (đường dẫn cũ `/privacy-policy`, `/terms-of-service`) dùng nội dung mặc định cho tới khi Admin tùy chỉnh; "Về mặc định" xóa bản tùy chỉnh. Nội dung mặc định chuyển sang `pages/legal/builtinPolicies.js`.
+- **Danh mục môn (#17):** `/admin/sport-categories`; công khai `GET /api/sports`. Tự nạp 8 môn mặc định khi bảng còn trống. Mã môn cố định; xóa bị chặn khi còn địa điểm/sân dùng (dùng "Tắt"); môn đã tắt không nhận sân mới nhưng sân cũ vẫn sửa được.
+  `courtController` kiểm tra môn theo danh mục động thay cho danh sách cứng. Frontend nạp danh mục trong `main.jsx` (tối đa 1,2 giây, lỗi thì dùng mặc định); `SPORTS` chỉ gồm môn đang bật, `getSport()` tra cả môn đã tắt.
+- Test: `tests/adminContent.test.js` (AC-01…18); đã thêm vào `npm test`.
+
+---
+
+## Đổi lịch · Hóa đơn cho khách
+
+- **Đổi lịch (mới):** `/bookings/:bookingId/reschedule`, nút "Đổi lịch" ở lịch sử đặt sân. Là một chế độ của trang chuyển sân: cố định địa điểm hiện tại, **giữ nguyên độ dài lượt đặt**,
+  chỉ đổi ngày/giờ (hoặc sân trong cùng địa điểm). Dùng lại toàn bộ engine chuyển sân (báo giá có hạn, giữ chỗ, thu/hoàn chênh lệch, loại T1/T2 → bậc phí "cùng địa điểm", thường miễn phí khi còn ≥ 12 giờ).
+  Lượt đặt đang đổi **không tự chặn chính nó** (vd. đặt 18–20h có thể dời thành 17–19h). Đổi lịch tính vào giới hạn `maxTransfersPerBooking` của lượt đặt (mặc định 1 lần).
+  `GET /bookings/:id/transfer/eligibility` trả thêm `venueId`, `courtId`. Logic khung giờ: `e360sport/src/utils/rescheduleSlots.js` (hàm thuần, có test).
+- **Hóa đơn (mới):** `GET /api/bookings/:id/invoice` + trang `/bookings/:bookingId/invoice` (nút "Hóa đơn" cho lượt đặt đã xác nhận/hoàn tất). Chỉ chủ đơn xem được; không lộ hoa hồng chủ sân hay dữ liệu cổng thanh toán.
+  "In / Lưu PDF" dùng hộp thoại in của trình duyệt (giữ đúng tiếng Việt có dấu, không cần thư viện PDF). Đây là chứng từ điện tử, **không thay thế hóa đơn GTGT**.
+- Test: `tests/reschedule.test.js` (RS-00…08), `tests/invoice.test.js` (INV-01…09); đã thêm vào `npm test`.
+
+---
+
+## Khiếu nại của khách · đánh giá: trả lời / sửa / xóa · form viết đánh giá
+
+- **Khiếu nại (mới):** khách gửi khiếu nại về một lượt đặt kèm tối đa 5 ảnh bằng chứng (`/complaints`, nút "Khiếu nại" ở lịch sử đặt sân). Admin có trang `/admin/complaints`:
+  xem danh sách theo trạng thái, **nhận xử lý**, **nhắn khách / nhắn chủ sân** (chủ sân không thấy danh tính khách), **giải quyết hoặc từ chối kèm phản hồi** gửi lại cho khách bằng thông báo.
+  Luồng trạng thái `open → investigating → resolved | rejected`. Mỗi lượt đặt chỉ có một khiếu nại đang xử lý (chỉ mục duy nhất một phần), mỗi khách tối đa 5 khiếu nại chưa xong.
+  Backend: `models/Complaint.js`, `controllers/complaintController.js`, `routes/complaintRoutes.js` (+ nhóm `/api/admin/complaints*` trong `adminRoutes.js`), `middleware/uploadEvidence.js`.
+- **Đánh giá:** chủ sân **trả lời công khai** đánh giá của khách (`/owner/reviews`, `POST|DELETE /api/owner/reviews/:id/reply`); khách **sửa / xóa đánh giá của chính mình**
+  (`PUT|DELETE /api/venues/:id/reviews/:reviewId`), điểm trung bình tính lại sau mỗi thay đổi.
+- **Sửa lỗi thiếu giao diện:** trước đây API `POST /venues/:id/reviews` có nhưng KHÔNG có form viết đánh giá, nút "Đánh giá" ở lịch sử đặt sân không làm gì.
+  Nay có `ReviewForm` ở trang địa điểm (cũng dùng để sửa) và nút "Đánh giá" dẫn tới đúng form.
+- `middleware/errorHandler.js`: thông báo lỗi ảnh không còn ghi cứng "tối đa 2MB" (ảnh sân/bằng chứng cho phép 5MB).
+- Test: `tests/complaintFlow.test.js` (CP-01…14), `tests/reviewFeatures.test.js` (RV-01…10); đã thêm vào `npm test`.
+
+---
+
 ## [Hosting miễn phí] — ảnh trên Cloudinary, giấy tờ trong MongoDB, email qua Brevo
 
 - **Ảnh sân / avatar**: nếu có `CLOUDINARY_URL` thì tải thẳng lên Cloudinary (tự thu nhỏ ≤1600px), DB lưu URL https đầy đủ; không có thì ghi vào `uploads/` như cũ. Ảnh cũ bị thay/xoá được dọn khỏi Cloudinary. (`utils/uploads.js`, `middleware/storageEngines.js`)

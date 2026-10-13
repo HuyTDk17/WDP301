@@ -140,6 +140,66 @@ exports.updateUserStatus = asyncHandler(async (req, res) => {
     res.json({ user: user.toSafeObject() });
 });
 
+// @route   PATCH /api/admin/users/:id/role   body: { role: 'customer'|'owner', reason }
+// Admin đổi vai trò thủ công giữa Khách hàng ↔ Chủ sân. KHÔNG tạo/gỡ tài khoản quản trị qua API này.
+const VN_OFFSET_MS = 7 * 60 * 60 * 1000;
+exports.changeUserRole = asyncHandler(async (req, res) => {
+    const { role } = req.body;
+    const reason = String(req.body.reason || '').trim();
+    if (!['customer', 'owner'].includes(role)) return res.status(400).json({ message: 'Vai trò không hợp lệ (chỉ khách hàng hoặc chủ sân)' });
+    if (reason.length < 5) return res.status(400).json({ message: 'Vui lòng nhập lý do đổi vai trò (ít nhất 5 ký tự)' });
+
+    const user = await User.findById(req.params.id);
+    if (!user) return res.status(404).json({ message: 'Không tìm thấy người dùng này' });
+    if (String(user._id) === String(req.user._id)) return res.status(403).json({ message: 'Bạn không thể đổi vai trò của chính mình' });
+    if (user.role === 'admin') return res.status(403).json({ message: 'Không thể đổi vai trò của tài khoản quản trị' });
+    if (user.status === 'banned') return res.status(409).json({ message: 'Tài khoản đang bị khóa. Hãy mở khóa trước khi đổi vai trò' });
+    if (user.role === role) return res.status(409).json({ message: 'Người dùng đã có vai trò này' });
+
+    if (role === 'owner') {
+        user.role = 'owner';
+        user.status = 'verified';
+        user.ownerApplicationStatus = 'approved';
+        user.ownerApplicationReviewedAt = new Date();
+        user.ownerApplicationReviewedBy = req.user._id;
+        user.ownerApplicationRejectionReason = '';
+        // Trả lại các địa điểm từng bị ẩn do mất quyền chủ sân (chỉ những cái do chính lần mất quyền đó ẩn).
+        await Venue.updateMany({ ownerId: user._id, suspendedByOwnerBan: true }, { isActive: true, suspendedByOwnerBan: false });
+        await Notification.create({
+            userId: user._id, type: 'account_moderation', icon: '🏟️',
+            title: 'Bạn đã được cấp quyền chủ sân',
+            message: `${reason}. Hãy cập nhật thông tin ngân hàng trong hồ sơ để nhận thanh toán.`,
+            link: '/owner/dashboard',
+        });
+    } else {
+        // owner → customer: không cho gỡ khi còn lượt đặt chưa diễn ra (khách đã trả tiền cho chủ sân này)
+        const venueIds = (await Venue.find({ ownerId: user._id }).select('_id')).map((v) => v._id);
+        const today = new Date(Date.now() + VN_OFFSET_MS).toISOString().slice(0, 10);
+        const upcoming = venueIds.length
+            ? await Booking.countDocuments({ venueId: { $in: venueIds }, status: { $in: ['awaiting_payment', 'pending', 'confirmed'] }, date: { $gte: today } })
+            : 0;
+        if (upcoming > 0) {
+            return res.status(409).json({ message: `Chủ sân còn ${upcoming} lượt đặt chưa diễn ra. Hãy chờ hoàn tất hoặc hủy các lượt đó trước khi hạ vai trò.` });
+        }
+        user.role = 'customer';
+        user.status = 'active';
+        user.ownerApplicationStatus = 'none';
+        // Ẩn địa điểm (đánh dấu để khôi phục đúng những cái này nếu sau này cấp lại quyền)
+        const { modifiedCount } = await Venue.updateMany({ ownerId: user._id, isActive: true }, { isActive: false, suspendedByOwnerBan: true });
+        await Notification.create({
+            userId: user._id, type: 'account_moderation', icon: '⚠️',
+            title: 'Quyền chủ sân của bạn đã được gỡ',
+            message: `${reason}.${modifiedCount > 0 ? ` ${modifiedCount} địa điểm bạn đứng tên đã tạm ẩn khỏi khách hàng.` : ''}`,
+            link: '/',
+        });
+    }
+
+    user.roleChangedAt = new Date();
+    user.roleChangedBy = req.user._id;
+    await user.save();
+    res.json({ user: user.toSafeObject() });
+});
+
 // @route   PATCH /api/admin/owners/:id/confirm-bank-info
 // Admin xác nhận ĐÃ KIỂM TRA (gọi điện/đối chiếu) một thay đổi ngân hàng của
 // chủ sân sau khi đã được duyệt. Cho tới khi xác nhận, settlementService.issueSettlement

@@ -2,6 +2,7 @@ const express = require('express');
 const router = express.Router();
 const { protect, authorize } = require('../middleware/auth');
 const upload = require('../middleware/upload');
+const uploadContentImage = require('../middleware/uploadContentImage');
 const { writeLimiter } = require('../middleware/rateLimiter');
 
 const venueController = require('../controllers/venueController');
@@ -11,6 +12,8 @@ const statsController = require('../controllers/statsController');
 const settlementController = require('../controllers/settlementController');
 const transferController = require('../controllers/transferController');
 const paymentController = require('../controllers/paymentController');
+const eventController = require('../controllers/eventController');
+const networkController = require('../controllers/networkController');
 
 router.use(protect, authorize('owner'));
 
@@ -49,6 +52,21 @@ router.get('/transfers', transferController.getOwnerTransfers);
 router.post('/transfers/:id/approve', transferController.approve);
 router.post('/transfers/:id/reject', transferController.reject);
 router.patch('/venues/:id/transfer-policy', transferController.setVenueTransferPolicy);
+
+// Mạng lưới chuyển sân: xem trạng thái thành viên và xin tham gia
+router.get('/network', networkController.getMyNetwork);
+router.post('/network/request', writeLimiter, networkController.requestToJoin);
+
+// Sự kiện (giải đấu / khuyến mãi) tại địa điểm của chủ sân: tạo, sửa, hủy
+router.get('/events', eventController.getOwnerEvents);
+router.post('/events', writeLimiter, uploadContentImage.single('image'), eventController.createEvent);
+router.put('/events/:id', writeLimiter, uploadContentImage.single('image'), eventController.updateEvent);
+router.post('/events/:id/cancel', writeLimiter, eventController.cancelEvent);
+
+// Đánh giá của khách trên các địa điểm của chủ sân: xem, trả lời, xóa phản hồi
+router.get('/reviews', venueController.getOwnerReviews);
+router.post('/reviews/:id/reply', writeLimiter, venueController.replyToReview);
+router.delete('/reviews/:id/reply', writeLimiter, venueController.deleteReviewReply);
 
 // Stats & Revenue
 router.get('/stats', statsController.getOwnerStats);

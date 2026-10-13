@@ -11,6 +11,9 @@ import api from './api'
 //   GET    /venues/:id/slots?courtId=&date=             -> khung giờ trống/đã đặt trong ngày
 //   GET    /venues/:id/reviews
 //   POST   /venues/:id/reviews     (auth: customer)
+//   PUT    /venues/:id/reviews/:reviewId    (auth: tác giả)
+//   DELETE /venues/:id/reviews/:reviewId    (auth: tác giả)
+//   GET    /owner/reviews, POST|DELETE /owner/reviews/:id/reply  (auth: owner)
 //   GET    /owner/venues           (auth: owner)
 //   POST   /owner/venues           (auth: owner, multipart — field 'images')
 //   PUT    /owner/venues/:id       (auth: owner, multipart)
@@ -45,6 +48,8 @@ export const venueService = {
 
   getVenueReviews: (venueId, params = {}) => api.get(`/venues/${venueId}/reviews`, { params }),
   addReview: (venueId, data) => api.post(`/venues/${venueId}/reviews`, data),
+  updateReview: (venueId, reviewId, data) => api.put(`/venues/${venueId}/reviews/${reviewId}`, data),
+  deleteReview: (venueId, reviewId) => api.delete(`/venues/${venueId}/reviews/${reviewId}`),
 
   // ── Chủ sân ──
   getOwnerVenues: () => api.get('/owner/venues'),
@@ -61,6 +66,11 @@ export const venueService = {
   updateCourtStatus: (venueId, courtId, status) =>
     api.patch(`/owner/venues/${venueId}/courts/${courtId}/status`, { status }),
   deleteCourt: (venueId, courtId) => api.delete(`/owner/venues/${venueId}/courts/${courtId}`),
+
+  // ── Chủ sân: xem và trả lời đánh giá của khách ──
+  getOwnerReviews: (params = {}) => api.get('/owner/reviews', { params }),
+  replyToReview: (reviewId, text) => api.post(`/owner/reviews/${reviewId}/reply`, { text }),
+  deleteReviewReply: (reviewId) => api.delete(`/owner/reviews/${reviewId}/reply`),
 
   // ── Admin (quản lý toàn bộ địa điểm trên nền tảng) ──
   getAllVenuesAdmin: (params = {}) => api.get('/admin/venues', { params }),

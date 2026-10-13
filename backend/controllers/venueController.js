@@ -168,6 +168,38 @@ exports.addReview = asyncHandler(async (req, res) => {
     res.status(201).json({ review });
 });
 
+// @route   PUT /api/venues/:id/reviews/:reviewId
+// Khách sửa đánh giá CỦA CHÍNH MÌNH (điều kiện sở hữu nằm ngay trong truy vấn).
+exports.updateReview = asyncHandler(async (req, res) => {
+    const { rating, comment = '' } = req.body;
+    if (!(rating >= 1 && rating <= 5)) {
+        return res.status(400).json({ message: 'Điểm đánh giá phải từ 1 đến 5 sao' });
+    }
+    if (String(comment).length > 1000) {
+        return res.status(400).json({ message: 'Nội dung đánh giá tối đa 1000 ký tự' });
+    }
+    const review = await Review.findOne({ _id: req.params.reviewId, venueId: req.params.id, userId: req.user._id });
+    if (!review) return res.status(404).json({ message: 'Không tìm thấy đánh giá của bạn' });
+
+    review.rating = Number(rating);
+    review.comment = String(comment).trim();
+    review.editedAt = new Date();
+    await review.save();
+    await recalculateVenueRating(review.venueId);
+    res.json({ review });
+});
+
+// @route   DELETE /api/venues/:id/reviews/:reviewId
+// Khách xóa đánh giá của chính mình. Sau khi xóa họ có thể viết lại đánh giá mới.
+exports.deleteOwnReview = asyncHandler(async (req, res) => {
+    const review = await Review.findOne({ _id: req.params.reviewId, venueId: req.params.id, userId: req.user._id });
+    if (!review) return res.status(404).json({ message: 'Không tìm thấy đánh giá của bạn' });
+
+    await review.deleteOne();
+    await recalculateVenueRating(review.venueId);
+    res.json({ message: 'Đã xóa đánh giá của bạn' });
+});
+
 // ============================================================
 // API CHO CHỦ SÂN
 // ============================================================
@@ -271,6 +303,77 @@ exports.toggleVenueStatus = asyncHandler(async (req, res) => {
     venue.isActive = !venue.isActive;
     await venue.save();
     res.json({ venue });
+});
+
+// @route   GET /api/owner/reviews?replied=true|false&venueId=&page=&limit=
+// Đánh giá của TẤT CẢ địa điểm thuộc chủ sân, kèm số đánh giá chưa trả lời.
+exports.getOwnerReviews = asyncHandler(async (req, res) => {
+    const { replied, venueId, page = 1, limit = 10 } = req.query;
+    const pageNum = Math.max(1, parseInt(page, 10) || 1);
+    const limitNum = Math.min(50, Math.max(1, parseInt(limit, 10) || 10));
+
+    const venues = await Venue.find({ ownerId: req.user._id }).select('_id name');
+    const ids = venues.map((v) => String(v._id));
+    const names = Object.fromEntries(venues.map((v) => [String(v._id), v.name]));
+    const base = { venueId: { $in: venues.map((v) => v._id) } };
+
+    const filter = { ...base };
+    // Chỉ cho lọc theo địa điểm của chính chủ sân; ID lạ bị bỏ qua thay vì lộ đánh giá nơi khác.
+    if (venueId && ids.includes(String(venueId))) filter.venueId = venueId;
+    if (replied === 'false') filter['reply.repliedAt'] = null;
+    if (replied === 'true') filter['reply.repliedAt'] = { $ne: null };
+
+    const [total, reviews, unreplied] = await Promise.all([
+        Review.countDocuments(filter),
+        Review.find(filter).populate('userId', 'name avatar').sort({ createdAt: -1 }).skip((pageNum - 1) * limitNum).limit(limitNum),
+        Review.countDocuments({ ...base, 'reply.repliedAt': null }),
+    ]);
+
+    res.json({
+        reviews: reviews.map((r) => ({ ...r.toObject(), venueName: names[String(r.venueId)] || '' })),
+        total, unreplied, page: pageNum, totalPages: Math.max(1, Math.ceil(total / limitNum)),
+        venues: venues.map((v) => ({ _id: v._id, name: v.name })),
+    });
+});
+
+// @route   POST /api/owner/reviews/:id/reply   body: { text }
+// Đăng hoặc sửa phản hồi công khai. Chỉ chủ sân CỦA địa điểm đó mới trả lời được.
+exports.replyToReview = asyncHandler(async (req, res) => {
+    const text = String(req.body.text || '').trim();
+    if (text.length < 2) return res.status(400).json({ message: 'Vui lòng nhập nội dung phản hồi' });
+    if (text.length > 1000) return res.status(400).json({ message: 'Phản hồi tối đa 1000 ký tự' });
+
+    const review = await Review.findById(req.params.id);
+    const venue = review ? await Venue.findOne({ _id: review.venueId, ownerId: req.user._id }) : null;
+    // Cùng một thông báo cho "không tồn tại" và "không phải của bạn" để không dò được đánh giá nơi khác.
+    if (!review || !venue) return res.status(404).json({ message: 'Không tìm thấy đánh giá này' });
+
+    const isFirstReply = !review.reply?.repliedAt;
+    review.reply = { text, repliedAt: new Date() };
+    await review.save();
+
+    if (isFirstReply && review.userId) {
+        await Notification.create({
+            userId: review.userId,
+            type: 'review_reply',
+            icon: '💬',
+            title: `${venue.name} đã phản hồi đánh giá của bạn`,
+            message: text,
+            link: `/venues/${venue._id}`,
+        }).catch(() => {});
+    }
+    res.json({ review });
+});
+
+// @route   DELETE /api/owner/reviews/:id/reply
+exports.deleteReviewReply = asyncHandler(async (req, res) => {
+    const review = await Review.findById(req.params.id);
+    const venue = review ? await Venue.findOne({ _id: review.venueId, ownerId: req.user._id }) : null;
+    if (!review || !venue) return res.status(404).json({ message: 'Không tìm thấy đánh giá này' });
+
+    review.reply = { text: '', repliedAt: null };
+    await review.save();
+    res.json({ review });
 });
 
 // ===== QUẢN LÝ ĐỊA ĐIỂM PHÍA ADMIN =====

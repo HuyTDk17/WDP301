@@ -1,6 +1,6 @@
 import { useEffect, useState, useRef } from 'react'
 import { Link, NavLink, useNavigate } from 'react-router-dom'
-import { Bell, ChevronUp, ChevronDown, User, ClipboardList, Heart, LandPlot, Settings, LogOut } from 'lucide-react'
+import { Bell, ChevronUp, ChevronDown, User, ClipboardList, Heart, LandPlot, Settings, LogOut, MessageSquareWarning } from 'lucide-react'
 import { useAuth } from '@/contexts/authState'
 import { useClickOutside } from '@/hooks'
 import { useUnreadNotifications } from '@/hooks/useUnreadNotifications'
@@ -26,11 +26,14 @@ export default function Navbar() {
 
   const NAV_LINKS = [
     { to: '/venues', label: 'Sân thể thao' },
+    { to: '/events', label: 'Sự kiện' },
+    { to: '/news', label: 'Tin tức' },
     { to: '/privacy-policy', label: 'Chính sách' },
     { to: '/terms-of-service', label: 'Điều khoản' },
     // Đặt sân/yêu thích là chức năng riêng của khách hàng — chủ sân/admin
     // đăng nhập sẽ không thấy 2 mục này trên thanh điều hướng.
     { to: '/bookings', label: 'Lịch đặt sân', customerOnly: true },
+    { to: '/players', label: 'Tìm người chơi', customerOnly: true },
     { to: '/favorites', label: 'Yêu thích', customerOnly: true },
   ]
   const visibleNavLinks = NAV_LINKS.filter(l => !l.customerOnly || (isAuthenticated && user?.role === 'customer'))
@@ -73,6 +76,7 @@ export default function Navbar() {
                     <div className={styles.dropdownDivider} />
                     <Link to="/profile" className={styles.dropdownItem} onClick={() => setMenuOpen(false)}><span><User size={15} /></span> Hồ sơ cá nhân</Link>
                     {user?.role === 'customer' && <Link to="/bookings" className={styles.dropdownItem} onClick={() => setMenuOpen(false)}><span><ClipboardList size={15} /></span> Lịch sử đặt sân</Link>}
+                    {user?.role === 'customer' && <Link to="/complaints" className={styles.dropdownItem} onClick={() => setMenuOpen(false)}><span><MessageSquareWarning size={15} /></span> Khiếu nại</Link>}
                     {user?.role === 'customer' && <Link to="/favorites" className={styles.dropdownItem} onClick={() => setMenuOpen(false)}><span><Heart size={15} /></span> Yêu thích</Link>}
                     {user?.role === 'customer' && (
                       <Link to="/owner-application" className={styles.dropdownItem} onClick={() => setMenuOpen(false)}><span><LandPlot size={15} /></span> Đăng ký làm chủ sân</Link>

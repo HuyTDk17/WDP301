@@ -6,6 +6,7 @@ import Button from '@/components/ui/Button/Button'
 import Spinner from '@/components/ui/Spinner/Spinner'
 import EmptyState from '@/components/ui/EmptyState/EmptyState'
 import ReasonModal from '@/components/dashboard/ReasonModal/ReasonModal'
+import NetworkMembershipCard from '@/components/owner/NetworkMembershipCard/NetworkMembershipCard'
 import { transferService, TRANSFER_STATUS, TRANSFER_TYPE_LABEL } from '@/services/transferService'
 import { useToast } from '@/contexts/ToastContext'
 import { formatCurrency, formatDate, formatTime } from '@/utils'
@@ -75,6 +76,8 @@ export default function TransferRequests() {
           ? `Có ${data.pendingCount} yêu cầu đang chờ bạn phản hồi`
           : 'Theo dõi các lượt đặt được chuyển đến và chuyển đi khỏi địa điểm của bạn'}
       />
+
+      <NetworkMembershipCard />
 
       <div className={styles.tabs}>
         {TABS.map((t) => (

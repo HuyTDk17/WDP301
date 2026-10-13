@@ -29,7 +29,7 @@ export default function AdminSettings() {
     platformName: '', supportEmail: '', commissionRate: 5, commissionCustomerSharePct: 0,
     commissionDueDays: 7, commissionGraceDays: 3, commissionBlockEnabled: true, commissionAutoIssueEnabled: true,
     gatewayFeeRate: 0.015,
-    transferEnabled: true, transferMinLeadTimeHours: 2, maxTransfersPerBooking: 1,
+    transferEnabled: true, transferNetworkRequired: false, transferMinLeadTimeHours: 2, maxTransfersPerBooking: 1,
     quoteTtlMinutes: 10, ownerApprovalTimeoutMinutes: 30,
     transferFeeMin: 5000, transferFeeMax: 100000, transferFixedFeeT5: 10000,
     maxRefundRatio: 0.5, refundToCreditEnabled: true,
@@ -57,6 +57,7 @@ export default function AdminSettings() {
           commissionAutoIssueEnabled: st.commissionAutoIssueEnabled ?? true,
           gatewayFeeRate: st.gatewayFeeRate ?? 0.015,
           transferEnabled: st.transferEnabled !== false,
+          transferNetworkRequired: st.transferNetworkRequired === true,
           transferMinLeadTimeHours: st.transferMinLeadTimeHours ?? 2,
           maxTransfersPerBooking: st.maxTransfersPerBooking ?? 1,
           quoteTtlMinutes: st.quoteTtlMinutes ?? 10,
@@ -241,6 +242,14 @@ export default function AdminSettings() {
             onChange={e => setForm(f => ({ ...f, transferEnabled: e.target.checked }))}
           />
           <span>Cho phép khách hàng chuyển sân thay vì huỷ</span>
+        </label>
+        <label className={styles.switchRow}>
+          <input
+            type="checkbox"
+            checked={form.transferNetworkRequired}
+            onChange={e => setForm(f => ({ ...f, transferNetworkRequired: e.target.checked }))}
+          />
+          <span>Chỉ cho chuyển sang chủ sân khác khi cả hai chủ sân đã được duyệt vào mạng lưới (duyệt tại mục “Mạng lưới chuyển sân”)</span>
         </label>
 
         <div className={styles.formGrid}>

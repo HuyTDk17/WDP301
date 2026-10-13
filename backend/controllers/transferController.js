@@ -25,11 +25,19 @@ exports.getEligibility = asyncHandler(async (req, res) => {
 
     const settings = await getSettings();
     const result = await transferService.checkEligibility(booking, settings);
+    // Thông tin mạng lưới để giao diện báo sớm: chủ sân hiện tại có là thành viên không (chỉ ảnh hưởng chuyển sang chủ sân khác)
+    const fromVenue = await Venue.findById(booking.venueId).select('ownerId');
+    const network = {
+        required: !!settings.transferNetworkRequired,
+        fromOwnerMember: await require('../utils/transferNetwork').ownerInNetwork(fromVenue?.ownerId, settings),
+    };
 
     res.json({
         ...result,
+        network,
         booking: {
-            _id: booking._id, venueName: booking.venueName, courtName: booking.courtName,
+            _id: booking._id, venueId: booking.venueId, courtId: booking.courtId,
+            venueName: booking.venueName, courtName: booking.courtName,
             date: booking.date, startTime: booking.startTime, endTime: booking.endTime,
             amount: booking.amount, serviceFee: booking.serviceFee,
             discountAmount: booking.discountAmount, sport: booking.sport,

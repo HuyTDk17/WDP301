@@ -53,7 +53,11 @@ export const validatePhone = (phone) => /^(\+84|0)[3-9]\d{8}$/.test(phone.replac
 export const validatePassword = (pw) => pw.length >= 8
 
 // === MÔN THỂ THAO ===
-export const SPORTS = [
+// Danh mục môn thể thao. Mặc định bên dưới dùng khi chưa tải được từ máy chủ; khi khởi động, main.jsx gọi
+// syncSportCategories() để thay bằng danh mục do Admin quản lý (GET /api/sports). `SPORTS` là mảng DUY NHẤT và được
+// sửa tại chỗ nên mọi nơi đã import vẫn thấy dữ liệu mới. SPORTS chỉ chứa môn ĐANG BẬT (cho ô chọn/bộ lọc);
+// getSport() tra cả môn đã tắt để dữ liệu cũ vẫn hiển thị đúng tên.
+const DEFAULT_SPORTS = [
   { id: 'football', name: 'Bóng đá', icon: '⚽', color: '#22C55E' },
   { id: 'basketball', name: 'Bóng rổ', icon: '🏀', color: '#F59E0B' },
   { id: 'badminton', name: 'Cầu lông', icon: '🏸', color: '#0A84FF' },
@@ -63,8 +67,17 @@ export const SPORTS = [
   { id: 'gym', name: 'Gym', icon: '🏋️', color: '#EF4444' },
   { id: 'yoga', name: 'Yoga', icon: '🧘', color: '#EC4899' },
 ]
+export const SPORTS = [...DEFAULT_SPORTS]
+const sportIndex = new Map(DEFAULT_SPORTS.map((s) => [s.id, s]))
 
-export const getSport = (id) => SPORTS.find(s => s.id === id)
+export const getSport = (id) => sportIndex.get(id)
+
+export const applySportCategories = (list = []) => {
+  if (!Array.isArray(list) || list.length === 0) return
+  sportIndex.clear()
+  list.forEach((s) => sportIndex.set(s.id, s))
+  SPORTS.splice(0, SPORTS.length, ...list.filter((s) => s.isActive !== false))
+}
 
 // === TRẠNG THÁI ĐẶT SÂN ===
 export const BOOKING_STATUS = {
@@ -169,3 +182,18 @@ export const previewCommission = (price, ratePct = 0, customerSharePct = 0) => {
   return { total, serviceFee, ownerCommission: total - serviceFee }
 }
 
+
+// === NGÀY GIỜ (sự kiện) ===
+// "28/10/2026 18:30" theo giờ máy người dùng
+export const formatDateTime = (iso) => {
+  if (!iso) return ''
+  return new Date(iso).toLocaleString('vi-VN', { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit', hour12: false })
+}
+// ISO (UTC) ↔ giá trị của <input type="datetime-local"> (giờ máy người dùng)
+export const toDateTimeLocal = (iso) => {
+  if (!iso) return ''
+  const d = new Date(iso)
+  const pad = (n) => String(n).padStart(2, '0')
+  return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`
+}
+export const fromDateTimeLocal = (v) => (v ? new Date(v).toISOString() : '')

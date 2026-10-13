@@ -125,6 +125,11 @@ async function createQuote({ booking, target, user }) {
         fromOwnerId: fromVenue?.ownerId, toVenueId: toVenue._id,
         toCourtId: toCourt._id, toOwnerId: toVenue.ownerId,
     });
+    // Mạng lưới chuyển sân: chuyển sang CHỦ SÂN KHÁC (T4) chỉ khi cả hai chủ sân là thành viên (nếu Admin bật yêu cầu này)
+    const networkBlock = await require('../utils/transferNetwork').crossOwnerBlocker({
+        type, fromOwnerId: fromVenue?.ownerId, toOwnerId: toVenue.ownerId, settings,
+    });
+    if (networkBlock) fail(403, networkBlock);
 
     // --- Tính giá đơn mới (luôn tính lại ở máy chủ, không tin client) ---
     const { ratePct, customerSharePct } = await getCommissionConfig();
@@ -214,6 +219,11 @@ async function confirmQuote({ transfer, user }) {
         await expire(transfer, 'Báo giá đã hết hạn');
         fail(410, 'Báo giá đã hết hạn, vui lòng chọn lại khung giờ');
     }
+    // Tư cách thành viên có thể bị gỡ giữa lúc báo giá và lúc xác nhận
+    const networkBlock = await require('../utils/transferNetwork').crossOwnerBlocker({
+        type: transfer.type, fromOwnerId: transfer.fromOwnerId, toOwnerId: transfer.toOwnerId, settings: await getSettings(),
+    });
+    if (networkBlock) fail(409, networkBlock);
 
     const toVenue = await Venue.findById(transfer.toVenueId);
     // BR-TR-14: chủ sân đích có quyền tự tay duyệt từng lượt chuyển đến
@@ -239,6 +249,12 @@ async function confirmQuote({ transfer, user }) {
 
 /** Sau khi (không cần hoặc đã được) duyệt: thu tiền hoặc thực thi luôn. */
 async function proceedAfterApproval({ transfer, user }) {
+    // Chủ sân đích có thể mất tư cách thành viên trong lúc chờ họ duyệt — kiểm tra lại TRƯỚC khi thu tiền.
+    const networkBlock = await require('../utils/transferNetwork').crossOwnerBlocker({
+        type: transfer.type, fromOwnerId: transfer.fromOwnerId, toOwnerId: transfer.toOwnerId, settings: await getSettings(),
+    });
+    if (networkBlock) fail(409, networkBlock);
+
     // S > 0: phải thu thêm trước. Đơn gốc vẫn còn nguyên hiệu lực cho tới khi
     // cổng thanh toán báo thành công.
     if (transfer.quote.settlement > 0) {
@@ -346,6 +362,8 @@ async function execute(transfer) {
     // Các bước phụ, thất bại không được phép làm hỏng giao dịch đã chốt
     await settleMoney(transfer, newBooking).catch((e) => console.error('settleMoney:', e.message));
     await notifyAllParties(transfer, newBooking).catch((e) => console.error('notify:', e.message));
+    // Lượt đặt gốc đã chuyển đi → đóng bài "tìm người chơi" gắn với nó (chủ nhóm có thể đăng lại cho lượt đặt mới)
+    await require('./playerService').closeForBooking(booking._id, 'lượt đặt đã được chuyển sang khung giờ/địa điểm khác');
 
     return { transfer, newBooking, oldBooking: booking };
 }
