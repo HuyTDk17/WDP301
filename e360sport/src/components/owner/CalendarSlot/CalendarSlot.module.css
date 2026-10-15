@@ -1,0 +1,14 @@
+.slot { width: 100%; height: 44px; border: none; border-radius: 6px; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 4px; transition: all var(--duration-fast); position: relative; padding: 2px 6px; font-family: var(--font-body); }
+.empty { background: var(--bg-base); border: 1.5px dashed var(--border); }
+.empty:hover:not(:disabled) { background: var(--primary-subtle); border-color: var(--primary); }
+.plus { font-size: 1rem; color: var(--text-muted); opacity: 0; transition: opacity var(--duration-fast); }
+.empty:hover:not(:disabled) .plus { opacity: 1; color: var(--primary); }
+.past { background: repeating-linear-gradient(45deg, var(--bg-base), var(--bg-base) 6px, #EDEFF3 6px, #EDEFF3 12px); cursor: not-allowed; }
+.booked { border: 1.5px solid transparent; overflow: hidden; }
+.booked:hover { transform: scale(1.03); z-index: 2; box-shadow: var(--shadow-md); }
+.dot { width: 6px; height: 6px; border-radius: 50%; flex-shrink: 0; background: currentColor; }
+.customerName { font-size: 11px; font-weight: var(--weight-semibold); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 100%; }
+.confirmed { background: #DCFCE7; color: #16A34A; border-color: #BBF7D0; }
+.pending { background: #FEF3C7; color: #D97706; border-color: #FDE68A; }
+.completed { background: #DBEAFE; color: #2563EB; border-color: #BFDBFE; }
+.cancelled { background: #FEE2E2; color: #DC2626; border-color: #FECACA; opacity: 0.65; }

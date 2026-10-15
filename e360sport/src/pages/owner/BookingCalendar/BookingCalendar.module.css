@@ -1,0 +1,34 @@
+.page { display: flex; flex-direction: column; gap: var(--space-5); }
+.controls { display: flex; align-items: center; justify-content: space-between; gap: var(--space-4); flex-wrap: wrap; background: var(--bg-surface); border: 1px solid var(--border); border-radius: var(--radius-lg); padding: var(--space-3) var(--space-4); }
+.controlsLeft, .controlsRight { display: flex; align-items: center; gap: var(--space-3); }
+.venueSelect { padding: var(--space-2) var(--space-4); border: 1.5px solid var(--border); border-radius: var(--radius); font-size: var(--text-sm); font-weight: var(--weight-semibold); background: var(--bg-base); cursor: pointer; max-width: 220px; }
+.viewToggle { display: flex; background: var(--bg-base); border: 1px solid var(--border); border-radius: var(--radius); padding: 2px; gap: 2px; }
+.viewBtn { padding: var(--space-1) var(--space-4); border-radius: var(--radius-sm); font-size: var(--text-sm); color: var(--text-muted); background: none; border: none; cursor: pointer; }
+.viewBtnActive { background: var(--bg-surface); color: var(--primary); font-weight: var(--weight-semibold); }
+.navBtn { width: 32px; height: 32px; display: flex; align-items: center; justify-content: center; border: 1.5px solid var(--border); border-radius: var(--radius-sm); background: var(--bg-surface); color: var(--text-secondary); cursor: pointer; }
+.rangeLabel { font-size: var(--text-sm); font-weight: var(--weight-semibold); min-width: 160px; text-align: center; }
+.legend { display: flex; gap: var(--space-5); flex-wrap: wrap; }
+.legendItem { display: flex; align-items: center; gap: var(--space-2); font-size: var(--text-xs); color: var(--text-muted); }
+.legendDot { width: 12px; height: 12px; border-radius: 3px; }
+.legendDot.confirmed { background: #DCFCE7; border: 1.5px solid #16A34A; }
+.legendDot.pending { background: #FEF3C7; border: 1.5px solid #D97706; }
+.legendDot.completed { background: #DBEAFE; border: 1.5px solid #2563EB; }
+.legendDot.empty { background: var(--bg-base); border: 1.5px dashed var(--border-strong); }
+.weekWrapper, .dayWrapper { background: var(--bg-surface); border: 1px solid var(--border); border-radius: var(--radius-lg); padding: var(--space-4); overflow-x: auto; }
+.weekGrid, .dayGrid { display: grid; gap: 4px; min-width: 720px; }
+.cornerCell { background: transparent; }
+.timeCell { display: flex; align-items: center; justify-content: flex-end; padding-right: var(--space-2); font-size: 11px; color: var(--text-muted); height: 44px; }
+.cell { min-width: 0; }
+.emptyCellNoCourt { background: var(--bg-base); border-radius: 6px; height: 44px; }
+.dayHeader { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 1px; padding: var(--space-2) var(--space-1); border-radius: var(--radius-sm); background: var(--bg-base); text-align: center; }
+.todayHeader { background: var(--primary-subtle); border: 1.5px solid var(--primary-light); }
+.dayName { font-size: 11px; font-weight: var(--weight-bold); color: var(--text-secondary); text-transform: uppercase; }
+.dayNum { font-family: var(--font-display); font-size: var(--text-base); font-weight: var(--weight-extrabold); }
+.dayCount { font-size: 10px; color: var(--text-muted); }
+.courtHeader { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 1px; padding: var(--space-2); border-radius: var(--radius-sm); background: var(--primary-subtle); text-align: center; }
+.courtName { font-size: var(--text-sm); font-weight: var(--weight-bold); color: var(--primary-dark); }
+.courtSub { font-size: 10px; color: var(--text-muted); }
+.noCourtsMsg { display: flex; flex-direction: column; align-items: center; gap: var(--space-3); padding: var(--space-12); color: var(--text-muted); text-align: center; }
+.noCourtsMsg span { font-size: 2.5rem; }
+@media (max-width: 768px) { .controls { flex-direction: column; align-items: stretch; } }
+.loadingState { display: flex; align-items: center; justify-content: center; min-height: 50vh; }

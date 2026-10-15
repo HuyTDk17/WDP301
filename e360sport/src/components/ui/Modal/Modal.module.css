@@ -1,0 +1,15 @@
+.overlay { position: fixed; inset: 0; background: var(--bg-overlay); z-index: 1000; display: flex; align-items: center; justify-content: center; padding: var(--space-4); animation: fadeOverlay 0.2s ease; backdrop-filter: blur(4px); }
+.modal { background: var(--bg-surface); border-radius: var(--radius-lg); box-shadow: var(--shadow-xl); display: flex; flex-direction: column; max-height: 90vh; width: 100%; animation: modalIn 0.25s var(--ease-out); overflow: hidden; }
+.sm { max-width: 400px; }
+.md { max-width: 560px; }
+.lg { max-width: 720px; }
+.xl { max-width: 920px; }
+.full { max-width: 98vw; max-height: 96vh; }
+.header { display: flex; align-items: center; justify-content: space-between; padding: var(--space-5) var(--space-6); border-bottom: 1px solid var(--border); flex-shrink: 0; }
+.title { font-family: var(--font-display); font-size: var(--text-xl); font-weight: var(--weight-bold); color: var(--text-primary); }
+.close { width: 32px; height: 32px; display: flex; align-items: center; justify-content: center; border-radius: var(--radius-sm); background: var(--bg-base); color: var(--text-muted); border: 1px solid var(--border); font-size: var(--text-sm); cursor: pointer; transition: all var(--duration-fast); }
+.close:hover { background: var(--error-subtle); color: var(--error); border-color: var(--error); }
+.body { padding: var(--space-6); overflow-y: auto; flex: 1; }
+.footer { padding: var(--space-4) var(--space-6); border-top: 1px solid var(--border); display: flex; justify-content: flex-end; gap: var(--space-3); flex-shrink: 0; }
+@keyframes fadeOverlay { from { opacity: 0; } to { opacity: 1; } }
+@keyframes modalIn { from { opacity: 0; transform: scale(0.95) translateY(10px); } to { opacity: 1; transform: scale(1) translateY(0); } }

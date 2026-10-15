@@ -1,0 +1,10 @@
+.section { display: flex; flex-direction: column; gap: var(--space-4); margin-top: var(--space-5); }
+
+.divider { display: flex; align-items: center; gap: var(--space-3); color: var(--text-muted); font-size: var(--text-xs); text-transform: uppercase; letter-spacing: 0.06em; }
+.divider::before, .divider::after { content: ''; flex: 1; height: 1px; background: var(--border); }
+
+.wrap { position: relative; min-height: 44px; display: flex; justify-content: center; }
+.holder { width: 100%; display: flex; justify-content: center; }
+.placeholder { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; font-size: var(--text-sm); color: var(--text-muted); border: 1px solid var(--border); border-radius: 999px; background: var(--bg-surface); pointer-events: none; }
+/* Đang gửi token lên server: chặn bấm thêm để không gửi trùng. */
+.disabled { pointer-events: none; opacity: 0.6; }
