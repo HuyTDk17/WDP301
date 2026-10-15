@@ -21,6 +21,7 @@ router.post('/', writeLimiter, bookingController.createBooking);
 
 router.get('/my', bookingController.getMyBookings);
 router.get('/stats', bookingController.getBookingStats);
+router.get('/:id/invoice', bookingController.getInvoice);
 router.get('/:id', bookingController.getBookingById);
 router.get('/:id/cancel-preview', bookingController.previewCancellation);
 router.patch('/:id/cancel', writeLimiter, bookingController.cancelBooking);

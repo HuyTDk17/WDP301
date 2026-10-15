@@ -18,6 +18,8 @@ import VenueDetail from '@/pages/customer/VenueDetail/VenueDetail'
 import Booking from '@/pages/customer/Booking/Booking'
 import Payment from '@/pages/customer/Payment/Payment'
 import BookingHistory from '@/pages/customer/BookingHistory/BookingHistory'
+import BookingInvoice from '@/pages/customer/BookingInvoice/BookingInvoice'
+import PlayerMatches from '@/pages/customer/PlayerMatches/PlayerMatches'
 import TransferBooking from '@/pages/customer/TransferBooking/TransferBooking'
 import TransferDetail from '@/pages/customer/TransferDetail/TransferDetail'
 import ClaimBooking from '@/pages/customer/ClaimBooking/ClaimBooking'
@@ -98,7 +100,9 @@ export default function AppRoutes() {
         <Route path="/booking/:venueId" element={<ProtectedRoute roles={['customer']}><Booking /></ProtectedRoute>} />
         <Route path="/payment" element={<ProtectedRoute roles={['customer']}><Payment /></ProtectedRoute>} />
         <Route path="/bookings" element={<ProtectedRoute roles={['customer']}><BookingHistory /></ProtectedRoute>} />
+        <Route path="/bookings/:bookingId/invoice" element={<ProtectedRoute roles={['customer']}><BookingInvoice /></ProtectedRoute>} />
         <Route path="/bookings/:bookingId/transfer" element={<ProtectedRoute roles={['customer']}><TransferBooking /></ProtectedRoute>} />
+        <Route path="/matches" element={<ProtectedRoute roles={['customer']}><PlayerMatches /></ProtectedRoute>} />
         {/* Cũng là địa chỉ cổng thanh toán chuyển hướng về sau khi khách trả khoản chênh lệch */}
         <Route path="/transfers/:id" element={<ProtectedRoute roles={['customer']}><TransferDetail /></ProtectedRoute>} />
         {/* Nhận suất bằng mã sang tên. Dạng có sẵn mã để chia sẻ link trực tiếp. */}

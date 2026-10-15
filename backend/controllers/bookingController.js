@@ -191,6 +191,39 @@ exports.getBookingById = asyncHandler(async (req, res) => {
     res.json({ booking });
 });
 
+exports.getInvoice = asyncHandler(async (req, res) => {
+    const booking = await Booking.findById(req.params.id);
+    if (!booking) return res.status(404).json({ message: 'Không tìm thấy lượt đặt sân này' });
+    if (String(booking.customerId || '') !== String(req.user._id)) {
+        return res.status(403).json({ message: 'Bạn không có quyền xem hóa đơn này' });
+    }
+    if (booking.status !== 'completed') {
+        return res.status(409).json({ message: 'Hóa đơn chỉ có sau khi lượt đặt hoàn tất' });
+    }
+
+    const total = booking.amount + (booking.serviceFee || 0) - (booking.discountAmount || 0);
+    res.json({
+        invoice: {
+            code: `E360-${new Date(booking.createdAt).getFullYear()}-${String(booking._id).slice(-8).toUpperCase()}`,
+            issuedAt: booking.updatedAt || booking.createdAt,
+            customerName: req.user.name,
+            customerEmail: req.user.email,
+            venueName: booking.venueName,
+            courtName: booking.courtName,
+            date: booking.date,
+            startTime: booking.startTime,
+            endTime: booking.endTime,
+            sport: booking.sport,
+            amount: booking.amount,
+            serviceFee: booking.serviceFee || 0,
+            discountAmount: booking.discountAmount || 0,
+            creditApplied: booking.creditApplied || 0,
+            total,
+            paymentMethod: booking.paymentMethod,
+        },
+    });
+});
+
 /**
  * Xem trước chính sách huỷ TRƯỚC khi khách bấm huỷ — để khách biết mất bao
  * nhiêu, và để thấy rằng chuyển sân thường rẻ hơn huỷ.

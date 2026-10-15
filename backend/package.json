@@ -12,7 +12,7 @@
     "seed": "node seed.js",
     "migrate": "node scripts/migrate.js",
     "test": "node tests/transferPricing.test.js && node tests/creditAndPolicy.test.js && node tests/googleAuth.test.js && node tests/ownerPaymentFlow.test.js && node tests/commission.test.js && node tests/settlementMath.test.js && node tests/settlementFlow.test.js && node tests/avatars.test.js && node tests/courtRules.test.js && node tests/uploadsAndMail.test.js",
-    "test:integration": "node tests/integration/booking-race.integration.test.js && node tests/integration/booking-expiry.integration.test.js && node tests/integration/credit-concurrency.integration.test.js && node tests/integration/transfer-flow.integration.test.js",
+    "test:integration": "node tests/integration/booking-race.integration.test.js && node tests/integration/booking-expiry.integration.test.js && node tests/integration/credit-concurrency.integration.test.js && node tests/integration/transfer-flow.integration.test.js && node tests/integration/customer-features.integration.test.js",
     "check-config": "node -e \"require('dotenv').config();require('./config/env').check()\""
   },
   "keywords": [

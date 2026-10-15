@@ -28,6 +28,7 @@ const ownerRoutes = require('./routes/ownerRoutes');
 const adminRoutes = require('./routes/adminRoutes');
 const transferRoutes = require('./routes/transferRoutes');
 const documentRoutes = require('./routes/documentRoutes');
+const playerMatchRoutes = require('./routes/playerMatchRoutes');
 const jobs = require('./jobs');
 
 const app = express();
@@ -145,6 +146,7 @@ app.use('/api/favorites', favoriteRoutes);
 app.use('/api/owner', ownerRoutes);
 app.use('/api/admin', adminRoutes);
 app.use('/api/transfers', transferRoutes);
+app.use('/api/matches', playerMatchRoutes);
 // Webhook ngân hàng → tự xác nhận chủ sân đã nộp phí dịch vụ (xác thực bằng BANK_WEBHOOK_SECRET)
 app.post('/api/webhooks/bank', require('./controllers/settlementController').bankWebhook);
 

@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
-import { Plus, ClipboardList, Trophy, Calendar, Clock, ChevronUp, ChevronDown, StickyNote, X, Star, XCircle, Repeat, ArrowUpRight, Gift, CreditCard, Hourglass } from 'lucide-react'
+import { Plus, ClipboardList, Trophy, Calendar, Clock, ChevronUp, ChevronDown, StickyNote, X, Star, XCircle, Repeat, ArrowUpRight, Gift, CreditCard, Hourglass, Receipt } from 'lucide-react'
 import Badge from '@/components/ui/Badge/Badge'
 import Button from '@/components/ui/Button/Button'
 import EmptyState from '@/components/ui/EmptyState/EmptyState'
@@ -222,6 +222,11 @@ export default function BookingHistory() {
                             <Button variant="outline" size="sm" icon={<Gift size={13} />} onClick={() => setAssignTarget(booking)}>Sang tên</Button>
                           )}
                           {canCancelNow && <Button variant="danger" size="sm" icon={<X size={13} />} onClick={() => openCancel(booking)}>Hủy lượt đặt</Button>}
+                          {booking.status === 'completed' && (
+                            <Link to={`/bookings/${booking._id}/invoice`} target="_blank" rel="noreferrer">
+                              <Button variant="outline" size="sm" icon={<Receipt size={13} />}>Hóa đơn</Button>
+                            </Link>
+                          )}
                           {booking.status === 'completed' && <Button variant="outline" size="sm" icon={<Star size={13} />}>Đánh giá</Button>}
                           {booking.status === 'transferred' && booking.transferredToBookingId && (
                             <span className={styles.transferNote}>

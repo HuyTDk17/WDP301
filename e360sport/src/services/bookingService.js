@@ -29,6 +29,7 @@ export const bookingService = {
 
   getMyBookings: (params = {}) => api.get('/bookings/my', { params }),
   getBookingById: (id) => api.get(`/bookings/${id}`),
+  getInvoice: (id) => api.get(`/bookings/${id}/invoice`),
   /** Xem trước số tiền được hoàn / bị mất TRƯỚC khi thực sự huỷ. */
   previewCancellation: (id) => api.get(`/bookings/${id}/cancel-preview`),
   cancelBooking: (id, reason) => api.patch(`/bookings/${id}/cancel`, { reason }),
