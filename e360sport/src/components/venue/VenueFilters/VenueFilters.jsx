@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { ChevronDown, ChevronUp, SlidersHorizontal, Check, Star } from 'lucide-react'
+import { ChevronDown, ChevronUp, SlidersHorizontal, Check, Star, LocateFixed, MapPin, X } from 'lucide-react'
 import { SPORTS } from '@/utils'
 import styles from './VenueFilters.module.css'
 
@@ -23,7 +23,25 @@ function Section({ id, title, children }) {
   )
 }
 
+const RADII = [1, 3, 5, 10, 20]
+
 export default function VenueFilters({ filters, onChange, onReset }) {
+  const [locating, setLocating] = useState(false)
+  const [locError, setLocError] = useState('')
+  const geo = filters.geo || null
+
+  const findNearMe = () => {
+    if (!navigator.geolocation) { setLocError('Trình duyệt không hỗ trợ định vị.'); return }
+    setLocating(true); setLocError('')
+    navigator.geolocation.getCurrentPosition(
+      (pos) => {
+        setLocating(false)
+        onChange({ ...filters, geo: { type: 'near', lat: pos.coords.latitude, lng: pos.coords.longitude, radiusKm: geo?.radiusKm || 5 } })
+      },
+      () => { setLocating(false); setLocError('Không lấy được vị trí. Hãy cho phép truy cập vị trí trong trình duyệt.') },
+      { enableHighAccuracy: true, timeout: 10000 }
+    )
+  }
   const toggleSport = (id) => onChange({ ...filters, sports: filters.sports.includes(id) ? filters.sports.filter(s => s !== id) : [...filters.sports, id] })
   const toggleAmenity = (a) => onChange({ ...filters, amenities: filters.amenities.includes(a) ? filters.amenities.filter(x => x !== a) : [...filters.amenities, a] })
 
@@ -33,6 +51,28 @@ export default function VenueFilters({ filters, onChange, onReset }) {
         <h3 className={styles.title}><SlidersHorizontal size={17} strokeWidth={2.25} /> Bộ lọc</h3>
         <button className={styles.resetBtn} onClick={onReset}>Đặt lại</button>
       </div>
+
+      <Section id="location" title="Vị trí">
+        <button type="button" className={`${styles.sportChip} ${geo?.type === 'near' ? styles.sportChipActive : ''}`} onClick={findNearMe} disabled={locating} style={{ display: 'inline-flex', alignItems: 'center', gap: 6, alignSelf: 'flex-start' }}>
+          <LocateFixed size={13} /> {locating ? 'Đang định vị…' : 'Tìm sân gần tôi'}
+        </button>
+        {geo?.type === 'near' && (
+          <div className={styles.ratingChips}>
+            {RADII.map(r => (
+              <button key={r} type="button" className={`${styles.ratingChip} ${geo.radiusKm === r ? styles.ratingChipActive : ''}`} onClick={() => onChange({ ...filters, geo: { ...geo, radiusKm: r } })}>{r} km</button>
+            ))}
+          </div>
+        )}
+        {geo?.type === 'bounds' && (
+          <span className={styles.sportChip} style={{ display: 'inline-flex', alignItems: 'center', gap: 6, alignSelf: 'flex-start' }}>
+            <MapPin size={13} /> Khu vực đang chọn trên bản đồ
+          </span>
+        )}
+        {geo && (
+          <button type="button" className={styles.resetBtn} style={{ alignSelf: 'flex-start' }} onClick={() => onChange({ ...filters, geo: null })}><X size={12} /> Bỏ lọc vị trí</button>
+        )}
+        {locError && <p style={{ fontSize: 'var(--text-xs)', color: 'var(--error)', margin: 0 }}>{locError}</p>}
+      </Section>
 
       <Section id="sport" title="Môn thể thao">
         <div className={styles.sportGrid}>

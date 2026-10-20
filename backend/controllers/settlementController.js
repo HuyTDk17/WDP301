@@ -179,7 +179,9 @@ exports.bankWebhook = asyncHandler(async (req, res) => {
     // Luôn trả 200 cho giao dịch hợp lệ-về-hình-thức (kể cả không khớp hoá đơn nào) để nhà cung
     // cấp không bắn lại mãi; kết quả khớp được ghi vào nhật ký để đối chiếu.
     try {
-        const r = await svc.autoConfirmFromBank(txn);
+        let r = await svc.autoConfirmFromBank(txn);
+        // Không phải hoá đơn phí dịch vụ → thử khớp với đơn mua gói Premium (nội dung bắt đầu bằng PRM)
+        if (r.status === 'no_match') r = await require('../services/premiumService').autoConfirmFromBank(txn);
         if (r.status !== 'ignored') console.log(`🏦 webhook ngân hàng ${txn.txnId}: ${r.status}`);
         return res.json({ success: true, result: r.status });
     } catch (err) {

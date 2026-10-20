@@ -37,12 +37,13 @@ function entitlementOfBooking(b) {
         case 'completed':
         case 'no_show': // khách không đến vẫn mất tiền, chủ sân giữ như đơn đã hoàn tất
             // + phí chuyển sân: khách trả thẳng cho chủ sân và thuộc về chủ sân (không tính hoa hồng)
-            return ownerNetOf(b) + (b.transferFeeAmount || 0);
+            // − phần phí chuyển sân phải chia cho chủ sân gốc (chỉ có ở đơn chuyển sang CHỦ SÂN KHÁC, mặc định 0)
+            return ownerNetOf(b) + (b.transferFeeAmount || 0) - (b.transferFeeShareOut || 0);
 
-        // Đơn đã chuyển đi: chủ sân chỉ còn được khoản bồi thường; phần còn lại của
-        // số tiền khách trả quay về nền tảng để chia cho chủ sân mới.
+        // Đơn đã chuyển đi: chủ sân chỉ còn được khoản bồi thường (+ phần chia phí chuyển sân nếu có);
+        // phần còn lại của số tiền khách trả quay về nền tảng để chia cho chủ sân mới.
         case 'transferred':
-            return b.compensationAmount || 0;
+            return (b.compensationAmount || 0) + (b.transferFeeShareIn || 0);
 
         case 'cancelled': {
             // Chỉ đơn ĐÃ thanh toán rồi mới huỷ mới có khoản chủ sân giữ lại
@@ -53,7 +54,7 @@ function entitlementOfBooking(b) {
             const keeps = Math.max(0, b.amount - refunded);
             // Hoa hồng chủ sân chịu tính theo tỉ lệ phần họ giữ lại
             const commissionShare = Math.round((b.ownerCommission || 0) * keeps / b.amount);
-            return keeps - commissionShare + (b.transferFeeAmount || 0);
+            return keeps - commissionShare + (b.transferFeeAmount || 0) - (b.transferFeeShareOut || 0);
         }
 
         default: // awaiting_payment, pending

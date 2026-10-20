@@ -83,7 +83,7 @@ export default function NetworkManagement() {
 
   const columns = [
     { header: 'Chủ sân', accessor: 'name', render: (v, o) => (<div><p className={f.cellTitle}>{v}</p><p className={f.cellSub}>{o.email}{o.phone ? ` · ${o.phone}` : ''}</p></div>) },
-    { header: 'Trạng thái', accessor: 'status', render: (v) => <StatusBadge status={v} /> },
+    { header: 'Trạng thái', accessor: 'status', render: (v) => <StatusBadge status={v} labels={{ none: 'Chưa tham gia' }} /> },
     { header: 'Gửi yêu cầu', accessor: 'requestedAt', render: (v) => <span className={f.cellSub}>{v ? formatDate(v) : '—'}</span> },
     { header: 'Xử lý', accessor: 'reviewedAt', render: (v, o) => (<div><span className={f.cellSub}>{v ? formatDate(v) : '—'}</span>{o.note && <p className={f.cellSub}>{o.note}</p>}</div>) },
   ]

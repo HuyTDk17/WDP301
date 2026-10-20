@@ -67,7 +67,19 @@ function buildPolicy(settings, type, leadHours) {
     };
 }
 
+/**
+ * Chủ sân đích có phải duyệt tay yêu cầu này không?
+ *  - Đổi lịch (T1/T2) có cài đặt RIÊNG `rescheduleRequiresApproval`; để trống (null) thì theo `transferRequiresApproval`
+ *    như trước đây (giữ nguyên hành vi cho chủ sân đã bật duyệt thủ công).
+ *  - Các loại chuyển khác luôn theo `transferRequiresApproval`.
+ */
+function requiresOwnerApproval(venue, type) {
+    if (['T1', 'T2'].includes(type) && typeof venue?.rescheduleRequiresApproval === 'boolean') return venue.rescheduleRequiresApproval;
+    return !!venue?.transferRequiresApproval;
+}
+
 module.exports = {
+    requiresOwnerApproval,
     resolveTransferType, pickTier, feeRate, compensationRate,
     cancellationRefundRate, buildPolicy,
 };

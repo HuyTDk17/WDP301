@@ -78,6 +78,21 @@ export default function ManageVenues() {
     }
   }
 
+  // 'follow' (null) = theo cài đặt chuyển đến · 'always' = luôn duyệt · 'auto' = tự chấp nhận đổi lịch
+  const rescheduleMode = (v) => (v.rescheduleRequiresApproval === true ? 'always' : v.rescheduleRequiresApproval === false ? 'auto' : 'follow')
+  const changeRescheduleMode = async (venueId, mode) => {
+    const value = { follow: null, always: true, auto: false }[mode]
+    const previous = venues.find((v) => v._id === venueId)?.rescheduleRequiresApproval ?? null
+    setVenues((list) => list.map((v) => (v._id === venueId ? { ...v, rescheduleRequiresApproval: value } : v)))
+    try {
+      await transferService.setRescheduleApproval(venueId, value)
+      toast.success({ follow: 'Đổi lịch sẽ theo cài đặt duyệt chuyển đến', always: 'Bạn sẽ tự duyệt từng yêu cầu đổi lịch', auto: 'Khách đổi lịch được chấp nhận ngay, không cần chờ bạn' }[mode])
+    } catch (err) {
+      setVenues((list) => list.map((v) => (v._id === venueId ? { ...v, rescheduleRequiresApproval: previous } : v)))
+      toast.error(err?.message || 'Không thể cập nhật thiết lập đổi lịch')
+    }
+  }
+
   return (
     <div className={styles.page}>
       <PageHeader title="Địa điểm của tôi" subtitle={`Đang quản lý ${venues.length} địa điểm`} actions={<Link to="/owner/venues/create"><Button icon={<Plus size={16} />}>Thêm địa điểm mới</Button></Link>} />
@@ -126,6 +141,15 @@ export default function ManageVenues() {
                       onChange={(e) => toggleTransferPolicy(venue._id, e.target.checked)}
                     />
                     <span>Tự duyệt từng yêu cầu chuyển sân đến địa điểm này</span>
+                  </label>
+                  {/* Đổi lịch = khách đổi giờ/đổi sân trong CHÍNH địa điểm này. Mặc định theo ô tích bên trên. */}
+                  <label className={styles.transferPolicy}>
+                    <span>Yêu cầu đổi lịch của khách:</span>
+                    <select value={rescheduleMode(venue)} onChange={(e) => changeRescheduleMode(venue._id, e.target.value)}>
+                      <option value="follow">Theo cài đặt chuyển sân ở trên</option>
+                      <option value="always">Luôn chờ tôi duyệt</option>
+                      <option value="auto">Tự chấp nhận ngay</option>
+                    </select>
                   </label>
                 </div>
                 <div className={styles.venueActions}>

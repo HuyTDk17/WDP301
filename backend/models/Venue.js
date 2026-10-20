@@ -4,6 +4,12 @@ const addressSchema = new mongoose.Schema(
     { street: { type: String, default: '' }, district: { type: String, default: '' }, city: { type: String, default: '' } },
     { _id: false }
 );
+// Vị trí trên bản đồ (WGS84). Không bắt buộc: địa điểm cũ chưa có toạ độ vẫn hoạt động
+// bình thường, chỉ là không hiện trong chế độ lọc theo bản đồ.
+const locationSchema = new mongoose.Schema(
+    { lat: { type: Number, min: -90, max: 90 }, lng: { type: Number, min: -180, max: 180 } },
+    { _id: false }
+);
 const openHoursSchema = new mongoose.Schema(
     { open: { type: String, default: '06:00' }, close: { type: String, default: '22:00' } },
     { _id: false }
@@ -16,6 +22,7 @@ const venueSchema = new mongoose.Schema(
         description: { type: String, default: '' },
         sports: { type: [String], default: [] },
         address: { type: addressSchema, default: () => ({}) },
+        location: { type: locationSchema, default: undefined },
         amenities: { type: [String], default: [] },
         images: { type: [String], default: [] },
         openHours: { type: openHoursSchema, default: () => ({}) },
@@ -35,10 +42,14 @@ const venueSchema = new mongoose.Schema(
         // Mặc định tắt để khách được chuyển ngay, tránh phụ thuộc tốc độ phản
         // hồi của chủ sân.
         transferRequiresApproval: { type: Boolean, default: false },
+        // Duyệt tay yêu cầu ĐỔI LỊCH (đổi giờ / đổi sân trong cùng địa điểm). null = theo transferRequiresApproval (mặc định,
+        // giữ hành vi cũ); true = luôn duyệt; false = tự chấp nhận dù transferRequiresApproval đang bật.
+        rescheduleRequiresApproval: { type: Boolean, default: null },
     },
     { timestamps: true }
 );
 
+venueSchema.index({ 'location.lat': 1, 'location.lng': 1 });
 venueSchema.index({ name: 'text', 'address.city': 1, 'address.district': 1 });
 
 module.exports = mongoose.model('Venue', venueSchema);

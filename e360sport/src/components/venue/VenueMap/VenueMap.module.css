@@ -1,0 +1,16 @@
+.wrap { position: relative; border: 1px solid var(--border); border-radius: var(--radius-lg); overflow: hidden; background: var(--bg-base); }
+.map { height: 640px; max-height: 75vh; min-height: 380px; width: 100%; z-index: 0; }
+.loading { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; color: var(--text-muted); font-size: var(--text-sm); background: var(--bg-base); }
+.error { display: flex; flex-direction: column; align-items: center; gap: var(--space-2); padding: var(--space-8); color: var(--text-secondary); border: 1px dashed var(--border-strong); border-radius: var(--radius-lg); text-align: center; }
+.searchBtn { position: absolute; top: 14px; left: 50%; transform: translateX(-50%); z-index: 500; display: inline-flex; align-items: center; gap: 6px; padding: 9px 16px; border: none; border-radius: var(--radius-full); background: var(--primary); color: #fff; font-size: var(--text-sm); font-weight: var(--weight-semibold); cursor: pointer; box-shadow: 0 4px 14px rgba(0, 0, 0, 0.25); }
+.searchBtn:hover { background: var(--primary-dark); }
+
+.pinWrap { background: none; border: none; }
+.pin { display: inline-block; min-width: 44px; text-align: center; padding: 4px 9px; border-radius: 999px; background: #fff; color: #0A0E1A; border: 2px solid var(--primary); font: 700 12px/1.2 var(--font-body); box-shadow: 0 2px 6px rgba(0, 0, 0, 0.3); white-space: nowrap; }
+.pin:hover { background: var(--primary); color: #fff; }
+.pinPremium { border-color: #D4A017; background: #FFF6D6; }
+
+.popup { display: flex; flex-direction: column; gap: 3px; text-decoration: none; color: inherit; }
+.popupImg { width: 100%; height: 90px; object-fit: cover; border-radius: 8px; margin-bottom: 4px; }
+.popupName { font-size: 14px; color: #0A0E1A; }
+.popupMeta { font-size: 12px; color: #4A5568; }

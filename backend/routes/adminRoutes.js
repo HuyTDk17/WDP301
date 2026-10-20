@@ -10,6 +10,7 @@ const venueController = require('../controllers/venueController');
 const settingsController = require('../controllers/settingsController');
 const settlementController = require('../controllers/settlementController');
 const complaintController = require('../controllers/complaintController');
+const premiumController = require('../controllers/premiumController');
 const contentController = require('../controllers/contentController');
 const networkController = require('../controllers/networkController');
 const sportCategoryController = require('../controllers/sportCategoryController');
@@ -18,6 +19,12 @@ const uploadContentImage = require('../middleware/uploadContentImage');
 router.use(protect, authorize('admin'));
 
 // Users & Owners
+// Gói Premium (doanh thu của nền tảng)
+router.get('/premium/stats', premiumController.getStats);
+router.get('/premium/orders', premiumController.listOrders);
+router.post('/premium/orders/:id/confirm', premiumController.confirmOrder);
+router.post('/premium/orders/:id/reject', premiumController.rejectOrder);
+
 router.get('/users', userController.getUsers);
 router.get('/users/stats', statsController.getUserStats);
 router.get('/users/:id', userController.getUserById);

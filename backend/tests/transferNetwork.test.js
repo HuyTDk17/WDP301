@@ -191,7 +191,7 @@ test('NW-10 · đã gắn đủ: kiểm tra ở báo giá + xác nhận + sau du
     const root = path.join(__dirname, '..');
     const ts = fs.readFileSync(path.join(root, 'services', 'transferService.js'), 'utf8');
     assert.strictEqual((ts.match(/crossOwnerBlocker\(/g) || []).length, 3);
-    assert.ok(ts.indexOf('crossOwnerBlocker') < ts.indexOf('const { ratePct, customerSharePct } = await getCommissionConfig()'), 'kiểm tra trước khi tính giá/giữ chỗ');
+    assert.ok(ts.indexOf('crossOwnerBlocker') < ts.indexOf('await getCommissionConfig()'), 'kiểm tra trước khi tính giá/giữ chỗ');
     assert.ok(ts.indexOf('async function proceedAfterApproval') < ts.lastIndexOf('crossOwnerBlocker(') && ts.lastIndexOf('crossOwnerBlocker(') < ts.indexOf('transfer.quote.settlement > 0'), 'kiểm tra lại trước khi thu tiền');
     assert.ok(fs.readFileSync(path.join(root, 'controllers', 'transferController.js'), 'utf8').includes('network,'));
     const owner = fs.readFileSync(path.join(root, 'routes', 'ownerRoutes.js'), 'utf8');

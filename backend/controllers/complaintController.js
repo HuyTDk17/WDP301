@@ -11,6 +11,16 @@ const { fileUrl } = require('../utils/uploads');
 const { CATEGORIES, STATUSES } = Complaint;
 const isId = (v) => mongoose.isValidObjectId(v);
 const OPEN_STATES = ['open', 'investigating'];
+const premium = require('../utils/premium');
+
+/** Khiếu nại của người chơi Premium, hoặc về sân của chủ sân Premium, được xử lý trước. */
+async function isPriority(customer, ownerId) {
+    if (premium.hasPlan(customer, 'player_premium')) return true;
+    try {
+        const owner = await User.findById(ownerId).select('premium');
+        return premium.hasPlan(owner, 'venue_premium');
+    } catch { return false; }
+}
 
 /** Chuẩn hóa độ dài nội dung. Trả về thông báo lỗi hoặc null nếu hợp lệ. */
 function validateContent({ subject, description }) {
@@ -83,6 +93,7 @@ exports.createComplaint = asyncHandler(async (req, res) => {
             venueId: venue._id,
             bookingId: booking ? booking._id : null,
             venueName: venue.name,
+            priority: await isPriority(req.user, venue.ownerId),
             category,
             subject: subject.trim(),
             description: description.trim(),
@@ -147,7 +158,7 @@ exports.getComplaintsAdmin = asyncHandler(async (req, res) => {
         Complaint.find(filter)
             .populate('customerId', 'name email phone avatar')
             .populate('ownerId', 'name email phone')
-            .sort({ createdAt: -1 })
+            .sort({ priority: -1, createdAt: -1 })
             .skip((pageNum - 1) * limitNum)
             .limit(limitNum),
         Complaint.aggregate([{ $group: { _id: '$status', count: { $sum: 1 } } }]),

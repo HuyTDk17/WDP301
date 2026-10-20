@@ -78,6 +78,8 @@ const NUMERIC_FIELDS = {
     gatewayFeeRate: { min: 0, max: 1 },
     transferMinLeadTimeHours: { min: 0, max: 72 },
     maxTransfersPerBooking: { min: 0, max: 10 },
+    maxTransfersPerMonth: { min: 0, max: 100 },
+    transferFeeOriginSharePct: { min: 0, max: 100 },
     quoteTtlMinutes: { min: 1, max: 60 },
     ownerApprovalTimeoutMinutes: { min: 1, max: 1440 },
     transferFeeMin: { min: 0 },
@@ -87,6 +89,12 @@ const NUMERIC_FIELDS = {
     // Đối soát hoa hồng với chủ sân
     commissionDueDays: { min: 1, max: 90 },
     commissionGraceDays: { min: 0, max: 90 },
+    // Gói Premium
+    premiumVenuePrice: { min: 1000, max: 100000000 },
+    premiumPlayerPrice: { min: 1000, max: 100000000 },
+    premiumDurationDays: { min: 1, max: 365 },
+    premiumVenueCommissionRate: { min: 0, max: 100 },
+    premiumPlayerHoldMinutes: { min: 1, max: 60 },
 };
 
 /** Biểu phí bậc thang phải là mảng hợp lệ, tỉ lệ trong [0,1]. */
@@ -168,7 +176,15 @@ exports.updatePlatformSettings = asyncHandler(async (req, res) => {
 
     if (req.body.transferEnabled !== undefined) settings.transferEnabled = !!req.body.transferEnabled;
     if (req.body.transferNetworkRequired !== undefined) settings.transferNetworkRequired = !!req.body.transferNetworkRequired;
+    if (req.body.ownerCancellationPolicyAllowed !== undefined) settings.ownerCancellationPolicyAllowed = !!req.body.ownerCancellationPolicyAllowed;
+    if (req.body.cancellationFloorTiers !== undefined) {
+        // Cùng quy tắc với biểu của chủ sân (1–8 bậc, có bậc 0 giờ, báo sớm hoàn không ít hơn)
+        const { tiers, error } = require('../utils/cancellationPolicy').normalizeTiers(req.body.cancellationFloorTiers);
+        if (error) return res.status(400).json({ message: `Sàn hoàn tiền: ${error}` });
+        settings.cancellationFloorTiers = tiers;
+    }
     if (req.body.commissionAutoIssueEnabled !== undefined) settings.commissionAutoIssueEnabled = !!req.body.commissionAutoIssueEnabled;
+    if (req.body.premiumEnabled !== undefined) settings.premiumEnabled = !!req.body.premiumEnabled;
     if (req.body.commissionBlockEnabled !== undefined) settings.commissionBlockEnabled = !!req.body.commissionBlockEnabled;
     if (req.body.refundToCreditEnabled !== undefined) settings.refundToCreditEnabled = !!req.body.refundToCreditEnabled;
 

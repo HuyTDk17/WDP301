@@ -3,6 +3,7 @@ const Venue = require('../models/Venue');
 const Court = require('../models/Court');
 const Hold = require('../models/Hold');
 const User = require('../models/User');
+const premium = require('../utils/premium');
 const Payment = require('../models/Payment');
 const Notification = require('../models/Notification');
 const TransferRequest = require('../models/TransferRequest');
@@ -12,7 +13,8 @@ const { getSettings, getCommissionConfig } = require('../utils/platformSettings'
 const courtRules = require('../utils/courtRules');
 const { splitCommission } = require('../utils/commission');
 const { calculateAmount, leadTimeHours, durationHours, isValidDateString, isValidTimeString } = require('../utils/timeSlots');
-const { resolveTransferType, buildPolicy } = require('../utils/transferPolicy');
+const { resolveTransferType, buildPolicy, requiresOwnerApproval } = require('../utils/transferPolicy');
+const transferMessages = require('../utils/transferMessages');
 const { quoteTransfer, verifyBalance, buildBreakdown } = require('../utils/transferPricing');
 const { validateAndCalculateDiscount } = require('../controllers/promotionController');
 const slotLock = require('../utils/slotLock');
@@ -26,8 +28,6 @@ function fail(status, message) {
     err.statusCode = status;
     throw err;
 }
-
-const money = (n) => Number(n || 0).toLocaleString('vi-VN') + 'đ';
 
 // ============================================================
 // 1. KIỂM TRA ĐIỀU KIỆN CHUYỂN (BR-TR-01 .. BR-TR-07)
@@ -83,6 +83,12 @@ async function createQuote({ booking, target, user }) {
     const eligibility = await checkEligibility(booking, settings);
     if (!eligibility.eligible) fail(422, eligibility.reasons[0]);
 
+    // Hạn mức theo tháng của mỗi khách (Admin đặt; 0 = không giới hạn)
+    const monthly = await require('../utils/transferLimits').monthlyStatus(booking.customerId, settings);
+    if (monthly.reached) {
+        fail(422, `Bạn đã dùng hết ${monthly.limit} lượt đổi lịch/chuyển sân trong tháng này. Lượt mới sẽ mở lại từ đầu tháng sau.`);
+    }
+
     const { toVenueId, toCourtId, toDate, toStartTime, toEndTime } = target;
     if (!toVenueId || !toCourtId || !toDate || !toStartTime || !toEndTime) {
         fail(400, 'Thiếu thông tin sân hoặc khung giờ muốn chuyển đến');
@@ -132,12 +138,20 @@ async function createQuote({ booking, target, user }) {
     if (networkBlock) fail(403, networkBlock);
 
     // --- Tính giá đơn mới (luôn tính lại ở máy chủ, không tin client) ---
-    const { ratePct, customerSharePct } = await getCommissionConfig();
-    const rate = ratePct / 100;
+    const cfg = await getCommissionConfig();
+    const destOwner = await User.findById(toVenue.ownerId).select('premium');
+    const isPremiumPlayer = premium.hasPlan(user, 'player_premium');
     const newAmount = calculateAmount(toCourt.pricePerHour, toStartTime, toEndTime);
+    // Giống lúc đặt sân: chủ sân đích Premium có phí ưu đãi, người chơi Premium được miễn phí dịch vụ cộng thêm
+    const priced = premium.priceFee({
+        amount: newAmount, ratePct: cfg.ratePct, customerSharePct: cfg.customerSharePct,
+        owner: destOwner, customer: user, settings,
+    });
+    const { ratePct } = priced;
+    const rate = ratePct / 100;
     // Hoa hồng đơn mới chia giữa khách và chủ sân đích theo cấu hình hiện hành.
-    const newFee = splitCommission({ amount: newAmount, ratePct, customerSharePct });
-    const newServiceFee = newFee.serviceFee;
+    const newFee = priced.fee;
+    const newServiceFee = priced.serviceFee;
 
     // BR-TR-11: mã khuyến mãi KHÔNG tự động theo sang đơn mới. Chỉ áp lại nếu
     // vẫn còn hiệu lực VÀ đơn mới vẫn đủ điều kiện — tránh mã "đơn tối thiểu
@@ -150,6 +164,8 @@ async function createQuote({ booking, target, user }) {
 
     const L = leadTimeHours(booking.date, booking.startTime);
     const policy = buildPolicy(settings, type, L);
+    // Người chơi Premium: miễn phí chuyển sân/đổi lịch (nền tảng chịu). Bồi thường cho chủ sân gốc vẫn giữ nguyên.
+    if (isPremiumPlayer) { policy.feeRate = 0; policy.fixedFeeT5 = 0; }
     const quote = quoteTransfer({
         oldAmount: booking.amount,
         oldServiceFee: booking.serviceFee,
@@ -183,10 +199,12 @@ async function createQuote({ booking, target, user }) {
         toDate, toStartTime, toEndTime,
         holdId: hold._id,
         quote, quoteExpiresAt: expiresAt,
+        // Chụp tỉ lệ chia phí cho chủ sân gốc (chỉ có nghĩa với T4) tại thời điểm báo giá
+        feeOriginSharePct: type === 'T4' ? (settings.transferFeeOriginSharePct || 0) : 0,
         status: 'quoted',
     });
 
-    return { transfer, breakdown: buildBreakdown(quote), requiresApproval: !!toVenue.transferRequiresApproval };
+    return { transfer, breakdown: buildBreakdown(quote), requiresApproval: requiresOwnerApproval(toVenue, type) };
 }
 
 /** Khung giờ đích có đang bị chiếm không — xét cả đơn, khoá ô và giữ chỗ. */
@@ -227,7 +245,7 @@ async function confirmQuote({ transfer, user }) {
 
     const toVenue = await Venue.findById(transfer.toVenueId);
     // BR-TR-14: chủ sân đích có quyền tự tay duyệt từng lượt chuyển đến
-    if (toVenue?.transferRequiresApproval) {
+    if (requiresOwnerApproval(toVenue, transfer.type)) {
         const settings = await getSettings();
         const timeout = settings.ownerApprovalTimeoutMinutes ?? 30;
         transfer.status = 'awaiting_owner_approval';
@@ -237,9 +255,7 @@ async function confirmQuote({ transfer, user }) {
         await Notification.create({
             userId: transfer.toOwnerId,
             type: 'transfer_request', icon: '🔄',
-            title: 'Có yêu cầu chuyển sân đến địa điểm của bạn',
-            message: `Khách muốn chuyển lượt đặt sang "${transfer.toCourtName}" ngày ${transfer.toDate} lúc ${transfer.toStartTime}. Vui lòng phản hồi trong ${timeout} phút.`,
-            link: '/owner/transfers',
+            ...transferMessages.approvalRequest(transfer, timeout),
         });
         return { status: 'awaiting_owner_approval', transfer };
     }
@@ -299,6 +315,9 @@ async function execute(transfer) {
         fail(409, 'Địa điểm đích hiện không nhận đặt sân');
     }
 
+    // Chia phí chuyển sân cho chủ sân gốc (T4). Số này ghi cả hai phía để quyết toán luôn cân.
+    const feeShare = require('../utils/transferSplit').originFeeShare({ type: transfer.type, transferFee: q.transferFee, pct: transfer.feeOriginSharePct });
+
     let newBooking;
     await withTransaction(async (session) => {
         const opt = session ? { session } : {};
@@ -322,6 +341,8 @@ async function execute(transfer) {
             rootBookingId: booking.rootBookingId || booking._id,
             transferCount: (booking.transferCount || 0) + 1,
             transferFeeAmount: q.transferFee,
+            transferFeeShareOut: feeShare,
+            ...(await require('./cancellationPolicyService').snapshotFor(toVenue.ownerId)),
             originalPaidAmount: (booking.originalPaidAmount || q.oldPaid) + Math.max(0, q.settlement),
         }], opt);
         newBooking = created[0];
@@ -341,6 +362,7 @@ async function execute(transfer) {
             status: 'transferred',
             transferredToBookingId: newBooking._id,
             compensationAmount: q.compensation,
+            transferFeeShareIn: feeShare,
             rootBookingId: booking.rootBookingId || booking._id,
         }, opt);
 
@@ -408,39 +430,9 @@ async function settleMoney(transfer, newBooking) {
     }
 }
 
-async function notifyAllParties(transfer, newBooking) {
-    const q = transfer.quote;
-    const settleLine = q.settlement > 0
-        ? `Bạn đã thanh toán thêm ${money(q.settlement)}.`
-        : q.settlement < 0
-            ? `Bạn được hoàn lại ${money(-q.settlement)}${q.refundCredit > 0 ? ` (trong đó ${money(q.refundCredit)} vào số dư khuyến mãi)` : ''}.`
-            : 'Không phát sinh chi phí.';
-
-    await Notification.create([
-        {
-            userId: transfer.customerId,
-            type: 'transfer', icon: '🔄',
-            title: 'Đã chuyển sân thành công',
-            message: `Lượt đặt của bạn đã chuyển từ "${transfer.fromVenueName}" sang "${transfer.toVenueName} – ${transfer.toCourtName}", ngày ${transfer.toDate} lúc ${transfer.toStartTime}–${transfer.toEndTime}. ${settleLine}`,
-            link: '/bookings',
-        },
-        {
-            userId: transfer.fromOwnerId,
-            type: 'transfer', icon: '↗️',
-            title: 'Một lượt đặt đã được chuyển đi',
-            message: q.compensation > 0
-                ? `Lượt đặt ngày ${transfer.fromDate} lúc ${transfer.fromStartTime} tại "${transfer.fromVenueName}" đã được khách chuyển sang địa điểm khác. Bạn nhận được khoản bồi thường ${money(q.compensation)}.`
-                : `Lượt đặt ngày ${transfer.fromDate} lúc ${transfer.fromStartTime} tại "${transfer.fromVenueName}" đã được khách chuyển đi. Khung giờ đã mở lại để nhận khách mới.`,
-            link: '/owner/revenue',
-        },
-        {
-            userId: transfer.toOwnerId,
-            type: 'transfer', icon: '↘️',
-            title: 'Bạn có lượt đặt mới được chuyển đến',
-            message: `"${transfer.toCourtName}" ngày ${transfer.toDate} lúc ${transfer.toStartTime}–${transfer.toEndTime} đã được đặt và thanh toán đầy đủ.`,
-            link: '/owner/bookings',
-        },
-    ].filter((n) => n.userId));
+async function notifyAllParties(transfer) {
+    // Nội dung ở utils/transferMessages.js (đổi lịch dùng lời lẽ riêng và chỉ báo chủ sân một lần)
+    await Notification.create(transferMessages.completedNotifications(transfer));
 }
 
 // ============================================================
@@ -480,8 +472,7 @@ async function abort(transfer, status, reason) {
     await Notification.create({
         userId: transfer.customerId,
         type: 'transfer', icon: '⚠️',
-        title: 'Yêu cầu chuyển sân không thành công',
-        message: `${reason}. Lượt đặt ban đầu của bạn tại "${transfer.fromVenueName}" VẪN CÒN HIỆU LỰC.${paid ? ` Khoản ${money(paid.amount)} đã thanh toán đang được hoàn lại.` : ''}`,
+        ...transferMessages.failureNotification(transfer, reason, paid ? paid.amount : 0),
         link: '/bookings',
     }).catch(() => {});
 

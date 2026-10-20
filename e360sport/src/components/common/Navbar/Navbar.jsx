@@ -1,11 +1,13 @@
 import { useEffect, useState, useRef } from 'react'
 import { Link, NavLink, useNavigate } from 'react-router-dom'
-import { Bell, ChevronUp, ChevronDown, User, ClipboardList, Heart, LandPlot, Settings, LogOut, MessageSquareWarning } from 'lucide-react'
+import { Bell, ChevronUp, ChevronDown, User, ClipboardList, Heart, LandPlot, Settings, LogOut, MessageSquareWarning, Crown } from 'lucide-react'
 import { useAuth } from '@/contexts/authState'
 import { useClickOutside } from '@/hooks'
 import { useUnreadNotifications } from '@/hooks/useUnreadNotifications'
 import Avatar from '@/components/ui/Avatar/Avatar'
 import Logo from '@/components/common/Logo/Logo'
+import PremiumBadge from '@/components/common/PremiumBadge/PremiumBadge'
+import { hasPremium } from '@/utils'
 import styles from './Navbar.module.css'
 
 export default function Navbar() {
@@ -26,6 +28,7 @@ export default function Navbar() {
 
   const NAV_LINKS = [
     { to: '/venues', label: 'Sân thể thao' },
+    { to: '/premium', label: 'Premium' },
     { to: '/events', label: 'Sự kiện' },
     { to: '/news', label: 'Tin tức' },
     { to: '/privacy-policy', label: 'Chính sách' },
@@ -62,6 +65,7 @@ export default function Navbar() {
                 <button className={styles.avatarBtn} onClick={() => setMenuOpen(v => !v)}>
                   <Avatar src={user?.avatar} name={user?.name} size="sm" />
                   <span className={styles.userName}>{user?.name?.split(' ')[0]}</span>
+                  {hasPremium(user) && <PremiumBadge />}
                   <span className={styles.chevron}>{menuOpen ? <ChevronUp size={14} /> : <ChevronDown size={14} />}</span>
                 </button>
                 {menuOpen && (
@@ -75,6 +79,7 @@ export default function Navbar() {
                     </div>
                     <div className={styles.dropdownDivider} />
                     <Link to="/profile" className={styles.dropdownItem} onClick={() => setMenuOpen(false)}><span><User size={15} /></span> Hồ sơ cá nhân</Link>
+                    {user?.role === 'customer' && <Link to="/premium" className={styles.dropdownItem} onClick={() => setMenuOpen(false)}><span><Crown size={15} /></span> {hasPremium(user) ? 'Gói Premium của tôi' : 'Nâng cấp Premium'}</Link>}
                     {user?.role === 'customer' && <Link to="/bookings" className={styles.dropdownItem} onClick={() => setMenuOpen(false)}><span><ClipboardList size={15} /></span> Lịch sử đặt sân</Link>}
                     {user?.role === 'customer' && <Link to="/complaints" className={styles.dropdownItem} onClick={() => setMenuOpen(false)}><span><MessageSquareWarning size={15} /></span> Khiếu nại</Link>}
                     {user?.role === 'customer' && <Link to="/favorites" className={styles.dropdownItem} onClick={() => setMenuOpen(false)}><span><Heart size={15} /></span> Yêu thích</Link>}
@@ -85,6 +90,7 @@ export default function Navbar() {
                       <>
                         <div className={styles.dropdownDivider} />
                         <Link to="/owner/dashboard" className={styles.dropdownItem} onClick={() => setMenuOpen(false)}><span><LandPlot size={15} /></span> Quản lý sân</Link>
+                        <Link to="/owner/premium" className={styles.dropdownItem} onClick={() => setMenuOpen(false)}><span><Crown size={15} /></span> {hasPremium(user) ? 'Gói Premium của tôi' : 'Nâng cấp Premium'}</Link>
                       </>
                     )}
                     {user?.role === 'admin' && (

@@ -38,6 +38,13 @@ const userSchema = new mongoose.Schema(
         legalRepresentative: { type: String, default: '' },
         licenseNumber: { type: String, default: '' },
         ownerApplicationStatus: { type: String, enum: ['none', 'pending', 'approved', 'rejected'], default: 'none' },
+        // Chính sách hủy RIÊNG của chủ sân (xem utils/cancellationPolicy.js). Chỉ có tác dụng khi enabled = true và
+        // đạt "sàn" do Admin đặt; áp dụng cho lượt đặt MỚI (được chụp vào Booking lúc tạo đơn).
+        cancellationPolicy: {
+            enabled: { type: Boolean, default: false },
+            tiers: { type: [{ _id: false, minLeadHours: Number, refundRate: Number }], default: [] },
+            updatedAt: { type: Date, default: null },
+        },
         // Mạng lưới chuyển sân liên chủ sân (chỉ có nghĩa với chủ sân). Chỉ có tác dụng khi Admin bật
         // PlatformSetting.transferNetworkRequired. status: none → pending → approved | rejected ; approved → revoked.
         transferNetwork: {
@@ -85,6 +92,15 @@ const userSchema = new mongoose.Schema(
         // phần chênh vượt trần hoàn tiền mặt. Chỉ dùng trừ vào đơn sau, KHÔNG
         // rút được thành tiền. Vòng đời đầy đủ ở utils/credit.js.
         creditBalance: { type: Number, default: 0, min: 0 },
+
+        // ===== GÓI PREMIUM =====
+        // Chỉ là bản sao để tra nhanh; nguồn sự thật là các PremiumOrder đã thanh toán.
+        // plan: 'venue_premium' (chủ sân) | 'player_premium' (người chơi). Còn hiệu lực khi until > hiện tại.
+        premium: {
+            plan: { type: String, enum: ['venue_premium', 'player_premium', null], default: null },
+            since: { type: Date, default: null },
+            until: { type: Date, default: null },
+        },
 
         // ===== XÁC MINH EMAIL =====
         // TRƯỚC ĐÂY: không xác minh email khi đăng ký — ai cũng đăng ký được

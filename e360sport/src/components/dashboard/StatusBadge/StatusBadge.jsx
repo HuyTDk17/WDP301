@@ -16,8 +16,7 @@ const STATUS_MAP = {
   banned:      { label: 'Bị khóa',     cls: 'banned'     },
   none:        { label: 'Chưa gửi',     cls: 'inactive'   },
   expired:     { label: 'Đã hết hạn',   cls: 'cancelled'  },
-  // Mạng lưới chuyển sân
-  none:        { label: 'Chưa tham gia', cls: 'inactive'  },
+  // Mạng lưới chuyển sân ('none' dùng chung nhãn "Chưa gửi" ở trên; trang mạng lưới tự đổi nhãn bằng prop `labels`)
   revoked:     { label: 'Đã gỡ',         cls: 'cancelled' },
   // Sự kiện (trạng thái suy ra theo thời gian)
   upcoming:    { label: 'Sắp diễn ra',  cls: 'pending'    },
@@ -29,7 +28,9 @@ const STATUS_MAP = {
   resolved:      { label: 'Đã giải quyết', cls: 'confirmed' },
 }
 
-export default function StatusBadge({ status, dot = true }) {
+// `labels`: đổi nhãn riêng cho một nơi dùng (vd. { none: 'Chưa tham gia' }) mà không ảnh hưởng nơi khác.
+export default function StatusBadge({ status, dot = true, labels }) {
   const cfg = STATUS_MAP[status] || { label: status, cls: 'inactive' }
-  return <span className={`${styles.badge} ${styles[cfg.cls]}`}>{dot && <span className={styles.dot} />}{cfg.label}</span>
+  const label = (labels && labels[status]) || cfg.label
+  return <span className={`${styles.badge} ${styles[cfg.cls]}`}>{dot && <span className={styles.dot} />}{label}</span>
 }

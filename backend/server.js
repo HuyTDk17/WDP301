@@ -146,6 +146,7 @@ app.use('/api/owner', ownerRoutes);
 app.use('/api/admin', adminRoutes);
 app.use('/api/transfers', transferRoutes);
 app.use('/api/complaints', require('./routes/complaintRoutes'));
+app.use('/api/premium', require('./routes/premiumRoutes'));
 app.use('/api', require('./routes/contentRoutes'));
 app.use('/api/events', require('./routes/eventRoutes'));
 app.use('/api/players', require('./routes/playerRoutes'));

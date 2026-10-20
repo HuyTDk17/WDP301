@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { Outlet, NavLink, Link, useNavigate, useLocation } from 'react-router-dom'
 import Avatar from '@/components/ui/Avatar/Avatar'
-import { LayoutGrid, BarChart3, Users, Building2, LandPlot, CalendarClock, Star, Settings, Globe, LogOut, ShieldCheck, Bell, PanelLeftClose, PanelLeftOpen, Menu, Percent, MessageSquareWarning, Image, Newspaper, ScrollText, Tags, Network } from 'lucide-react'
+import { LayoutGrid, BarChart3, Users, Building2, LandPlot, CalendarClock, Star, Settings, Globe, LogOut, ShieldCheck, Bell, PanelLeftClose, PanelLeftOpen, Menu, Percent, MessageSquareWarning, Crown, Image, Newspaper, ScrollText, Tags, Network } from 'lucide-react'
 import { useAuth } from '@/contexts/authState'
 import { useUnreadNotifications } from '@/hooks/useUnreadNotifications'
 import ToastContainer from '@/components/ui/Toast/Toast'
@@ -12,6 +12,7 @@ const NAV_GROUPS = [
   { label: 'Tổng quan', items: [
     { to: '/admin/dashboard', icon: LayoutGrid, label: 'Tổng quan' },
     { to: '/admin/reports', icon: BarChart3, label: 'Báo cáo' },
+    { to: '/admin/premium', icon: Crown, label: 'Gói Premium' },
   ]},
   { label: 'Quản lý', items: [
     { to: '/admin/users', icon: Users, label: 'Người dùng' },

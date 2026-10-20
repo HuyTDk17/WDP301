@@ -5,6 +5,7 @@ import { useToast } from '@/contexts/ToastContext'
 import { venueService } from '@/services/venueService'
 import Button from '@/components/ui/Button/Button'
 import Input from '@/components/ui/Input/Input'
+import MapPicker from '@/components/venue/MapPicker/MapPicker'
 import Spinner from '@/components/ui/Spinner/Spinner'
 import { SPORTS, getImageUrl } from '@/utils'
 import styles from './AddVenue.module.css'
@@ -17,6 +18,7 @@ const EMPTY_FORM = {
   street: '', district: '', city: '',
   openTime: '06:00', closeTime: '22:00',
   amenities: [], rules: '',
+  location: null,
 }
 
 export default function AddVenue({ editMode = false, venueId = null }) {
@@ -42,6 +44,7 @@ export default function AddVenue({ editMode = false, venueId = null }) {
           street: v.address?.street || '', district: v.address?.district || '', city: v.address?.city || '',
           openTime: v.openHours?.open || '06:00', closeTime: v.openHours?.close || '22:00',
           amenities: v.amenities || [], rules: v.rules || '',
+          location: typeof v.location?.lat === 'number' ? { lat: v.location.lat, lng: v.location.lng } : null,
         })
         setExistingImages(v.images || [])
       })
@@ -76,9 +79,17 @@ export default function AddVenue({ editMode = false, venueId = null }) {
       formData.append('name', form.name)
       formData.append('description', form.description)
       form.sports.forEach(s => formData.append('sports', s))
-      formData.append('street', form.street)
-      formData.append('district', form.district)
-      formData.append('city', form.city)
+      formData.append('address[street]', form.street)
+      formData.append('address[district]', form.district)
+      formData.append('address[city]', form.city)
+      // Vị trí bản đồ: gửi chuỗi rỗng khi bỏ ghim để xoá vị trí cũ (khi sửa)
+      if (form.location) {
+        formData.append('lat', form.location.lat)
+        formData.append('lng', form.location.lng)
+      } else if (editMode) {
+        formData.append('lat', '')
+        formData.append('lng', '')
+      }
       formData.append('openHours[open]', form.openTime)
       formData.append('openHours[close]', form.closeTime)
       form.amenities.forEach(a => formData.append('amenities', a))
@@ -155,6 +166,14 @@ export default function AddVenue({ editMode = false, venueId = null }) {
               <div className={styles.formRow}>
                 <Input label="Quận/Huyện" value={form.district} onChange={set('district')} required />
                 <Input label="Thành phố" value={form.city} onChange={set('city')} required />
+              </div>
+              <div className={styles.fieldGroup}>
+                <label className={styles.label}>Vị trí trên bản đồ (khuyến nghị)</label>
+                <MapPicker
+                  value={form.location}
+                  onChange={(location) => setForm(f => ({ ...f, location }))}
+                  addressText={[form.street, form.district, form.city].filter(Boolean).join(', ')}
+                />
               </div>
             </div>
           </div>

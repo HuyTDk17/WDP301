@@ -1,7 +1,8 @@
 import { useState, useEffect, useCallback } from 'react'
 import { useSearchParams } from 'react-router-dom'
-import { LayoutGrid, List, ChevronDown, SlidersHorizontal, X, ChevronLeft, ChevronRight, AlertTriangle, LandPlot } from 'lucide-react'
+import { LayoutGrid, List, ChevronDown, SlidersHorizontal, X, ChevronLeft, ChevronRight, AlertTriangle, LandPlot, Map as MapIcon, MapPin } from 'lucide-react'
 import VenueCard from '@/components/venue/VenueCard/VenueCard'
+import VenueMap from '@/components/venue/VenueMap/VenueMap'
 import VenueFilters from '@/components/venue/VenueFilters/VenueFilters'
 import SearchBar from '@/components/common/SearchBar/SearchBar'
 import EmptyState from '@/components/ui/EmptyState/EmptyState'
@@ -19,6 +20,7 @@ const SORT_OPTIONS = [
 ]
 
 const PAGE_SIZE = 12
+const MAP_LIMIT = 100 // chế độ bản đồ hiện tối đa 100 sân trong khu vực
 
 // Sinh dãy số trang kiểu "1 … 4 5 6 … 12" thay vì luôn cắt 5 trang đầu
 function getPaginationRange(current, total) {
@@ -58,6 +60,7 @@ export default function VenueListing() {
     minRating: null,
     amenities: [],
     availableToday: false,
+    geo: null, // null | {type:'bounds',swLat,..} | {type:'near',lat,lng,radiusKm}
   })
 
   const query = searchParams.get('q') || ''
@@ -67,7 +70,16 @@ export default function VenueListing() {
     setLoading(true)
     setError(null)
 
-    const params = { page, limit: PAGE_SIZE, sort }
+    const isMap = layout === 'map'
+    const params = { page: isMap ? 1 : page, limit: isMap ? MAP_LIMIT : PAGE_SIZE, sort }
+    const g = filters.geo
+    if (g?.type === 'bounds') {
+      params.swLat = g.swLat; params.swLng = g.swLng; params.neLat = g.neLat; params.neLng = g.neLng
+    } else if (g?.type === 'near') {
+      params.lat = g.lat; params.lng = g.lng; params.radiusKm = g.radiusKm
+    } else if (isMap) {
+      params.hasLocation = 1 // bản đồ chỉ cần các sân đã có vị trí (xem backend)
+    }
     if (debouncedQuery) params.search = debouncedQuery
     if (filters.sports.length) params.sport = filters.sports[0]
     if (filters.minRating) params.minRating = filters.minRating
@@ -84,7 +96,7 @@ export default function VenueListing() {
       })
       .catch((err) => setError(err?.message || 'Không thể tải danh sách sân thể thao'))
       .finally(() => setLoading(false))
-  }, [page, sort, debouncedQuery, filters])
+  }, [page, sort, debouncedQuery, filters, layout])
 
   useEffect(() => { fetchVenues() }, [fetchVenues])
 
@@ -97,8 +109,21 @@ export default function VenueListing() {
   // Reset về trang 1 mỗi khi filter/search/sort thay đổi
   useEffect(() => { setPage(1) }, [debouncedQuery, filters, sort])
 
-  const handleFiltersReset = () => setFilters({ sports: [], priceRange: '', minRating: null, amenities: [], availableToday: false })
-  const activeFilterCount = [filters.sports?.length > 0, !!filters.priceRange, !!filters.minRating, filters.amenities?.length > 0, filters.availableToday].filter(Boolean).length
+  const handleFiltersReset = () => { setFilters({ sports: [], priceRange: '', minRating: null, amenities: [], availableToday: false, geo: null }); setSort(s => (s === 'distance' ? 'relevance' : s)) }
+
+  // Đổi bộ lọc; bật "gần tôi" thì tự sắp xếp theo khoảng cách, tắt thì trả về mặc định
+  const handleFiltersChange = (next) => {
+    const wasNear = filters.geo?.type === 'near'
+    const isNear = next.geo?.type === 'near'
+    if (isNear && !wasNear) setSort('distance')
+    if (!isNear && sort === 'distance') setSort('relevance')
+    setFilters(next)
+  }
+  const searchThisArea = (b) => { setFilters(f => ({ ...f, geo: { type: 'bounds', ...b } })) }
+  const clearGeo = () => handleFiltersChange({ ...filters, geo: null })
+  const sortOptions = filters.geo?.type === 'near' ? [{ value: 'distance', label: 'Gần tôi nhất' }, ...SORT_OPTIONS] : SORT_OPTIONS
+  const isMapView = layout === 'map'
+  const activeFilterCount = [filters.sports?.length > 0, !!filters.priceRange, !!filters.minRating, filters.amenities?.length > 0, filters.availableToday, !!filters.geo].filter(Boolean).length
 
   const totalPages = Math.max(1, Math.ceil(total / PAGE_SIZE))
 
@@ -108,7 +133,7 @@ export default function VenueListing() {
       <div className="container">
         <div className={styles.layout}>
           <div className={styles.sidebar}>
-            <VenueFilters filters={filters} onChange={setFilters} onReset={handleFiltersReset} />
+            <VenueFilters filters={filters} onChange={handleFiltersChange} onReset={handleFiltersReset} />
           </div>
 
           {/* Drawer bộ lọc cho mobile */}
@@ -120,7 +145,7 @@ export default function VenueListing() {
                   <button className={styles.drawerClose} onClick={() => setFiltersOpen(false)} aria-label="Đóng"><X size={20} /></button>
                 </div>
                 <div className={styles.drawerBody}>
-                  <VenueFilters filters={filters} onChange={setFilters} onReset={handleFiltersReset} />
+                  <VenueFilters filters={filters} onChange={handleFiltersChange} onReset={handleFiltersReset} />
                 </div>
                 <div className={styles.drawerFooter}>
                   <button className={styles.drawerApply} onClick={() => setFiltersOpen(false)}>
@@ -146,19 +171,37 @@ export default function VenueListing() {
                 {activeFilterCount > 0 && <Badge variant="primary" className={styles.filterBadgeDesktop}>{activeFilterCount} bộ lọc</Badge>}
                 <div className={styles.selectWrap}>
                   <select className={styles.sortSelect} value={sort} onChange={e => setSort(e.target.value)}>
-                    {SORT_OPTIONS.map(o => <option key={o.value} value={o.value}>{o.label}</option>)}
+                    {sortOptions.map(o => <option key={o.value} value={o.value}>{o.label}</option>)}
                   </select>
                   <ChevronDown size={15} strokeWidth={2.25} className={styles.selectChevron} />
                 </div>
                 <div className={styles.layoutToggle}>
                   <button className={`${styles.layoutBtn} ${layout === 'grid' ? styles.layoutBtnActive : ''}`} onClick={() => setLayout('grid')} title="Xem dạng lưới" aria-label="Xem dạng lưới"><LayoutGrid size={16} strokeWidth={2.25} /></button>
                   <button className={`${styles.layoutBtn} ${layout === 'list' ? styles.layoutBtnActive : ''}`} onClick={() => setLayout('list')} title="Xem dạng danh sách" aria-label="Xem dạng danh sách"><List size={16} strokeWidth={2.25} /></button>
+                  <button className={`${styles.layoutBtn} ${layout === 'map' ? styles.layoutBtnActive : ''}`} onClick={() => setLayout('map')} title="Xem trên bản đồ" aria-label="Xem trên bản đồ"><MapIcon size={16} strokeWidth={2.25} /></button>
                 </div>
               </div>
             </div>
 
+            {filters.geo && (
+              <div className={styles.geoChipRow}>
+                <span className={styles.geoChip}>
+                  <MapPin size={13} />
+                  {filters.geo.type === 'near' ? `Trong bán kính ${filters.geo.radiusKm} km quanh bạn` : 'Trong khu vực đang chọn trên bản đồ'}
+                  <button type="button" onClick={clearGeo} aria-label="Bỏ lọc vị trí"><X size={13} /></button>
+                </span>
+              </div>
+            )}
+
             {error ? (
               <EmptyState icon={<AlertTriangle size={40} strokeWidth={1.75} />} title="Có lỗi xảy ra" description={error} action={fetchVenues} actionLabel="Thử lại" />
+            ) : isMapView ? (
+              <>
+                <VenueMap venues={venues} userPoint={filters.geo?.type === 'near' ? filters.geo : null} autoFit={filters.geo?.type !== 'bounds'} onSearchArea={searchThisArea} />
+                <p className={styles.mapNote}>
+                  {loading ? 'Đang cập nhật…' : venues.length === 0 ? 'Không có sân nào trong khu vực này. Hãy kéo/thu nhỏ bản đồ rồi bấm "Tìm trong khu vực này".' : `Hiện ${venues.length} sân trên bản đồ. Kéo hoặc phóng to bản đồ để tìm trong khu vực khác.`}
+                </p>
+              </>
             ) : loading ? (
               <div className={layout === 'grid' ? styles.grid : styles.list}>
                 {Array.from({ length: 6 }, (_, i) => (
@@ -185,7 +228,7 @@ export default function VenueListing() {
               </div>
             )}
 
-            {!loading && !error && venues.length > 0 && totalPages > 1 && (
+            {!isMapView && !loading && !error && venues.length > 0 && totalPages > 1 && (
               <div className={styles.pagination}>
                 <button className={styles.pageBtn} disabled={page === 1} onClick={() => setPage(p => p - 1)} aria-label="Trang trước"><ChevronLeft size={16} strokeWidth={2.25} /></button>
                 {getPaginationRange(page, totalPages).map((p, i) => p === '...' ? (

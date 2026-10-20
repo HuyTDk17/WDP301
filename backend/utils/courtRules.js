@@ -5,7 +5,7 @@
  * không được chọn môn khác; server bỏ qua `sport` client gửi lên. Hệ thống KHÔNG hỏi số người chơi:
  * tiền sân cố định theo giờ, người chơi tự chia nhau.
  */
-const SPORT_IDS = ['football', 'basketball', 'badminton', 'tennis', 'volleyball', 'swimming', 'gym', 'yoga'];
+const SPORT_IDS = ['football', 'basketball', 'badminton', 'tennis', 'pickleball', 'volleyball', 'swimming', 'gym', 'yoga'];
 
 /** Môn của lượt đặt = môn của sân. */
 function sportOf(court) {

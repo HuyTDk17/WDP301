@@ -1,3 +1,4 @@
+import PremiumBadge from '@/components/common/PremiumBadge/PremiumBadge'
 import { useState, useEffect, useCallback } from 'react'
 import { useParams, Link, useNavigate, useSearchParams } from 'react-router-dom'
 import { ChevronRight, Heart, MapPin, LayoutGrid, Clock, Check, ChevronUp, ChevronDown, CreditCard, Frown, Calendar, Pencil, Trash2, CornerDownRight } from 'lucide-react'
@@ -11,6 +12,7 @@ import TimeSlotPicker from '@/components/venue/TimeSlotPicker/TimeSlotPicker'
 import CourtPicker from '@/components/booking/CourtPicker/CourtPicker'
 import ReviewForm from '@/components/venue/ReviewForm/ReviewForm'
 import VenueEvents from '@/components/venue/VenueEvents/VenueEvents'
+import CancellationPolicy from '@/components/venue/CancellationPolicy/CancellationPolicy'
 import ConfirmModal from '@/components/dashboard/ConfirmModal/ConfirmModal'
 import { venueService } from '@/services/venueService'
 import { settingsService } from '@/services/settingsService'
@@ -225,11 +227,14 @@ export default function VenueDetail() {
           <div className={styles.header}>
             <div className={styles.headerLeft}>
               {sport && <Badge variant="primary" size="lg">{sport.icon} {sport.name}</Badge>}
-              <h1 className={styles.title}>{venue.name}</h1>
+              <h1 className={styles.title}>{venue.name} {venue.isPremium && <PremiumBadge size="md" />}</h1>
               <div className={styles.meta}>
                 <Rating value={venue.rating || 0} size="md" count={venue.reviewCount || 0} />
                 <span className={styles.metaDot}>·</span>
                 <span className={styles.metaText}><MapPin size={14} strokeWidth={2.25} className={styles.metaIcon} /> {venue.address?.street}, {venue.address?.district}, {venue.address?.city}</span>
+                {typeof venue.location?.lat === 'number' && (
+                  <a className={styles.metaText} href={`https://www.google.com/maps?q=${venue.location.lat},${venue.location.lng}`} target="_blank" rel="noreferrer" style={{ color: 'var(--primary)', fontWeight: 600 }}>Xem trên bản đồ</a>
+                )}
               </div>
             </div>
           </div>
@@ -264,6 +269,8 @@ export default function VenueDetail() {
               <p className={styles.description}>{venue.rules}</p>
             </section>
           )}
+
+          <CancellationPolicy policy={venue.cancellationPolicy} />
 
           <VenueEvents venueId={id} />
 

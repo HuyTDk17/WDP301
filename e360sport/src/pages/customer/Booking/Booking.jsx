@@ -2,18 +2,20 @@ import { useState, useEffect, useRef } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { MapPin, LayoutGrid, Calendar, Clock, ClipboardList, Lock, Frown, ArrowRight } from 'lucide-react'
 import { useBooking } from '@/contexts/BookingContext'
+import { useAuth } from '@/contexts/authState'
 import { useToast } from '@/contexts/ToastContext'
 import { bookingService } from '@/services/bookingService'
 import { settingsService } from '@/services/settingsService'
 import Button from '@/components/ui/Button/Button'
 import Spinner from '@/components/ui/Spinner/Spinner'
 import HoldTimer from '@/components/booking/HoldTimer/HoldTimer'
-import { formatCurrency, formatDate, formatTime, getSport, getImageUrl, previewCommission } from '@/utils'
+import { formatCurrency, formatDate, formatTime, getSport, getImageUrl, previewCommission, hasPremium } from '@/utils'
 import styles from './Booking.module.css'
 
 export default function Booking() {
   const navigate = useNavigate()
   const { toast } = useToast()
+  const { user } = useAuth()
   const { booking, setHold, setSport, setNotes, setBookingResult } = useBooking()
   const { venue, court, date, slot, hold } = booking
 
@@ -114,7 +116,8 @@ export default function Booking() {
 
   const pricePerHour = court.pricePerHour
   const fee = previewCommission(pricePerHour, commissionRate, customerSharePct)
-  const serviceFee = fee.serviceFee
+  const premiumPlayer = hasPremium(user, 'player_premium')
+  const serviceFee = premiumPlayer ? 0 : fee.serviceFee
   const total = pricePerHour + serviceFee
 
   return (
@@ -167,6 +170,9 @@ export default function Booking() {
               <h3 className={styles.summaryTitle}>Tóm tắt đơn</h3>
               <div className={styles.priceBreakdown}>
                 <div className={styles.priceRow}><span>{formatCurrency(pricePerHour)} × 1 giờ</span><span>{formatCurrency(pricePerHour)}</span></div>
+                {premiumPlayer && fee.serviceFee > 0 && (
+                  <div className={styles.priceRow}><span>Phí dịch vụ (Premium)</span><span>Miễn phí</span></div>
+                )}
                 {serviceFee > 0 && (
                   <div className={styles.priceRow}><span>Phí dịch vụ</span><span>{formatCurrency(serviceFee)}</span></div>
                 )}

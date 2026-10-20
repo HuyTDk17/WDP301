@@ -58,7 +58,9 @@ export default function TransferDetail() {
   const handleCancel = async () => {
     try {
       await transferService.cancel(id)
-      toast.success('Đã huỷ yêu cầu chuyển sân. Lượt đặt ban đầu vẫn còn hiệu lực.')
+      toast.success(['T1', 'T2'].includes(data?.transfer?.type)
+        ? 'Đã huỷ yêu cầu đổi lịch. Lịch đặt ban đầu vẫn còn hiệu lực.'
+        : 'Đã huỷ yêu cầu chuyển sân. Lượt đặt ban đầu vẫn còn hiệu lực.')
       const res = await transferService.getById(id)
       setData(res)
     } catch (err) {
@@ -94,23 +96,25 @@ export default function TransferDetail() {
   const q = transfer.quote
   const isPending = PENDING_STATES.includes(transfer.status)
   const isSuccess = transfer.status === 'completed'
+  const isRes = ['T1', 'T2'].includes(transfer.type)   // đổi lịch
 
   return (
     <div className={styles.page}>
       <div className="container">
         <Link to="/bookings" className={styles.back}><ArrowLeft size={15} /> Quay lại lịch sử đặt sân</Link>
 
+        {/* Đổi lịch (T1/T2) dùng lời lẽ riêng thay vì "chuyển sân" */}
         <div className={styles.hero}>
           <span className={`${styles.heroIcon} ${isSuccess ? styles.ok : isPending ? styles.wait : styles.bad}`}>
             {isSuccess ? <CheckCircle2 size={28} /> : isPending ? <Clock size={28} /> : <XCircle size={28} />}
           </span>
           <div>
             <h1 className={styles.title}>
-              {isSuccess ? 'Đã chuyển sân thành công'
+              {isSuccess ? (isRes ? 'Đã đổi lịch thành công' : 'Đã chuyển sân thành công')
                 : transfer.status === 'awaiting_owner_approval' ? 'Đang chờ chủ sân duyệt'
                 : transfer.status === 'awaiting_payment' ? 'Đang chờ thanh toán'
                 : isPending ? 'Đang xử lý yêu cầu'
-                : 'Yêu cầu chuyển sân không thành công'}
+                : (isRes ? 'Yêu cầu đổi lịch không thành công' : 'Yêu cầu chuyển sân không thành công')}
             </h1>
             <p className={styles.sub}>
               {TRANSFER_TYPE_LABEL[transfer.type]} · <Badge size="sm" style={{ background: status.bg, color: status.color }}>{status.label}</Badge>

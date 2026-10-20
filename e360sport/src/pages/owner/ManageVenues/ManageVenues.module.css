@@ -29,3 +29,5 @@
   height: 15px;
   accent-color: var(--primary);
 }
+
+.transferPolicy select { margin-left: 4px; padding: 5px 8px; border: 1px solid var(--border-strong); border-radius: var(--radius-sm); background: var(--bg-surface); font: inherit; font-size: var(--text-sm); color: var(--text-primary); }

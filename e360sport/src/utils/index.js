@@ -54,7 +54,7 @@ export const validatePassword = (pw) => pw.length >= 8
 
 // === MÔN THỂ THAO ===
 // Danh mục môn thể thao. Mặc định bên dưới dùng khi chưa tải được từ máy chủ; khi khởi động, main.jsx gọi
-// syncSportCategories() để thay bằng danh mục do Admin quản lý (GET /api/sports). `SPORTS` là mảng DUY NHẤT và được
+// applySportCategories() để thay bằng danh mục do Admin quản lý (GET /api/sports). `SPORTS` là mảng DUY NHẤT và được
 // sửa tại chỗ nên mọi nơi đã import vẫn thấy dữ liệu mới. SPORTS chỉ chứa môn ĐANG BẬT (cho ô chọn/bộ lọc);
 // getSport() tra cả môn đã tắt để dữ liệu cũ vẫn hiển thị đúng tên.
 const DEFAULT_SPORTS = [
@@ -62,6 +62,7 @@ const DEFAULT_SPORTS = [
   { id: 'basketball', name: 'Bóng rổ', icon: '🏀', color: '#F59E0B' },
   { id: 'badminton', name: 'Cầu lông', icon: '🏸', color: '#0A84FF' },
   { id: 'tennis', name: 'Tennis', icon: '🎾', color: '#FF6B2B' },
+  { id: 'pickleball', name: 'Pickleball', icon: '🏓', color: '#14B8A6' },
   { id: 'volleyball', name: 'Bóng chuyền', icon: '🏐', color: '#8B5CF6' },
   { id: 'swimming', name: 'Bơi lội', icon: '🏊', color: '#06B6D4' },
   { id: 'gym', name: 'Gym', icon: '🏋️', color: '#EF4444' },
@@ -111,6 +112,14 @@ export const getAvatarPlaceholder = (name) =>
   `https://ui-avatars.com/api/?name=${encodeURIComponent(name)}&background=0A84FF&color=fff&bold=true`
 
 // === KHÁC ===
+// === PREMIUM ===
+// Người dùng đang có gói Premium còn hiệu lực (đúng gói nếu truyền `plan`).
+export const hasPremium = (user, plan) => {
+  const until = user?.premium?.until
+  if (!until || new Date(until).getTime() <= Date.now()) return false
+  return !plan || user.premium.plan === plan
+}
+
 export const clsx = (...classes) => classes.filter(Boolean).join(' ')
 
 export const generateTimeSlots = (open = '06:00', close = '22:00', interval = 60) => {
@@ -181,7 +190,6 @@ export const previewCommission = (price, ratePct = 0, customerSharePct = 0) => {
   const serviceFee = Math.round(total * (Number(customerSharePct) || 0) / 100)
   return { total, serviceFee, ownerCommission: total - serviceFee }
 }
-
 
 // === NGÀY GIỜ (sự kiện) ===
 // "28/10/2026 18:30" theo giờ máy người dùng

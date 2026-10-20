@@ -88,6 +88,8 @@ const transferRequestSchema = new mongoose.Schema(
         rejectionReason: { type: String, default: '' },
         failureReason: { type: String, default: '' },
         completedAt: { type: Date, default: null },
+        // Chụp tỉ lệ chia phí cho chủ sân gốc LÚC BÁO GIÁ (cài đặt đổi sau đó không làm thay đổi yêu cầu đang chạy)
+        feeOriginSharePct: { type: Number, default: 0, min: 0, max: 100 },
     },
     { timestamps: true }
 );

@@ -29,3 +29,6 @@
 .listLayout .imageWrap { width: 220px; aspect-ratio: unset; flex-shrink: 0; }
 .listLayout .content { flex: 1; }
 @media (max-width: 640px) { .listLayout { flex-direction: column; } .listLayout .imageWrap { width: 100%; aspect-ratio: 3/2; } }
+
+.premiumTag { position: absolute; bottom: var(--space-3); left: var(--space-3); }
+.premiumCard { border-color: #F5C451; box-shadow: 0 2px 14px rgba(245, 158, 11, 0.18); }

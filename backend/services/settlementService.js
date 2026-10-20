@@ -32,7 +32,7 @@ async function computeBalance(ownerId) {
 
     const [bookings, cashPayments, ownerRefunds, settlements, payouts] = await Promise.all([
         Booking.find({ venueId: { $in: venueIds } })
-            .select('status paymentMethod amount serviceFee ownerCommission compensationAmount refundAmount refundCreditAmount cancellationFee transferFeeAmount'),
+            .select('status paymentMethod amount serviceFee ownerCommission compensationAmount refundAmount refundCreditAmount cancellationFee transferFeeAmount transferFeeShareIn transferFeeShareOut'),
         // Tiền khách đã chuyển thẳng vào tài khoản chủ sân (đã được chủ sân xác nhận)
         // Giao dịch đang/đã hoàn vẫn là tiền ĐÃ vào tài khoản chủ sân — phần hoàn được trừ riêng ở dưới.
         Payment.find({

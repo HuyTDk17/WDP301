@@ -30,16 +30,20 @@ export default function AdminSettings() {
     commissionDueDays: 7, commissionGraceDays: 3, commissionBlockEnabled: true, commissionAutoIssueEnabled: true,
     gatewayFeeRate: 0.015,
     transferEnabled: true, transferNetworkRequired: false, transferMinLeadTimeHours: 2, maxTransfersPerBooking: 1,
+    maxTransfersPerMonth: 0, transferFeeOriginSharePct: 0, ownerCancellationPolicyAllowed: true,
     quoteTtlMinutes: 10, ownerApprovalTimeoutMinutes: 30,
     transferFeeMin: 5000, transferFeeMax: 100000, transferFixedFeeT5: 10000,
     maxRefundRatio: 0.5, refundToCreditEnabled: true,
     bankName: '', bankBin: '', bankAccountNumber: '', bankAccountName: '',
     bankTransferWindowMinutes: 30,
+    premiumEnabled: true, premiumVenuePrice: 149000, premiumPlayerPrice: 29000, premiumDurationDays: 30,
+    premiumVenueCommissionRate: 7, premiumPlayerHoldMinutes: 20,
   })
   // Biểu phí bậc thang chỉnh riêng vì là mảng, không hợp với ô nhập đơn giản.
   const [feeTiers, setFeeTiers] = useState([])
   const [compTiers, setCompTiers] = useState([])
   const [cancelTiers, setCancelTiers] = useState([])
+  const [floorTiers, setFloorTiers] = useState([])
 
   useEffect(() => {
     settingsService.getPlatformSettings()
@@ -60,6 +64,9 @@ export default function AdminSettings() {
           transferNetworkRequired: st.transferNetworkRequired === true,
           transferMinLeadTimeHours: st.transferMinLeadTimeHours ?? 2,
           maxTransfersPerBooking: st.maxTransfersPerBooking ?? 1,
+          maxTransfersPerMonth: st.maxTransfersPerMonth ?? 0,
+          transferFeeOriginSharePct: st.transferFeeOriginSharePct ?? 0,
+          ownerCancellationPolicyAllowed: st.ownerCancellationPolicyAllowed !== false,
           quoteTtlMinutes: st.quoteTtlMinutes ?? 10,
           ownerApprovalTimeoutMinutes: st.ownerApprovalTimeoutMinutes ?? 30,
           transferFeeMin: st.transferFeeMin ?? 5000,
@@ -72,10 +79,17 @@ export default function AdminSettings() {
           bankAccountNumber: st.bankAccountNumber || '',
           bankAccountName: st.bankAccountName || '',
           bankTransferWindowMinutes: st.bankTransferWindowMinutes ?? 30,
+          premiumEnabled: st.premiumEnabled !== false,
+          premiumVenuePrice: st.premiumVenuePrice ?? 149000,
+          premiumPlayerPrice: st.premiumPlayerPrice ?? 29000,
+          premiumDurationDays: st.premiumDurationDays ?? 30,
+          premiumVenueCommissionRate: st.premiumVenueCommissionRate ?? 7,
+          premiumPlayerHoldMinutes: st.premiumPlayerHoldMinutes ?? 20,
         }))
         setFeeTiers(st.transferFeeTiers || [])
         setCompTiers(st.compensationTiers || [])
         setCancelTiers(st.cancellationTiers || [])
+        setFloorTiers(st.cancellationFloorTiers || [])
       })
       .catch(() => toast.error('Không thể tải cài đặt hệ thống'))
       .finally(() => setLoading(false))
@@ -90,6 +104,7 @@ export default function AdminSettings() {
         transferFeeTiers: feeTiers,
         compensationTiers: compTiers,
         cancellationTiers: cancelTiers,
+        cancellationFloorTiers: floorTiers,
       })
       toast.success('Đã lưu cài đặt — áp dụng ngay cho lượt đặt sân tiếp theo')
     } catch (err) {
@@ -174,6 +189,22 @@ export default function AdminSettings() {
               hint="Quá hạn nộp + ngần này ngày mà chưa nộp thì địa điểm bị khoá. Mặc định 7 + 3 = 10 ngày kể từ khi lập hoá đơn. Chủ sân đã báo chuyển khoản (chờ bạn đối chiếu) thì không bị khoá."
             />
           )}
+        </div>
+
+        <h3 className={styles.sectionTitle}>Gói Premium</h3>
+        <p className={styles.sectionHint}>
+          Tiền gói Premium chuyển vào <strong>tài khoản nền tảng</strong> bên dưới. Webhook ngân hàng nhận diện mã đơn <code>PRM…</code> để tự kích hoạt; chưa bật thì xác nhận tay ở trang Gói Premium.
+        </p>
+        <div className={styles.formGrid}>
+          <label className={styles.checkRow}>
+            <input type="checkbox" checked={!!form.premiumEnabled} onChange={e => setForm(f => ({ ...f, premiumEnabled: e.target.checked }))} />
+            <span>Mở bán gói Premium</span>
+          </label>
+          <Input label="Giá Venue Premium (chủ sân)" type="number" min={1000} step={1000} value={form.premiumVenuePrice} onChange={e => setForm(f => ({ ...f, premiumVenuePrice: e.target.value }))} suffix="đ" />
+          <Input label="Giá Premium Player (người chơi)" type="number" min={1000} step={1000} value={form.premiumPlayerPrice} onChange={e => setForm(f => ({ ...f, premiumPlayerPrice: e.target.value }))} suffix="đ" />
+          <Input label="Thời hạn mỗi lần mua" type="number" min={1} max={365} value={form.premiumDurationDays} onChange={e => setForm(f => ({ ...f, premiumDurationDays: e.target.value }))} suffix="ngày" />
+          <Input label="Phí dịch vụ cho chủ sân Premium" type="number" min={0} max={100} step={0.5} value={form.premiumVenueCommissionRate} onChange={e => setForm(f => ({ ...f, premiumVenueCommissionRate: e.target.value }))} suffix="%" hint="Thay cho tỉ lệ chung ở trên, chỉ áp khi thấp hơn. Áp cho đơn mới." />
+          <Input label="Thời gian giữ chỗ của người chơi Premium" type="number" min={1} max={60} value={form.premiumPlayerHoldMinutes} onChange={e => setForm(f => ({ ...f, premiumPlayerHoldMinutes: e.target.value }))} suffix="phút" hint="Người chơi thường được giữ chỗ 10 phút." />
         </div>
 
         <h3 className={styles.sectionTitle}>Tài khoản nền tảng (nhận phí dịch vụ)</h3>
@@ -271,6 +302,24 @@ export default function AdminSettings() {
             hint="Chống dùng chuyển sân như công cụ giữ chỗ trôi nổi."
           />
           <Input
+            label="Hạn mức đổi lịch/chuyển sân mỗi tháng (mỗi khách)"
+            type="number" min={0} max={100} step={1}
+            value={form.maxTransfersPerMonth}
+            onChange={e => setForm(f => ({ ...f, maxTransfersPerMonth: e.target.value }))}
+            icon={<Repeat size={15} />}
+            suffix="lượt"
+            hint="Tính theo tháng dương lịch (giờ Việt Nam), gồm đổi lịch và chuyển sân, không gồm sang tên. 0 = không giới hạn."
+          />
+          <Input
+            label="Chia phí chuyển sân cho chủ sân gốc"
+            type="number" min={0} max={100} step={1}
+            value={form.transferFeeOriginSharePct}
+            onChange={e => setForm(f => ({ ...f, transferFeeOriginSharePct: e.target.value }))}
+            icon={<Percent size={15} />}
+            suffix="%"
+            hint="Chỉ khi chuyển sang chủ sân khác: chủ sân gốc nhận thêm tỉ lệ này của phí chuyển (ngoài khoản bồi thường); phần còn lại thuộc chủ sân đích. 0 = toàn bộ phí về chủ sân đích như hiện nay."
+          />
+          <Input
             label="Hiệu lực báo giá"
             type="number" min={1} max={60} step={1}
             value={form.quoteTtlMinutes}
@@ -280,7 +329,7 @@ export default function AdminSettings() {
           />
           <Input
             label="Hạn chủ sân phản hồi"
-            type="number" min={1} max={1440} step={5}
+            type="number" min={1} max={1440} step={1}
             value={form.ownerApprovalTimeoutMinutes}
             onChange={e => setForm(f => ({ ...f, ownerApprovalTimeoutMinutes: e.target.value }))}
             suffix="phút"
@@ -343,6 +392,22 @@ export default function AdminSettings() {
           tiers={cancelTiers}
           onChange={setCancelTiers}
           columns={[{ key: 'refundRate', label: 'Tỉ lệ hoàn tiền sân' }]}
+        />
+
+        <label className={styles.switchRow}>
+          <input
+            type="checkbox"
+            checked={form.ownerCancellationPolicyAllowed}
+            onChange={e => setForm(f => ({ ...f, ownerCancellationPolicyAllowed: e.target.checked }))}
+          />
+          <span>Cho phép chủ sân tự đặt chính sách hủy riêng (phải đạt mức tối thiểu bên dưới)</span>
+        </label>
+
+        <TierEditor
+          title="Mức hoàn tối thiểu mà chủ sân buộc phải đạt (sàn bảo vệ khách)"
+          tiers={floorTiers}
+          onChange={setFloorTiers}
+          columns={[{ key: 'refundRate', label: 'Hoàn tối thiểu' }]}
         />
 
         <p className={styles.notice}>

@@ -61,3 +61,9 @@
   .resultsHeader { flex-direction: column; align-items: stretch; }
   .controls { justify-content: space-between; }
 }
+
+/* Lọc theo bản đồ */
+.geoChipRow { margin-bottom: var(--space-3); }
+.geoChip { display: inline-flex; align-items: center; gap: 6px; padding: 6px 10px 6px 12px; background: var(--primary-subtle); color: var(--primary-dark); border-radius: var(--radius-full); font-size: var(--text-sm); font-weight: var(--weight-medium); }
+.geoChip button { display: inline-flex; background: none; border: none; cursor: pointer; color: inherit; padding: 2px; }
+.mapNote { margin-top: var(--space-3); font-size: var(--text-sm); color: var(--text-muted); }

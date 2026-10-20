@@ -52,6 +52,12 @@ const bookingSchema = new mongoose.Schema(
         refundCreditAmount: { type: Number, default: 0 },
         cancellationFee: { type: Number, default: 0 },
 
+        // ===== CHÍNH SÁCH HỦY =====
+        // Chỉ có khi chủ sân dùng biểu RIÊNG lúc đặt: biểu được CHỤP vào đơn nên đổi chính sách sau đó không ảnh hưởng
+        // khách đã đặt. Rỗng = dùng biểu chung hiện hành của nền tảng (hành vi cũ).
+        cancellationTiers: { type: [{ _id: false, minLeadHours: Number, refundRate: Number }], default: [] },
+        cancellationPolicySource: { type: String, enum: ['platform', 'owner'], default: 'platform' },
+
         // ===== CHUYỂN SÂN =====
         transferredToBookingId: { type: mongoose.Schema.Types.ObjectId, ref: 'Booking', default: null },
         transferredFromBookingId: { type: mongoose.Schema.Types.ObjectId, ref: 'Booking', default: null },
@@ -63,6 +69,12 @@ const bookingSchema = new mongoose.Schema(
         compensationAmount: { type: Number, default: 0 },
         // Phí chuyển sân nền tảng đã thu — ghi trên đơn MỚI
         transferFeeAmount: { type: Number, default: 0 },
+        // Chia phí chuyển sân giữa hai chủ sân (chỉ loại T4, xem utils/transferSplit.js):
+        //   ShareIn  — ghi trên đơn GỐC (đã chuyển đi): phần phí chủ sân gốc nhận thêm
+        //   ShareOut — ghi trên đơn MỚI: phần phí bị trừ khỏi chủ sân đích để chuyển cho chủ sân gốc
+        // Hai số luôn bằng nhau nên tổng quyền lợi của các chủ sân không đổi.
+        transferFeeShareIn: { type: Number, default: 0 },
+        transferFeeShareOut: { type: Number, default: 0 },
         // Tổng tiền khách đã trả tích luỹ qua cả chuỗi chuyển, dùng áp trần hoàn
         originalPaidAmount: { type: Number, default: 0 },
     },

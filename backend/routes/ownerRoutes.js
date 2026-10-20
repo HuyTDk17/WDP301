@@ -14,6 +14,7 @@ const transferController = require('../controllers/transferController');
 const paymentController = require('../controllers/paymentController');
 const eventController = require('../controllers/eventController');
 const networkController = require('../controllers/networkController');
+const cancellationPolicyController = require('../controllers/cancellationPolicyController');
 
 router.use(protect, authorize('owner'));
 
@@ -52,6 +53,10 @@ router.get('/transfers', transferController.getOwnerTransfers);
 router.post('/transfers/:id/approve', transferController.approve);
 router.post('/transfers/:id/reject', transferController.reject);
 router.patch('/venues/:id/transfer-policy', transferController.setVenueTransferPolicy);
+
+// Chính sách hủy riêng của chủ sân (biểu hoàn tiền theo giờ báo trước, phải đạt sàn của nền tảng)
+router.get('/cancellation-policy', cancellationPolicyController.getPolicy);
+router.put('/cancellation-policy', writeLimiter, cancellationPolicyController.updatePolicy);
 
 // Mạng lưới chuyển sân: xem trạng thái thành viên và xin tham gia
 router.get('/network', networkController.getMyNetwork);

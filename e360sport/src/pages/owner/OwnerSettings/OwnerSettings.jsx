@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import { Building2, Lock, Wallet, User, Mail, Phone, FileText, KeyRound, Landmark, CreditCard } from 'lucide-react'
+import { Building2, Lock, Wallet, CalendarX, User, Mail, Phone, FileText, KeyRound, Landmark, CreditCard } from 'lucide-react'
 import PageHeader from '@/components/dashboard/PageHeader/PageHeader'
 import Button from '@/components/ui/Button/Button'
 import Input from '@/components/ui/Input/Input'
@@ -8,12 +8,14 @@ import { useToast } from '@/contexts/ToastContext'
 import { useAuth } from '@/contexts/authState'
 import { authService } from '@/services/authService'
 import { VN_BANKS, findBankByBin } from '@/data/vnBanks'
+import CancellationPolicyEditor from '@/components/owner/CancellationPolicyEditor/CancellationPolicyEditor'
 import styles from './OwnerSettings.module.css'
 
 const TABS = [
   { id: 'profile', label: 'Hồ sơ doanh nghiệp', Icon: Building2 },
   { id: 'security', label: 'Bảo mật', Icon: Lock },
   { id: 'payout', label: 'Thông tin nhận tiền', Icon: Wallet },
+  { id: 'cancel', label: 'Chính sách hủy', Icon: CalendarX },
 ]
 
 export default function OwnerSettings() {
@@ -147,6 +149,9 @@ export default function OwnerSettings() {
               </div>
               <div className={styles.actions}><Button loading={loading} onClick={handleSavePayout}>Lưu thông tin nhận tiền</Button></div>
             </div>
+          )}
+          {tab === 'cancel' && (
+            <div className={styles.section}><CancellationPolicyEditor /></div>
           )}
         </div>
       </div>

@@ -143,7 +143,7 @@ export default function CourtManagement() {
           <div className={styles.fieldGroup}>
             <label className={styles.label}>Môn thể thao</label>
             <select className={styles.select} value={form.type} onChange={e => setForm(f => ({ ...f, type: e.target.value }))}>
-              {['football', 'badminton', 'tennis', 'basketball', 'volleyball', 'swimming', 'gym', 'yoga'].map(t => <option key={t} value={t}>{getSport(t)?.name || t}</option>)}
+              {['football', 'badminton', 'tennis', 'pickleball', 'basketball', 'volleyball', 'swimming', 'gym', 'yoga'].map(t => <option key={t} value={t}>{getSport(t)?.name || t}</option>)}
             </select>
           </div>
           <div className={styles.formRow}>

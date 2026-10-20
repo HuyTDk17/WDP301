@@ -5,6 +5,61 @@ Tài liệu này ghi lại toàn bộ thay đổi so với phiên bản gốc, k
 
 ---
 
+## Lọc sân theo bản đồ
+
+- **Trang tìm sân:** thêm chế độ xem **Bản đồ** (nút thứ 3 cạnh Lưới/Danh sách). Mỗi sân là một ghim giá (sân Premium viền vàng), bấm ghim xem nhanh rồi vào trang sân. Kéo/phóng to bản đồ sẽ hiện nút **"Tìm trong khu vực này"** để lọc theo khung nhìn. Mục **Vị trí** ở bộ lọc có **"Tìm sân gần tôi"** (1/3/5/10/20 km) và sắp xếp **"Gần tôi nhất"**; thẻ sân hiện khoảng cách. Vẫn kết hợp được với môn, giá, đánh giá…
+- **Chủ sân:** form đăng/sửa địa điểm có ô **chọn vị trí trên bản đồ** (bấm, kéo ghim, "Tìm theo địa chỉ", "Vị trí của tôi"). Vị trí không bắt buộc; sân chưa có vị trí vẫn hoạt động nhưng không hiện ở chế độ bản đồ. Trang chi tiết sân có link "Xem trên bản đồ".
+- **Backend:** `Venue.location {lat,lng}`; `GET /venues` nhận `swLat,swLng,neLat,neLng` (khung nhìn) hoặc `lat,lng,radiusKm` (gần tôi, trả `distanceKm`), `hasLocation=1`; `utils/geo.js`; tạo/sửa venue nhận `lat`,`lng` (kiểm tra nằm trong Việt Nam; gửi rỗng để xoá). Test `tests/venueMap.test.js`.
+- **Sửa lỗi:** form địa điểm trước đây gửi `street/district/city` rời trong khi backend đọc `address` nên địa chỉ có thể không được lưu; nay form gửi `address[...]` và backend cũng chấp nhận dạng rời.
+- Bản đồ dùng Leaflet (tải từ unpkg), nền OpenStreetMap, tìm địa chỉ bằng Nominatim — miễn phí, không cần API key. Nginx CSP đã cho phép các domain này.
+- Sửa ô "Hạn chủ sân phản hồi" ở Cài đặt admin: `step` 5 làm giá trị như 30 bị coi là không hợp lệ.
+
+---
+
+## Gói Premium (Venue Premium · Premium Player)
+
+- **Mua gói:** `/premium` (người chơi), `/owner/premium` (chủ sân). Tạo đơn mã `PRM…` + QR VietQR vào tài khoản nền tảng; xác nhận bằng webhook ngân hàng sẵn có (`POST /api/webhooks/bank`, tự khớp mã `PRM`, cộng dồn tiền về nhiều lần, bỏ qua giao dịch bắn lại) hoặc admin đối chiếu ở `/admin/premium`. Mua khi còn hạn thì cộng nối tiếp.
+- **Venue Premium (chủ sân, 149.000đ/30 ngày):** ưu tiên hiển thị ở danh sách và Sân nổi bật, huy hiệu, phí dịch vụ giảm 10% → 7% (chỉ áp khi thấp hơn mức chung), khiếu nại liên quan được xử lý trước.
+- **Premium Player (người chơi, 29.000đ/30 ngày):** miễn phí đổi lịch/chuyển sân (bồi thường chủ sân gốc vẫn giữ), giữ chỗ 20 phút thay vì 10, miễn phần phí dịch vụ cộng thêm vào giá (nền tảng chịu, chủ sân không bị tính thêm), huy hiệu, khiếu nại ưu tiên.
+- Giá, thời hạn, % ưu đãi, thời gian giữ chỗ chỉnh ở Cài đặt admin. Nhắc sắp hết hạn / đã hết hạn chạy ở tác vụ nền hằng giờ.
+- Thêm môn **Pickleball**. Backend: `models/PremiumOrder.js`, `services/premiumService.js`, `controllers/premiumController.js`, `routes/premiumRoutes.js`, `utils/premium.js`; test `tests/premium.test.js` (PR-01…20).
+
+---
+
+## Ghép bản bổ sung vào WDP301 (từ `code_bo_sung_tong_hop`)
+
+Các mục bên dưới được ghép từ bản bổ sung; **Gói Premium** và **lọc sân theo bản đồ** của WDP301 được giữ nguyên.
+- Pickleball được giữ trong danh mục môn mặc định (backend `utils/sportCategories.js`, frontend `utils/index.js`); danh mục đã nạp từ trước mà đã có sân Pickleball sẽ được tự bổ sung.
+- `StatusBadge` có thêm prop `labels` để trang Mạng lưới đổi nhãn "Chưa tham gia" mà không làm đổi nhãn "Chưa gửi" ở nơi khác.
+- Nối route còn thiếu: `/api/banners|news|policies|sports`, `/api/events`, `/api/players`, `/api/admin/{banners,news,policies,sport-categories,network,users/:id/role}`, `/api/owner/{events,network,cancellation-policy}`.
+
+---
+
+## Chủ sân xử lý yêu cầu đổi lịch (#33)
+
+- **Tab "Đổi lịch"** ở `/owner/transfers` (mở thẳng bằng `?tab=reschedule` từ thông báo): hiện yêu cầu đổi giờ/đổi sân tại địa điểm của chủ sân với "Lịch hiện tại → Lịch mới", phí đổi lịch, hạn phản hồi, nút **Chấp thuận / Từ chối** (kèm lý do). Đổi lịch **không còn lẫn** vào "Chuyển đến/Chuyển đi" (trước đây vì cùng một chủ sân nên hiện ở cả hai tab); số yêu cầu chờ duyệt đếm riêng (`pendingRescheduleCount`).
+- **Cài đặt duyệt đổi lịch riêng cho từng địa điểm** (`Venue.rescheduleRequiresApproval`, ở trang Địa điểm): *theo cài đặt chuyển sân* (mặc định, `null` — chủ sân đã bật duyệt thủ công vẫn giữ đúng hành vi cũ) / *luôn chờ tôi duyệt* / *tự chấp nhận ngay*. Quy tắc nằm ở `requiresOwnerApproval` (`utils/transferPolicy.js`); chỉ áp dụng cho T1/T2, các loại chuyển khác không đổi.
+- **Thông báo đúng lời lẽ** (`utils/transferMessages.js`, hàm thuần): xin duyệt ("Khách xin đổi lịch" nêu cả lịch cũ và mới), hoàn tất ("Đã đổi lịch thành công" / "Khách đã đổi lịch"), thất bại ("lịch đặt ban đầu VẪN CÒN HIỆU LỰC"). Chủ sân chỉ nhận **một** thông báo khi đổi lịch (trước đây nhận hai: "chuyển đi" và "chuyển đến"). Nội dung T3/T4 giữ nguyên. Trang kết quả của khách cũng dùng lời lẽ "đổi lịch".
+- **Sửa lỗi có sẵn:** `PATCH /owner/venues/:id/transfer-policy` trước đây đặt `transferRequiresApproval = false` nếu body không có trường đó; nay chỉ cập nhật trường được gửi.
+- **Hủy đặt** (nửa còn lại của #33): khách hủy được ngay theo chính sách hủy; chủ sân nhận thông báo, xử lý hoàn tiền ở `/owner/refunds` (đã có từ trước).
+- Test: `tests/rescheduleApproval.test.js` (RA-01…09), đã thêm vào `npm test`.
+- **#66 (OCR giấy phép kinh doanh) đã được nhóm quyết định không làm**: Admin tiếp tục xem giấy tờ và duyệt hồ sơ chủ sân thủ công.
+
+---
+
+## Chính sách hủy do chủ sân đặt (#58) · hạn mức tháng & chia phí chuyển sân (#61)
+
+- **Chính sách hủy riêng của chủ sân (#58):** tab "Chính sách hủy" ở Cài đặt chủ sân — tự đặt biểu hoàn tiền theo số giờ báo trước (tối đa 8 bậc, phải có bậc 0 giờ, báo càng sớm hoàn càng nhiều), có xem trước "khách sẽ thấy" và kiểm tra tức thời.
+  **Sàn bảo vệ khách:** Admin đặt mức hoàn TỐI THIỂU (`cancellationFloorTiers`, mặc định ≥100% khi báo trước ≥48h, ≥50% khi ≥24h) — ở mọi thời điểm biểu của chủ sân phải ≥ sàn (được tử tế hơn, không được khắt khe hơn). Admin có công tắc cho phép/không cho phép chủ sân tự đặt (`ownerCancellationPolicyAllowed`).
+  Biểu riêng được **chụp vào từng lượt đặt lúc tạo đơn** (`Booking.cancellationTiers`) nên đổi chính sách sau đó không ảnh hưởng khách đã đặt; chủ sân chưa cấu hình/đang tắt thì **hành vi cũ giữ nguyên** (dùng biểu chung hiện hành của nền tảng lúc hủy). Đơn tạo qua chuyển sân dùng chính sách của chủ sân ĐÍCH. Admin nâng sàn sau đó → biểu cũ không đạt tự quay về biểu chung và chủ sân thấy cảnh báo.
+  Trang địa điểm hiển thị mục "Chính sách hủy sân" cho khách (`GET /api/venues/:id` trả thêm `cancellationPolicy`). Xem trước hủy (`/bookings/:id/cancel-preview`) trả thêm `policySource`.
+- **Hạn mức theo tháng (#61):** `maxTransfersPerMonth` (mỗi khách, tính đổi lịch + chuyển sân, không tính sang tên, theo tháng dương lịch giờ Việt Nam; **0 = không giới hạn, mặc định**). Kiểm tra ở bước báo giá (trước khi giữ chỗ) và báo sớm ở bước kiểm tra điều kiện; trang chuyển sân hiện "đã dùng x/y lượt".
+- **Chia phí chuyển sân (#61):** `transferFeeOriginSharePct` — chỉ khi chuyển sang CHỦ SÂN KHÁC (T4), chủ sân gốc nhận thêm tỉ lệ này của phí chuyển (ngoài khoản bồi thường theo bậc), phần còn lại thuộc chủ sân đích như hiện nay (**0 = giữ nguyên, mặc định**). Tỉ lệ được chụp lúc báo giá (`TransferRequest.feeOriginSharePct`); ghi `transferFeeShareIn` (đơn gốc) / `transferFeeShareOut` (đơn mới) và `settlementMath` cộng/trừ tương ứng — **tổng quyền lợi của hai chủ sân không đổi**, chỉ chuyển giữa họ. Số chia làm tròn xuống, không vượt phí.
+- Cài đặt Admin (**Cài đặt → Chuyển sân / Huỷ đơn**): thêm hạn mức tháng, tỉ lệ chia phí, công tắc + bảng sàn hoàn tiền.
+- Backend: `utils/cancellationPolicy.js`, `utils/transferLimits.js`, `utils/transferSplit.js`, `services/cancellationPolicyService.js`, `controllers/cancellationPolicyController.js` (`GET|PUT /api/owner/cancellation-policy`). Test: `tests/cancellationPolicy.test.js` (CP-01…09, gồm đối chiếu frontend/backend trên 3000 biểu ngẫu nhiên), `tests/transferLimitsAndSplit.test.js` (LS-01…07, gồm kiểm tra bảo toàn tiền); đã thêm vào `npm test`.
+
+---
+
 ## Mạng lưới chuyển sân (Admin duyệt chủ sân)
 
 - **Chủ sân:** thẻ "Mạng lưới chuyển sân" ở đầu trang `/owner/transfers` hiện trạng thái (chưa tham gia / chờ duyệt / thành viên / bị từ chối / đã gỡ) và nút **xin tham gia** (`GET /api/owner/network`, `POST /api/owner/network/request`). Admin được báo khi có yêu cầu mới; hai lần bấm cùng lúc chỉ tạo một yêu cầu.
@@ -52,6 +107,8 @@ Tài liệu này ghi lại toàn bộ thay đổi so với phiên bản gốc, k
 - **Danh mục môn (#17):** `/admin/sport-categories`; công khai `GET /api/sports`. Tự nạp 8 môn mặc định khi bảng còn trống. Mã môn cố định; xóa bị chặn khi còn địa điểm/sân dùng (dùng "Tắt"); môn đã tắt không nhận sân mới nhưng sân cũ vẫn sửa được.
   `courtController` kiểm tra môn theo danh mục động thay cho danh sách cứng. Frontend nạp danh mục trong `main.jsx` (tối đa 1,2 giây, lỗi thì dùng mặc định); `SPORTS` chỉ gồm môn đang bật, `getSport()` tra cả môn đã tắt.
 - Test: `tests/adminContent.test.js` (AC-01…18); đã thêm vào `npm test`.
+
+---
 
 ---
 

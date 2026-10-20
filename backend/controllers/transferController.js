@@ -27,6 +27,12 @@ exports.getEligibility = asyncHandler(async (req, res) => {
     const result = await transferService.checkEligibility(booking, settings);
     // Thông tin mạng lưới để giao diện báo sớm: chủ sân hiện tại có là thành viên không (chỉ ảnh hưởng chuyển sang chủ sân khác)
     const fromVenue = await Venue.findById(booking.venueId).select('ownerId');
+    // Hạn mức theo tháng: hết lượt thì báo ngay ở bước kiểm tra để khách không mất công tìm sân
+    const monthly = await require('../utils/transferLimits').monthlyStatus(booking.customerId, settings);
+    if (monthly.reached && result.eligible) {
+        result.eligible = false;
+        result.reasons = [`Bạn đã dùng hết ${monthly.limit} lượt đổi lịch/chuyển sân trong tháng này`, ...result.reasons];
+    }
     const network = {
         required: !!settings.transferNetworkRequired,
         fromOwnerMember: await require('../utils/transferNetwork').ownerInNetwork(fromVenue?.ownerId, settings),
@@ -35,6 +41,7 @@ exports.getEligibility = asyncHandler(async (req, res) => {
     res.json({
         ...result,
         network,
+        monthly,
         booking: {
             _id: booking._id, venueId: booking.venueId, courtId: booking.courtId,
             venueName: booking.venueName, courtName: booking.courtName,
@@ -235,12 +242,18 @@ exports.getOwnerTransfers = asyncHandler(async (req, res) => {
         .populate('customerId', 'name phone avatar')
         .sort({ createdAt: -1 }).limit(100);
 
-    // Chia sẵn hai nhóm để giao diện không phải tự lọc
+    // Chia sẵn các nhóm để giao diện không phải tự lọc. ĐỔI LỊCH (T1/T2) tách thành nhóm riêng — không còn lẫn
+    // vào "chuyển đến/chuyển đi" (vì đổi lịch luôn cùng một chủ sân nên trước đây hiện ở cả hai tab).
+    const { isReschedule } = require('../utils/transferMessages');
+    const mine = (id) => String(id) === String(me);
+    const waiting = (t) => mine(t.toOwnerId) && t.status === 'awaiting_owner_approval';
     res.json({
         transfers,
-        incoming: transfers.filter((t) => String(t.toOwnerId) === String(me)),
-        outgoing: transfers.filter((t) => String(t.fromOwnerId) === String(me)),
-        pendingCount: transfers.filter((t) => String(t.toOwnerId) === String(me) && t.status === 'awaiting_owner_approval').length,
+        incoming: transfers.filter((t) => mine(t.toOwnerId) && !isReschedule(t.type)),
+        outgoing: transfers.filter((t) => mine(t.fromOwnerId) && !isReschedule(t.type)),
+        reschedules: transfers.filter((t) => mine(t.toOwnerId) && isReschedule(t.type)),
+        pendingCount: transfers.filter((t) => waiting(t) && !isReschedule(t.type)).length,
+        pendingRescheduleCount: transfers.filter((t) => waiting(t) && isReschedule(t.type)).length,
     });
 });
 
@@ -273,7 +286,8 @@ exports.reject = asyncHandler(async (req, res) => {
     if (transfer.status !== 'awaiting_owner_approval') {
         return res.status(409).json({ message: 'Yêu cầu này không còn chờ duyệt' });
     }
-    const reason = req.body.reason?.trim() || 'Chủ sân từ chối yêu cầu chuyển đến';
+    const reason = req.body.reason?.trim()
+        || (require('../utils/transferMessages').isReschedule(transfer.type) ? 'Chủ sân từ chối yêu cầu đổi lịch' : 'Chủ sân từ chối yêu cầu chuyển đến');
     await transferService.abort(transfer, 'rejected', reason);
     res.json({ transfer });
 });
@@ -285,7 +299,14 @@ exports.setVenueTransferPolicy = asyncHandler(async (req, res) => {
     if (String(venue.ownerId) !== String(req.user._id)) {
         return res.status(403).json({ message: 'Bạn không có quyền với địa điểm này' });
     }
-    venue.transferRequiresApproval = !!req.body.transferRequiresApproval;
+    // Chỉ cập nhật trường được gửi lên (trước đây thiếu trường sẽ bị đặt về false)
+    if (req.body.transferRequiresApproval !== undefined) venue.transferRequiresApproval = !!req.body.transferRequiresApproval;
+    if (req.body.rescheduleRequiresApproval !== undefined) {
+        const v = req.body.rescheduleRequiresApproval;
+        // true = luôn duyệt · false = tự chấp nhận · null = theo cài đặt "chuyển đến"
+        if (v !== null && typeof v !== 'boolean') return res.status(400).json({ message: 'Giá trị duyệt đổi lịch không hợp lệ' });
+        venue.rescheduleRequiresApproval = v;
+    }
     await venue.save();
     res.json({ venue });
 });

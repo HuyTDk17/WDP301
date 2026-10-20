@@ -270,6 +270,13 @@ export default function TransferBooking({ mode = 'transfer' }) {
                 compTiers={eligibility.feePolicy?.compensationTiers || []}
               />
 
+              {eligibility.monthly?.limit > 0 && (
+                <div className={styles.noteBox}>
+                  <Info size={15} />
+                  <p>Bạn đã dùng <strong>{eligibility.monthly.used}/{eligibility.monthly.limit}</strong> lượt đổi lịch/chuyển sân trong tháng này. Hạn mức mở lại từ đầu tháng sau.</p>
+                </div>
+              )}
+
               {!isReschedule && eligibility.network?.required && (
                 <div className={styles.noteBox}>
                   <Info size={15} />

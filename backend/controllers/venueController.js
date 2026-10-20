@@ -3,10 +3,42 @@ const Court = require('../models/Court');
 const Review = require('../models/Review');
 const Booking = require('../models/Booking');
 const Notification = require('../models/Notification');
+const User = require('../models/User');
+const premium = require('../utils/premium');
 const asyncHandler = require('../utils/asyncHandler');
 const escapeRegex = require('../utils/escapeRegex');
 const { fileUrl, removeStoredFile } = require('../utils/uploads');
+const geo = require('../utils/geo');
 const settlementService = require('../services/settlementService');
+
+/** Thêm cờ `isPremium` (chủ sân đang có gói Venue Premium còn hạn) vào mỗi địa điểm trong pipeline. */
+const premiumStages = () => [
+    {
+        $lookup: {
+            from: 'users',
+            let: { ownerId: '$ownerId' },
+            pipeline: [{ $match: { $expr: { $eq: ['$_id', '$$ownerId'] } } }, { $project: { premium: 1 } }],
+            as: '_owner',
+        },
+    },
+    {
+        $addFields: {
+            isPremium: {
+                $and: [
+                    { $eq: [{ $arrayElemAt: ['$_owner.premium.plan', 0] }, 'venue_premium'] },
+                    { $gt: [{ $arrayElemAt: ['$_owner.premium.until', 0] }, new Date()] },
+                ],
+            },
+        },
+    },
+    { $project: { _owner: 0 } },
+];
+
+/** Form cũ gửi street/district/city rời; gộp lại thành `address` để không bị bỏ sót. */
+const withFlatAddress = (body) => {
+    if (body.address !== undefined || (body.street === undefined && body.district === undefined && body.city === undefined)) return body;
+    return { ...body, address: { street: body.street || '', district: body.district || '', city: body.city || '' } };
+};
 
 // ============================================================
 // API CÔNG KHAI
@@ -27,11 +59,19 @@ exports.getVenues = asyncHandler(async (req, res) => {
     if (search) matchStage.name = { $regex: search, $options: 'i' };
     if (minRating) matchStage.rating = { $gte: Number(minRating) };
 
+    // Lọc theo bản đồ: khung nhìn (bounds) hoặc "gần tôi" (near + bán kính)
+    const bounds = geo.parseBounds(req.query);
+    const near = bounds ? null : geo.parseNear(req.query);
+    // Chế độ bản đồ chỉ cần các sân đã có vị trí
+    if (req.query.hasLocation && !bounds && !near) matchStage['location.lat'] = { $exists: true, $type: 'number' };
+
     const sortStage =
+        sort === 'distance' && near ? { distanceKm: 1 } :
         sort === 'rating' ? { rating: -1 } :
         sort === 'price_asc' ? { minPricePerHour: 1 } :
         sort === 'price_desc' ? { minPricePerHour: -1 } :
-        { createdAt: -1 };
+        // Mặc định: địa điểm của chủ sân Premium lên đầu, còn lại mới nhất trước
+        { isPremium: -1, createdAt: -1 };
 
     const priceMatch = {};
     if (minPrice) priceMatch.$gte = Number(minPrice);
@@ -39,6 +79,7 @@ exports.getVenues = asyncHandler(async (req, res) => {
 
     const pipeline = [
         { $match: matchStage },
+        ...geo.geoStages({ bounds, near }),
         {
             $lookup: {
                 from: 'courts',
@@ -49,13 +90,16 @@ exports.getVenues = asyncHandler(async (req, res) => {
         },
         { $addFields: { minPricePerHour: { $min: '$activeCourts.pricePerHour' } } },
         { $project: { activeCourts: 0 } },
+        ...premiumStages(),
     ];
 
     if (Object.keys(priceMatch).length > 0) pipeline.push({ $match: { minPricePerHour: priceMatch } });
     pipeline.push({ $sort: sortStage });
 
     const countPipeline = [...pipeline, { $count: 'total' }];
-    const dataPipeline = [...pipeline, { $skip: (Number(page) - 1) * Number(limit) }, { $limit: Number(limit) }];
+    const pageNum = Math.max(1, Number(page) || 1);
+    const limitNum = Math.min(100, Math.max(1, Number(limit) || 12));
+    const dataPipeline = [...pipeline, { $skip: (pageNum - 1) * limitNum }, { $limit: limitNum }];
 
     const [venues, countResult] = await Promise.all([Venue.aggregate(dataPipeline), Venue.aggregate(countPipeline)]);
     res.json({ venues, total: countResult[0]?.total || 0 });
@@ -76,7 +120,8 @@ exports.getFeaturedVenues = asyncHandler(async (req, res) => {
         },
         { $addFields: { minPricePerHour: { $min: '$activeCourts.pricePerHour' } } },
         { $project: { activeCourts: 0 } },
-        { $sort: { rating: -1 } },
+        ...premiumStages(),
+        { $sort: { isPremium: -1, rating: -1 } },
         { $limit: 6 },
     ]);
     res.json({ venues });
@@ -100,7 +145,10 @@ exports.getVenueById = asyncHandler(async (req, res) => {
     }
 
     const courts = await Court.find({ venueId: venue._id });
-    res.json({ venue: { ...venue.toObject(), courts } });
+    const owner = await User.findById(venue.ownerId).select('premium');
+    // Chính sách hủy đang áp dụng cho lượt đặt MỚI tại địa điểm này (của chủ sân, hoặc biểu chung của nền tảng)
+    const cancellationPolicy = await require('../services/cancellationPolicyService').publicPolicyFor(venue.ownerId);
+    res.json({ venue: { ...venue.toObject(), courts, isPremium: premium.hasPlan(owner, 'venue_premium'), cancellationPolicy } });
 });
 
 // @route   GET /api/venues/:id/slots?courtId=&date=
@@ -238,15 +286,20 @@ exports.createVenue = asyncHandler(async (req, res) => {
     // trường cho phép, giống hệt cách updateVenue đang làm — KHÔNG spread
     // thẳng req.body.
     const EDITABLE = ['name', 'description', 'sports', 'amenities', 'rules', 'openHours', 'address', 'transferRequiresApproval'];
+    const body = withFlatAddress(req.body);
     const payload = {};
     EDITABLE.forEach((field) => {
-        if (req.body[field] === undefined) return;
+        if (body[field] === undefined) return;
         if (field === 'sports' || field === 'amenities') {
-            payload[field] = Array.isArray(req.body[field]) ? req.body[field] : [req.body[field]].filter(Boolean);
+            payload[field] = Array.isArray(body[field]) ? body[field] : [body[field]].filter(Boolean);
         } else {
-            payload[field] = req.body[field];
+            payload[field] = body[field];
         }
     });
+
+    const loc = geo.parseLocationBody(req.body);
+    if (loc.error) return res.status(400).json({ message: loc.error });
+    if (loc.location) payload.location = loc.location;
 
     // Chủ sân đã được admin xét duyệt ở bước đăng ký làm chủ sân (owner application),
     // nên địa điểm họ tạo ra được duyệt tự động, không cần thêm 1 vòng duyệt riêng nữa.
@@ -266,14 +319,19 @@ exports.updateVenue = asyncHandler(async (req, res) => {
     // { status: 'approved', rating: 5, ownerId: '...' } là ghi đè được hết.
     // Giờ chỉ nhận đúng các trường được phép sửa.
     const EDITABLE = ['name', 'description', 'sports', 'amenities', 'rules', 'openHours', 'address', 'transferRequiresApproval'];
+    const body = withFlatAddress(req.body);
     EDITABLE.forEach((field) => {
-        if (req.body[field] === undefined) return;
+        if (body[field] === undefined) return;
         if (field === 'sports' || field === 'amenities') {
-            venue[field] = Array.isArray(req.body[field]) ? req.body[field] : [req.body[field]].filter(Boolean);
+            venue[field] = Array.isArray(body[field]) ? body[field] : [body[field]].filter(Boolean);
         } else {
-            venue[field] = req.body[field];
+            venue[field] = body[field];
         }
     });
+    const loc = geo.parseLocationBody(req.body);
+    if (loc.error) return res.status(400).json({ message: loc.error });
+    if (loc.location) venue.location = loc.location;
+    else if (loc.clear) venue.location = undefined;
     const oldImages = venue.images || [];
     if (newImages) venue.images = newImages;
     await venue.save();

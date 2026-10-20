@@ -39,8 +39,12 @@ export const transferService = {
   getOwnerTransfers: (params = {}) => api.get('/owner/transfers', { params }),
   approve: (id) => api.post(`/owner/transfers/${id}/approve`),
   reject: (id, reason) => api.post(`/owner/transfers/${id}/reject`, { reason }),
-  setVenuePolicy: (venueId, transferRequiresApproval) =>
-    api.patch(`/owner/venues/${venueId}/transfer-policy`, { transferRequiresApproval }),
+  // value: boolean (tương thích cũ — duyệt chuyển đến) hoặc object { transferRequiresApproval?, rescheduleRequiresApproval? }
+  // rescheduleRequiresApproval: true = luôn duyệt đổi lịch · false = tự chấp nhận · null = theo cài đặt "chuyển đến"
+  setVenuePolicy: (venueId, value) =>
+    api.patch(`/owner/venues/${venueId}/transfer-policy`, typeof value === 'object' && value !== null ? value : { transferRequiresApproval: value }),
+  setRescheduleApproval: (venueId, rescheduleRequiresApproval) =>
+    api.patch(`/owner/venues/${venueId}/transfer-policy`, { rescheduleRequiresApproval }),
 
 }
 

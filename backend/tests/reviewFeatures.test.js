@@ -53,6 +53,7 @@ fake('models/Venue.js', {
     findOne: async (f) => state.venues.find((v) => match(v, f)) || null,
     findByIdAndUpdate: async (id, upd) => { state.venueUpdates.push({ id, ...upd }); },
 });
+fake('models/User.js', { findById: () => ({ select: async () => null }) });
 fake('models/Court.js', {});
 fake('models/Booking.js', {});
 fake('models/Notification.js', { create: async (n) => { state.notifications.push(n); return Promise.resolve(n); } });

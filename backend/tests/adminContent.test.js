@@ -220,7 +220,7 @@ test('AC-09 · chính sách: mã hợp lệ, không trùng, cần ít nhất m�
 });
 
 // ── Danh mục môn ──
-test('AC-10 · danh mục môn tự nạp 8 môn mặc định khi trống (một lần), công khai trả đủ kèm isActive', async () => {
+test('AC-10 · danh mục môn tự nạp các môn mặc định (gồm Pickleball) khi trống (một lần), công khai trả đủ kèm isActive', async () => {
     reset();
     const r = await call(sports.getPublicSports, {});
     assert.strictEqual(r.body.sports.length, DEFAULTS.length);
@@ -230,17 +230,17 @@ test('AC-10 · danh mục môn tự nạp 8 môn mặc định khi trống (mộ
 });
 test('AC-11 · tạo môn: mã/màu/tên hợp lệ, không trùng mã; sửa không đổi mã', async () => {
     reset();
-    const ok = { key: 'pickleball', name: 'Pickleball', icon: '🏓', color: '#12ab34' };
+    const ok = { key: 'billiards', name: 'Billiards', icon: '🎱', color: '#12ab34' };
     assert.strictEqual((await call(sports.createCategory, { body: { ...ok, key: 'Bad Key' } })).code, 400);
     assert.strictEqual((await call(sports.createCategory, { body: { ...ok, color: 'red' } })).code, 400);
     assert.strictEqual((await call(sports.createCategory, { body: { ...ok, name: 'x' } })).code, 400);
     const c = (await call(sports.createCategory, { body: ok })).body.category;
     assert.strictEqual(c.order, DEFAULTS.length);
     assert.strictEqual((await call(sports.createCategory, { body: ok })).code, 409);
-    await call(sports.updateCategory, { params: { id: c._id }, body: { key: 'doi-ma', name: 'Pickleball VN', color: '#ff0000' } });
+    await call(sports.updateCategory, { params: { id: c._id }, body: { key: 'doi-ma', name: 'Billiards VN', color: '#ff0000' } });
     const doc = SportCategory.docs.find((d) => d._id === c._id);
-    assert.strictEqual(doc.key, 'pickleball');
-    assert.strictEqual(doc.name, 'Pickleball VN');
+    assert.strictEqual(doc.key, 'billiards');
+    assert.strictEqual(doc.name, 'Billiards VN');
     assert.strictEqual(doc.color, '#FF0000');
 });
 test('AC-12 · không xóa môn đang được địa điểm/sân dùng (409) — xóa được khi không dùng', async () => {
