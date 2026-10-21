@@ -21,6 +21,20 @@ function formatDayLabel(d) { return d.toLocaleDateString('vi-VN', { weekday: 'sh
 
 const HOURS = Array.from({ length: 16 }, (_, i) => i + 6) // 06:00 → 21:00
 
+// Backend trả về booking với `customerId` (đã populate, hoặc null với đơn thủ công/khách vãng lai
+// — khi đó tên/SĐT nằm ở guestName/guestPhone). Lịch và modal lại đọc `booking.customer`,
+// nên phải chuẩn hóa ở đây, nếu không `booking.customer.name` sẽ ném TypeError và sập cả trang.
+function normalizeBooking(b) {
+  const populated = b.customerId && typeof b.customerId === 'object' ? b.customerId : null
+  return {
+    ...b,
+    customer: {
+      name: populated?.name || b.guestName || 'Khách hàng',
+      phone: populated?.phone || b.guestPhone || '',
+    },
+  }
+}
+
 export default function BookingCalendar() {
   const { toast } = useToast()
   const [loading, setLoading] = useState(true)
@@ -45,7 +59,7 @@ export default function BookingCalendar() {
       const v = venuesRes.venues || []
       setVenues(v)
       setCourts(courtsRes.courts || [])
-      setBookings(bookingsRes.bookings || [])
+      setBookings((bookingsRes.bookings || []).map(normalizeBooking))
       if (v.length > 0 && !venueId) setVenueId(v[0]._id)
     }).catch(() => toast.error('Không thể tải dữ liệu lịch đặt sân'))
       .finally(() => setLoading(false))
@@ -222,7 +236,7 @@ export default function BookingCalendar() {
       )}
 
       <BookingQuickModal isOpen={!!quickModal} onClose={() => setQuickModal(null)} mode={quickModal?.mode} booking={quickModal?.booking} slotInfo={quickModal?.slotInfo} onConfirmStatus={handleStatusChange} onCreateBooking={handleCreateBooking} />
-      <ConfirmModal isOpen={!!cancelTarget} onClose={() => setCancelTarget(null)} onConfirm={confirmCancel} title="Hủy lượt đặt sân" message={`Hủy lượt đặt sân của ${cancelTarget?.customerId?.name || 'khách hàng'}?`} confirmLabel="Hủy lượt đặt" icon={<XCircle size={28} />} />
+      <ConfirmModal isOpen={!!cancelTarget} onClose={() => setCancelTarget(null)} onConfirm={confirmCancel} title="Hủy lượt đặt sân" message={`Hủy lượt đặt sân của ${cancelTarget?.customer?.name || 'khách hàng'}?`} confirmLabel="Hủy lượt đặt" icon={<XCircle size={28} />} />
     </div>
   )
 }

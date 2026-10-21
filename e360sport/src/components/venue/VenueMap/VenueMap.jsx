@@ -57,7 +57,7 @@ export default function VenueMap({ venues, userPoint, autoFit, onSearchArea }) {
       const price = v.minPricePerHour ?? 0
       const icon = L.divIcon({
         className: styles.pinWrap,
-        html: `<span class="${styles.pin} ${v.isPremium ? styles.pinPremium : ''}">${formatPinPrice(price)}</span>`,
+        html: `<span class="${styles.pin}">${formatPinPrice(price)}</span>`,
         iconSize: null,
         iconAnchor: [28, 30],
         popupAnchor: [0, -28],
@@ -70,7 +70,7 @@ export default function VenueMap({ venues, userPoint, autoFit, onSearchArea }) {
           <span class="${styles.popupMeta}">${esc(v.address?.district)}, ${esc(v.address?.city)}${typeof v.distanceKm === 'number' ? ` · ${v.distanceKm.toFixed(1)} km` : ''}</span>
           <span class="${styles.popupMeta}">★ ${(v.rating || 0).toFixed(1)} · từ ${esc(formatCurrency(price))}/giờ</span>
         </a>`
-      L.marker(ll, { icon, riseOnHover: true, zIndexOffset: v.isPremium ? 500 : 0 }).bindPopup(popup, { minWidth: 190 }).addTo(layerRef.current)
+      L.marker(ll, { icon, riseOnHover: true }).bindPopup(popup, { minWidth: 190 }).addTo(layerRef.current)
     })
     if (autoFit && pts.length) {
       programmatic.current = 1

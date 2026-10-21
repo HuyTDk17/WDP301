@@ -3,36 +3,11 @@ const Court = require('../models/Court');
 const Review = require('../models/Review');
 const Booking = require('../models/Booking');
 const Notification = require('../models/Notification');
-const User = require('../models/User');
-const premium = require('../utils/premium');
 const asyncHandler = require('../utils/asyncHandler');
 const escapeRegex = require('../utils/escapeRegex');
 const { fileUrl, removeStoredFile } = require('../utils/uploads');
 const geo = require('../utils/geo');
 const settlementService = require('../services/settlementService');
-
-/** Thêm cờ `isPremium` (chủ sân đang có gói Venue Premium còn hạn) vào mỗi địa điểm trong pipeline. */
-const premiumStages = () => [
-    {
-        $lookup: {
-            from: 'users',
-            let: { ownerId: '$ownerId' },
-            pipeline: [{ $match: { $expr: { $eq: ['$_id', '$$ownerId'] } } }, { $project: { premium: 1 } }],
-            as: '_owner',
-        },
-    },
-    {
-        $addFields: {
-            isPremium: {
-                $and: [
-                    { $eq: [{ $arrayElemAt: ['$_owner.premium.plan', 0] }, 'venue_premium'] },
-                    { $gt: [{ $arrayElemAt: ['$_owner.premium.until', 0] }, new Date()] },
-                ],
-            },
-        },
-    },
-    { $project: { _owner: 0 } },
-];
 
 /** Form cũ gửi street/district/city rời; gộp lại thành `address` để không bị bỏ sót. */
 const withFlatAddress = (body) => {
@@ -70,8 +45,7 @@ exports.getVenues = asyncHandler(async (req, res) => {
         sort === 'rating' ? { rating: -1 } :
         sort === 'price_asc' ? { minPricePerHour: 1 } :
         sort === 'price_desc' ? { minPricePerHour: -1 } :
-        // Mặc định: địa điểm của chủ sân Premium lên đầu, còn lại mới nhất trước
-        { isPremium: -1, createdAt: -1 };
+        { createdAt: -1 };
 
     const priceMatch = {};
     if (minPrice) priceMatch.$gte = Number(minPrice);
@@ -90,7 +64,6 @@ exports.getVenues = asyncHandler(async (req, res) => {
         },
         { $addFields: { minPricePerHour: { $min: '$activeCourts.pricePerHour' } } },
         { $project: { activeCourts: 0 } },
-        ...premiumStages(),
     ];
 
     if (Object.keys(priceMatch).length > 0) pipeline.push({ $match: { minPricePerHour: priceMatch } });
@@ -120,8 +93,7 @@ exports.getFeaturedVenues = asyncHandler(async (req, res) => {
         },
         { $addFields: { minPricePerHour: { $min: '$activeCourts.pricePerHour' } } },
         { $project: { activeCourts: 0 } },
-        ...premiumStages(),
-        { $sort: { isPremium: -1, rating: -1 } },
+        { $sort: { rating: -1 } },
         { $limit: 6 },
     ]);
     res.json({ venues });
@@ -145,10 +117,9 @@ exports.getVenueById = asyncHandler(async (req, res) => {
     }
 
     const courts = await Court.find({ venueId: venue._id });
-    const owner = await User.findById(venue.ownerId).select('premium');
     // Chính sách hủy đang áp dụng cho lượt đặt MỚI tại địa điểm này (của chủ sân, hoặc biểu chung của nền tảng)
     const cancellationPolicy = await require('../services/cancellationPolicyService').publicPolicyFor(venue.ownerId);
-    res.json({ venue: { ...venue.toObject(), courts, isPremium: premium.hasPlan(owner, 'venue_premium'), cancellationPolicy } });
+    res.json({ venue: { ...venue.toObject(), courts, cancellationPolicy } });
 });
 
 // @route   GET /api/venues/:id/slots?courtId=&date=

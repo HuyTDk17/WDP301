@@ -1,4 +1,3 @@
-import PremiumBadge from '@/components/common/PremiumBadge/PremiumBadge'
 import { useState, useEffect, useCallback } from 'react'
 import { useParams, Link, useNavigate, useSearchParams } from 'react-router-dom'
 import { ChevronRight, Heart, MapPin, LayoutGrid, Clock, Check, ChevronUp, ChevronDown, CreditCard, Frown, Calendar, Pencil, Trash2, CornerDownRight } from 'lucide-react'
@@ -227,7 +226,7 @@ export default function VenueDetail() {
           <div className={styles.header}>
             <div className={styles.headerLeft}>
               {sport && <Badge variant="primary" size="lg">{sport.icon} {sport.name}</Badge>}
-              <h1 className={styles.title}>{venue.name} {venue.isPremium && <PremiumBadge size="md" />}</h1>
+              <h1 className={styles.title}>{venue.name}</h1>
               <div className={styles.meta}>
                 <Rating value={venue.rating || 0} size="md" count={venue.reviewCount || 0} />
                 <span className={styles.metaDot}>·</span>

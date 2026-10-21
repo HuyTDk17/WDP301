@@ -68,8 +68,6 @@ import OwnerRefundRequests from '@/pages/owner/RefundRequests/RefundRequests'
 import AdminSettlements from '@/pages/admin/Settlements/Settlements'
 import RevenueReports from '@/pages/admin/RevenueReports/RevenueReports'
 import AdminSettings from '@/pages/admin/AdminSettings/AdminSettings'
-import PremiumPage from '@/pages/customer/Premium/Premium'
-import PremiumManagement from '@/pages/admin/PremiumManagement/PremiumManagement'
 
 import Forbidden from '@/pages/error/Forbidden/Forbidden'
 import NotFound from '@/pages/error/NotFound/NotFound'
@@ -128,7 +126,6 @@ export default function AppRoutes() {
         <Route path="/players/mine" element={<ProtectedRoute roles={['customer']}><MyPlayers /></ProtectedRoute>} />
         <Route path="/complaints" element={<ProtectedRoute roles={['customer']}><Complaints /></ProtectedRoute>} />
         <Route path="/favorites" element={<ProtectedRoute roles={['customer']}><FavoriteVenues /></ProtectedRoute>} />
-        <Route path="/premium" element={<PremiumPage />} />
         <Route path="/profile" element={<ProtectedRoute><Profile /></ProtectedRoute>} />
         <Route path="/notifications" element={<ProtectedRoute><Notifications /></ProtectedRoute>} />
         <Route path="/owner-application" element={<ProtectedRoute roles={['customer', 'owner']}><OwnerApplication /></ProtectedRoute>} />
@@ -159,7 +156,6 @@ export default function AppRoutes() {
         <Route path="reviews" element={<OwnerReviews />} />
         <Route path="events" element={<OwnerEvents />} />
         <Route path="revenue" element={<Revenue />} />
-        <Route path="premium" element={<PremiumPage embedded />} />
         <Route path="notifications" element={<Notifications />} />
         <Route path="settings" element={<OwnerSettings />} />
       </Route>
@@ -181,7 +177,6 @@ export default function AppRoutes() {
         <Route path="commissions" element={<CommissionReport />} />
         <Route path="settlements" element={<AdminSettlements />} />
         <Route path="reports" element={<RevenueReports />} />
-        <Route path="premium" element={<PremiumManagement />} />
         <Route path="notifications" element={<Notifications />} />
         <Route path="settings" element={<AdminSettings />} />
       </Route>

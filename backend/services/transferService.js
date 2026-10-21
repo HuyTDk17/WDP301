@@ -3,7 +3,6 @@ const Venue = require('../models/Venue');
 const Court = require('../models/Court');
 const Hold = require('../models/Hold');
 const User = require('../models/User');
-const premium = require('../utils/premium');
 const Payment = require('../models/Payment');
 const Notification = require('../models/Notification');
 const TransferRequest = require('../models/TransferRequest');
@@ -138,20 +137,12 @@ async function createQuote({ booking, target, user }) {
     if (networkBlock) fail(403, networkBlock);
 
     // --- Tính giá đơn mới (luôn tính lại ở máy chủ, không tin client) ---
-    const cfg = await getCommissionConfig();
-    const destOwner = await User.findById(toVenue.ownerId).select('premium');
-    const isPremiumPlayer = premium.hasPlan(user, 'player_premium');
-    const newAmount = calculateAmount(toCourt.pricePerHour, toStartTime, toEndTime);
-    // Giống lúc đặt sân: chủ sân đích Premium có phí ưu đãi, người chơi Premium được miễn phí dịch vụ cộng thêm
-    const priced = premium.priceFee({
-        amount: newAmount, ratePct: cfg.ratePct, customerSharePct: cfg.customerSharePct,
-        owner: destOwner, customer: user, settings,
-    });
-    const { ratePct } = priced;
+    const { ratePct, customerSharePct } = await getCommissionConfig();
     const rate = ratePct / 100;
+    const newAmount = calculateAmount(toCourt.pricePerHour, toStartTime, toEndTime);
     // Hoa hồng đơn mới chia giữa khách và chủ sân đích theo cấu hình hiện hành.
-    const newFee = priced.fee;
-    const newServiceFee = priced.serviceFee;
+    const newFee = splitCommission({ amount: newAmount, ratePct, customerSharePct });
+    const newServiceFee = newFee.serviceFee;
 
     // BR-TR-11: mã khuyến mãi KHÔNG tự động theo sang đơn mới. Chỉ áp lại nếu
     // vẫn còn hiệu lực VÀ đơn mới vẫn đủ điều kiện — tránh mã "đơn tối thiểu
@@ -164,8 +155,6 @@ async function createQuote({ booking, target, user }) {
 
     const L = leadTimeHours(booking.date, booking.startTime);
     const policy = buildPolicy(settings, type, L);
-    // Người chơi Premium: miễn phí chuyển sân/đổi lịch (nền tảng chịu). Bồi thường cho chủ sân gốc vẫn giữ nguyên.
-    if (isPremiumPlayer) { policy.feeRate = 0; policy.fixedFeeT5 = 0; }
     const quote = quoteTransfer({
         oldAmount: booking.amount,
         oldServiceFee: booking.serviceFee,

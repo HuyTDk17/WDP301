@@ -129,7 +129,6 @@ const refundService = require('../services/refundService');
 // paymentController kéo theo nhiều thứ — chỉ cần 3 hàm hoàn tiền, nên giả các phụ thuộc nặng
 fake('controllers/promotionController.js', { validateAndCalculateDiscount: async () => ({ valid: false }) });
 fake('services/transferService.js', {});
-fake('services/premiumService.js', { autoConfirmFromBank: async () => ({ status: 'no_match' }) });
 fake('models/TransferRequest.js', {});
 fake('models/Hold.js', {});
 fake('utils/slotLock.js', { acquire: async () => ({}), release: async () => {} });

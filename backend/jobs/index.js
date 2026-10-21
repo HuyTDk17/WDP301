@@ -146,7 +146,6 @@ async function runHourly() {
     // Đầu tháng: lập hoá đơn đối soát hoa hồng cho chủ sân (tự giới hạn một lần/ngày)
     await settlementService.autoIssueMonthly().catch((e) => console.error('autoIssueMonthly', e.message));
     await settlementService.sendFeeReminders().catch((e) => console.error('sendFeeReminders', e.message));
-    await require('../services/premiumService').sendExpiryReminders().catch((e) => console.error('sendExpiryReminders', e.message));
     await cleanConsumedHolds().catch(() => {});
     await cleanExpiredResetTokens().catch(() => {});
 }

@@ -36,8 +36,6 @@ export default function AdminSettings() {
     maxRefundRatio: 0.5, refundToCreditEnabled: true,
     bankName: '', bankBin: '', bankAccountNumber: '', bankAccountName: '',
     bankTransferWindowMinutes: 30,
-    premiumEnabled: true, premiumVenuePrice: 149000, premiumPlayerPrice: 29000, premiumDurationDays: 30,
-    premiumVenueCommissionRate: 7, premiumPlayerHoldMinutes: 20,
   })
   // Biểu phí bậc thang chỉnh riêng vì là mảng, không hợp với ô nhập đơn giản.
   const [feeTiers, setFeeTiers] = useState([])
@@ -79,12 +77,6 @@ export default function AdminSettings() {
           bankAccountNumber: st.bankAccountNumber || '',
           bankAccountName: st.bankAccountName || '',
           bankTransferWindowMinutes: st.bankTransferWindowMinutes ?? 30,
-          premiumEnabled: st.premiumEnabled !== false,
-          premiumVenuePrice: st.premiumVenuePrice ?? 149000,
-          premiumPlayerPrice: st.premiumPlayerPrice ?? 29000,
-          premiumDurationDays: st.premiumDurationDays ?? 30,
-          premiumVenueCommissionRate: st.premiumVenueCommissionRate ?? 7,
-          premiumPlayerHoldMinutes: st.premiumPlayerHoldMinutes ?? 20,
         }))
         setFeeTiers(st.transferFeeTiers || [])
         setCompTiers(st.compensationTiers || [])
@@ -189,22 +181,6 @@ export default function AdminSettings() {
               hint="Quá hạn nộp + ngần này ngày mà chưa nộp thì địa điểm bị khoá. Mặc định 7 + 3 = 10 ngày kể từ khi lập hoá đơn. Chủ sân đã báo chuyển khoản (chờ bạn đối chiếu) thì không bị khoá."
             />
           )}
-        </div>
-
-        <h3 className={styles.sectionTitle}>Gói Premium</h3>
-        <p className={styles.sectionHint}>
-          Tiền gói Premium chuyển vào <strong>tài khoản nền tảng</strong> bên dưới. Webhook ngân hàng nhận diện mã đơn <code>PRM…</code> để tự kích hoạt; chưa bật thì xác nhận tay ở trang Gói Premium.
-        </p>
-        <div className={styles.formGrid}>
-          <label className={styles.checkRow}>
-            <input type="checkbox" checked={!!form.premiumEnabled} onChange={e => setForm(f => ({ ...f, premiumEnabled: e.target.checked }))} />
-            <span>Mở bán gói Premium</span>
-          </label>
-          <Input label="Giá Venue Premium (chủ sân)" type="number" min={1000} step={1000} value={form.premiumVenuePrice} onChange={e => setForm(f => ({ ...f, premiumVenuePrice: e.target.value }))} suffix="đ" />
-          <Input label="Giá Premium Player (người chơi)" type="number" min={1000} step={1000} value={form.premiumPlayerPrice} onChange={e => setForm(f => ({ ...f, premiumPlayerPrice: e.target.value }))} suffix="đ" />
-          <Input label="Thời hạn mỗi lần mua" type="number" min={1} max={365} value={form.premiumDurationDays} onChange={e => setForm(f => ({ ...f, premiumDurationDays: e.target.value }))} suffix="ngày" />
-          <Input label="Phí dịch vụ cho chủ sân Premium" type="number" min={0} max={100} step={0.5} value={form.premiumVenueCommissionRate} onChange={e => setForm(f => ({ ...f, premiumVenueCommissionRate: e.target.value }))} suffix="%" hint="Thay cho tỉ lệ chung ở trên, chỉ áp khi thấp hơn. Áp cho đơn mới." />
-          <Input label="Thời gian giữ chỗ của người chơi Premium" type="number" min={1} max={60} value={form.premiumPlayerHoldMinutes} onChange={e => setForm(f => ({ ...f, premiumPlayerHoldMinutes: e.target.value }))} suffix="phút" hint="Người chơi thường được giữ chỗ 10 phút." />
         </div>
 
         <h3 className={styles.sectionTitle}>Tài khoản nền tảng (nhận phí dịch vụ)</h3>

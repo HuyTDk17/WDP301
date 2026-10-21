@@ -18,8 +18,6 @@ const settlementService = require('../services/settlementService');
 const Notification = require('../models/Notification');
 
 const HOLD_DURATION_MINUTES = 10;
-const premium = require('../utils/premium');
-const User = require('../models/User');
 // Cửa sổ mặc định — dùng khi chưa tải được cấu hình từ CSDL (ví dụ lỗi tạm
 // thời). Giá trị thật lấy từ settings.bankTransferWindowMinutes, có thể chỉnh
 // trong trang Cài đặt. Chuyển khoản ngân hàng cần nhiều thời gian hơn quẹt thẻ
@@ -105,10 +103,7 @@ exports.holdSlot = asyncHandler(async (req, res) => {
         return res.status(409).json({ message: 'Khung giờ này vừa có người đặt hoặc đang được giữ chỗ, vui lòng chọn giờ khác' });
     }
 
-    // Người chơi Premium được giữ chỗ lâu hơn
-    const holdMinutes = premium.hasPlan(req.user, 'player_premium')
-        ? ((await getSettings()).premiumPlayerHoldMinutes ?? 20) : HOLD_DURATION_MINUTES;
-    const expiresAt = new Date(Date.now() + holdMinutes * 60 * 1000);
+    const expiresAt = new Date(Date.now() + HOLD_DURATION_MINUTES * 60 * 1000);
     const hold = await Hold.create({ userId: req.user._id, venueId, courtId, date, startTime, endTime, expiresAt });
 
     res.status(201).json({ hold: { holdId: hold._id, expiresAt: hold.expiresAt } });
@@ -137,14 +132,9 @@ exports.createBooking = asyncHandler(async (req, res) => {
     if (amount <= 0) return res.status(400).json({ message: 'Khung giờ không hợp lệ' });
     // Hoa hồng nền tảng = giá sân × tỉ lệ, chia giữa khách (serviceFee) và chủ sân
     // (ownerCommission) theo cấu hình — mặc định chủ sân chịu toàn bộ.
-    const cfg = await getCommissionConfig();
-    const venueOwner = await User.findById(venue.ownerId).select('premium');
-    // Premium: chủ sân được phí dịch vụ ưu đãi, người chơi được miễn phí dịch vụ cộng thêm (xem utils/premium.priceFee)
-    const priced = premium.priceFee({
-        amount, ratePct: cfg.ratePct, customerSharePct: cfg.customerSharePct,
-        owner: venueOwner, customer: req.user, settings: await getSettings(),
-    });
-    const { ratePct, fee, serviceFee } = priced;
+    const { ratePct, customerSharePct } = await getCommissionConfig();
+    const fee = splitCommission({ amount, ratePct, customerSharePct });
+    const serviceFee = fee.serviceFee;
 
     // Không còn mã khuyến mãi do nền tảng cấp: giá khách trả = giá sân + phần phí dịch vụ khách chịu.
     const discountAmount = 0;

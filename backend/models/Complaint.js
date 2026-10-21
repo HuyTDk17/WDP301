@@ -38,8 +38,6 @@ const complaintSchema = new mongoose.Schema(
         description: { type: String, required: [true, 'Vui lòng mô tả nội dung khiếu nại'], trim: true, maxlength: 3000 },
         evidence: { type: [String], default: [], validate: [(v) => v.length <= 5, 'Tối đa 5 ảnh bằng chứng'] },
 
-        // Khiếu nại của người chơi Premium hoặc về sân Premium được xử lý trước.
-        priority: { type: Boolean, default: false },
         status: { type: String, enum: STATUSES, default: 'open' },
         // true khi còn đang xử lý (open/investigating). Có trường riêng vì chỉ mục duy nhất một phần
         // chỉ dùng được phép so sánh bằng — `$in` trên status không chạy trên MongoDB đời cũ.

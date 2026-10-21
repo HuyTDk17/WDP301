@@ -27,16 +27,6 @@ const platformSettingSchema = new mongoose.Schema(
         commissionGraceDays: { type: Number, default: 3, min: 0, max: 90 },
         commissionCustomerSharePct: { type: Number, default: 0, min: 0, max: 100 },
 
-        // ===== GÓI PREMIUM =====
-        premiumEnabled: { type: Boolean, default: true },
-        premiumVenuePrice: { type: Number, default: 149000, min: 1000 },
-        premiumPlayerPrice: { type: Number, default: 29000, min: 1000 },
-        premiumDurationDays: { type: Number, default: 30, min: 1, max: 365 },
-        // Chủ sân Premium: tỉ lệ phí dịch vụ (%) trên giá sân thay cho commissionRate (chỉ áp nếu thấp hơn).
-        premiumVenueCommissionRate: { type: Number, default: 7, min: 0, max: 100 },
-        // Người chơi Premium: thời gian giữ chỗ khi đặt sân (phút).
-        premiumPlayerHoldMinutes: { type: Number, default: 20, min: 1, max: 60 },
-
         // ===== THAM SỐ KẾ TOÁN =====
         // Tỉ lệ phí cổng thanh toán (0.015 = 1,5%) — khoản chi phí
         // trước đây bị bỏ qua khi tính lợi nhuận.

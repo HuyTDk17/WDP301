@@ -99,15 +99,6 @@ export default function Home() {
       <BannerCarousel />
 
       {/* THỐNG KÊ — số liệu THẬT, xem ghi chú ở STAT_META phía trên */}
-      <section className={styles.section}>
-        <div className="container">
-          <Link to="/premium" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 16, flexWrap: 'wrap', padding: '20px 24px', borderRadius: 16, textDecoration: 'none', color: '#5B3A00', background: 'linear-gradient(135deg, #FDE68A, #F59E0B)' }}>
-            <span><strong style={{ fontSize: 18 }}>👑 Nâng cấp Premium</strong><br />Đổi lịch miễn phí, giữ chỗ lâu hơn · chủ sân được ưu tiên hiển thị và phí dịch vụ thấp hơn</span>
-            <strong>Xem gói →</strong>
-          </Link>
-        </div>
-      </section>
-
       <section className={styles.statsBar}>
         <div className="container">
           <div className={styles.statsGrid}>

@@ -93,15 +93,6 @@ const userSchema = new mongoose.Schema(
         // rút được thành tiền. Vòng đời đầy đủ ở utils/credit.js.
         creditBalance: { type: Number, default: 0, min: 0 },
 
-        // ===== GÓI PREMIUM =====
-        // Chỉ là bản sao để tra nhanh; nguồn sự thật là các PremiumOrder đã thanh toán.
-        // plan: 'venue_premium' (chủ sân) | 'player_premium' (người chơi). Còn hiệu lực khi until > hiện tại.
-        premium: {
-            plan: { type: String, enum: ['venue_premium', 'player_premium', null], default: null },
-            since: { type: Date, default: null },
-            until: { type: Date, default: null },
-        },
-
         // ===== XÁC MINH EMAIL =====
         // TRƯỚC ĐÂY: không xác minh email khi đăng ký — ai cũng đăng ký được
         // bằng một email không có thật (hoặc email của người khác) rồi nộp hồ

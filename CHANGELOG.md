@@ -16,19 +16,11 @@ Tài liệu này ghi lại toàn bộ thay đổi so với phiên bản gốc, k
 
 ---
 
-## Gói Premium (Venue Premium · Premium Player)
-
-- **Mua gói:** `/premium` (người chơi), `/owner/premium` (chủ sân). Tạo đơn mã `PRM…` + QR VietQR vào tài khoản nền tảng; xác nhận bằng webhook ngân hàng sẵn có (`POST /api/webhooks/bank`, tự khớp mã `PRM`, cộng dồn tiền về nhiều lần, bỏ qua giao dịch bắn lại) hoặc admin đối chiếu ở `/admin/premium`. Mua khi còn hạn thì cộng nối tiếp.
-- **Venue Premium (chủ sân, 149.000đ/30 ngày):** ưu tiên hiển thị ở danh sách và Sân nổi bật, huy hiệu, phí dịch vụ giảm 10% → 7% (chỉ áp khi thấp hơn mức chung), khiếu nại liên quan được xử lý trước.
-- **Premium Player (người chơi, 29.000đ/30 ngày):** miễn phí đổi lịch/chuyển sân (bồi thường chủ sân gốc vẫn giữ), giữ chỗ 20 phút thay vì 10, miễn phần phí dịch vụ cộng thêm vào giá (nền tảng chịu, chủ sân không bị tính thêm), huy hiệu, khiếu nại ưu tiên.
-- Giá, thời hạn, % ưu đãi, thời gian giữ chỗ chỉnh ở Cài đặt admin. Nhắc sắp hết hạn / đã hết hạn chạy ở tác vụ nền hằng giờ.
-- Thêm môn **Pickleball**. Backend: `models/PremiumOrder.js`, `services/premiumService.js`, `controllers/premiumController.js`, `routes/premiumRoutes.js`, `utils/premium.js`; test `tests/premium.test.js` (PR-01…20).
-
----
-
 ## Ghép bản bổ sung vào WDP301 (từ `code_bo_sung_tong_hop`)
 
-Các mục bên dưới được ghép từ bản bổ sung; **Gói Premium** và **lọc sân theo bản đồ** của WDP301 được giữ nguyên.
+Các mục bên dưới được ghép từ bản bổ sung; **lọc sân theo bản đồ** của WDP301 được giữ nguyên.
+
+**Đã gỡ chức năng Gói Premium** (Venue Premium / Premium Player): bỏ các trang mua/quản lý gói, API `/api/premium` và `/api/admin/premium/*`, nhận diện chuyển khoản `PRM…` ở webhook, nhắc hết hạn, ưu đãi phí dịch vụ / giữ chỗ lâu hơn / miễn phí đổi lịch, ưu tiên hiển thị sân và ưu tiên khiếu nại. Phí dịch vụ, thời gian giữ chỗ và phí chuyển sân nay áp dụng chung cho mọi người dùng.
 - Pickleball được giữ trong danh mục môn mặc định (backend `utils/sportCategories.js`, frontend `utils/index.js`); danh mục đã nạp từ trước mà đã có sân Pickleball sẽ được tự bổ sung.
 - `StatusBadge` có thêm prop `labels` để trang Mạng lưới đổi nhãn "Chưa tham gia" mà không làm đổi nhãn "Chưa gửi" ở nơi khác.
 - Nối route còn thiếu: `/api/banners|news|policies|sports`, `/api/events`, `/api/players`, `/api/admin/{banners,news,policies,sport-categories,network,users/:id/role}`, `/api/owner/{events,network,cancellation-policy}`.

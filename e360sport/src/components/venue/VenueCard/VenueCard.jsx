@@ -6,7 +6,6 @@ import { useToast } from '@/contexts/ToastContext'
 import { favoriteService } from '@/services/notificationService'
 import Rating from '@/components/ui/Rating/Rating'
 import Badge from '@/components/ui/Badge/Badge'
-import PremiumBadge from '@/components/common/PremiumBadge/PremiumBadge'
 import { formatCurrency, getSport, getImageUrl } from '@/utils'
 import styles from './VenueCard.module.css'
 
@@ -40,14 +39,13 @@ export default function VenueCard({ venue, layout = 'grid' }) {
   }
 
   return (
-    <Link to={`/venues/${venue._id}`} className={`${styles.card} ${layout === 'list' ? styles.listLayout : ''} ${venue.isPremium ? styles.premiumCard : ''}`}>
+    <Link to={`/venues/${venue._id}`} className={`${styles.card} ${layout === 'list' ? styles.listLayout : ''}`}>
       <div className={styles.imageWrap}>
         <img src={getImageUrl(venue.images?.[0]) || PLACEHOLDER_IMG} alt={venue.name} className={styles.image} loading="lazy" />
         {sport && <span className={styles.sportTag} style={{ background: sport.color }}>{sport.icon} {sport.name}</span>}
         <button className={`${styles.favBtn} ${isFav ? styles.favActive : ''}`} onClick={toggleFavorite} disabled={loading} aria-label={isFav ? 'Bỏ yêu thích' : 'Thêm vào yêu thích'}>
           <Heart size={17} strokeWidth={2.25} fill={isFav ? 'currentColor' : 'none'} />
         </button>
-        {venue.isPremium && <PremiumBadge className={styles.premiumTag} />}
         {venue.isActive === false && <div className={styles.closedOverlay}>Tạm đóng cửa</div>}
       </div>
       <div className={styles.content}>

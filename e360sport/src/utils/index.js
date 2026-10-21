@@ -112,13 +112,6 @@ export const getAvatarPlaceholder = (name) =>
   `https://ui-avatars.com/api/?name=${encodeURIComponent(name)}&background=0A84FF&color=fff&bold=true`
 
 // === KHÁC ===
-// === PREMIUM ===
-// Người dùng đang có gói Premium còn hiệu lực (đúng gói nếu truyền `plan`).
-export const hasPremium = (user, plan) => {
-  const until = user?.premium?.until
-  if (!until || new Date(until).getTime() <= Date.now()) return false
-  return !plan || user.premium.plan === plan
-}
 
 export const clsx = (...classes) => classes.filter(Boolean).join(' ')
 
