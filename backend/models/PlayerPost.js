@@ -38,14 +38,16 @@ const playerPostSchema = new mongoose.Schema(
 playerPostSchema.index({ status: 1, startsAt: 1 });
 playerPostSchema.index({ hostId: 1, startsAt: -1 });
 // Bài 'direct' không có bookingId: phải loại khỏi chỉ mục duy nhất, nếu không mọi bài thiếu bookingId đều bị tính là trùng nhau (null).
-// Với CSDL đã chạy bản cũ, chỉ mục cũ cùng tên được dựng lại bằng PlayerPost.ensureIndexes() (xem scripts/migrate.js + server.js).
+// Với CSDL đã chạy bản cũ, chỉ mục cũ cùng tên được dựng lại bằng PlayerPost.rebuildIndexes() (xem scripts/migrate.js + server.js).
 playerPostSchema.index({ bookingId: 1 }, { unique: true, partialFilterExpression: { active: true, bookingId: { $type: 'objectId' } } });
 
 /**
  * Chỉ mục cũ `bookingId_1` có partialFilterExpression { active: true } — vẫn chặn nhiều bài 'direct' (cùng bookingId = null).
  * Hàm này gỡ chỉ mục cũ rồi dựng bản mới. Idempotent, lỗi "namespace chưa tồn tại" (CSDL trống) được bỏ qua.
  */
-playerPostSchema.statics.ensureIndexes = async function ensurePlayerPostIndexes() {
+// ⚠️ KHÔNG đặt tên là `ensureIndexes`: đó là hàm có sẵn của Mongoose và `createIndexes()` gọi lại chính nó —
+// ghi đè sẽ gây đệ quy vô hạn (migrate/server treo mãi, không báo lỗi).
+playerPostSchema.statics.rebuildIndexes = async function rebuildPlayerPostIndexes() {
     try {
         const existing = await this.collection.indexes();
         const old = existing.find((i) => i.name === 'bookingId_1');

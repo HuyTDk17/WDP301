@@ -147,7 +147,9 @@ export default function BookingHistory() {
               const status = BOOKING_STATUS[booking.status] || BOOKING_STATUS.pending
               const transfer = transferState(booking, policy)
               const isExpanded = expandedId === booking._id
-              const canCancel = ['pending', 'confirmed'].includes(booking.status)
+              // Qua giờ bắt đầu thì ẩn nút huỷ (máy chủ cũng chặn) — tránh huỷ nhiều ngày sau khi chủ sân chưa bấm "Hoàn thành"
+              const started = startOf(booking).getTime() <= Date.now()
+              const canCancel = ['pending', 'confirmed'].includes(booking.status) && !started
 
               return (
                 <div key={booking._id} className={styles.bookingCard}>
@@ -197,7 +199,7 @@ export default function BookingHistory() {
                     // payments[id] chỉ có khóa khi đã gọi xong API (kể cả khi kết quả là null)
                     const paymentLoaded = booking._id in payments
                     // Đã báo chuyển khoản thì KHÔNG cho huỷ (máy chủ cũng chặn): tiền có thể đã về tài khoản chủ sân.
-                    const canCancelNow = canCancel || (awaitingPayment && paymentLoaded && !reportedTransfer)
+                    const canCancelNow = canCancel || (awaitingPayment && !started && paymentLoaded && !reportedTransfer)
                     const showMethod = ['confirmed', 'completed', 'transferred'].includes(booking.status)
                     return (
                       <div className={styles.expandedSection}>

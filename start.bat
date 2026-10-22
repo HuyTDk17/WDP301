@@ -34,7 +34,7 @@ REM 2. Kiem tra cau truc thu muc du an
 REM --------------------------------------------------------
 if not exist "%BACKEND%\package.json" (
     echo [LOI] Khong tim thay thu muc "backend" ben canh file .bat nay.
-    echo        Hay dat file nay ngay trong thu muc goc cua du an ^(EXE101\^),
+    echo        Hay dat file nay ngay trong thu muc goc cua du an ^(WDP301\^),
     echo        cung cap voi 2 thu muc con: backend\ va e360sport\
     echo.
     pause
@@ -114,18 +114,16 @@ if not exist "%BACKEND%\.env" (
         echo ADMIN_PASSWORD=Admin@12345
         echo ADMIN_PHONE=0900000000
         echo.
-        echo # VNPay ^(dien sau khi dang ky merchant tai vnpay.vn^)
-        echo VNP_TMN_CODE=
-        echo VNP_HASH_SECRET=
-        echo VNP_URL=https://sandbox.vnpayment.vn/paymentv2/vpcpay.html
-        echo VNP_API_URL=https://sandbox.vnpayment.vn/merchant_webapi/api/transaction
+        echo APP_TZ_OFFSET_MINUTES=420
+        echo RUN_JOBS=true
         echo.
-        echo # MoMo ^(dien sau khi dang ky merchant tai business.momo.vn^)
-        echo MOMO_PARTNER_CODE=
-        echo MOMO_ACCESS_KEY=
-        echo MOMO_SECRET_KEY=
-        echo MOMO_ENDPOINT=https://test-payment.momo.vn/v2/gateway/api/create
-        echo MOMO_REFUND_ENDPOINT=https://test-payment.momo.vn/v2/gateway/api/refund
+        echo # Tai khoan ngan hang NEN TANG ^(thu khoan bu khi khach chuyen san^).
+        echo # Co the de trong va cau hinh trong trang Cai dat cua Admin.
+        echo # BANK_BIN: ma Napas, vd ACB=970416, Vietcombank=970436, MB=970422
+        echo BANK_BIN=
+        echo BANK_ACCOUNT_NUMBER=
+        echo BANK_ACCOUNT_NAME=
+        echo BANK_NAME=
     ) > "%BACKEND%\.env"
 
     echo [OK] Da tao backend\.env voi cau hinh mac dinh.
@@ -219,7 +217,7 @@ REM --------------------------------------------------------
 REM 10. Khoi dong BACKEND trong cua so rieng
 REM --------------------------------------------------------
 echo [...] Dang khoi dong BACKEND tai http://localhost:9999 ...
-start "ESport360 - BACKEND (dong cua so nay de tat)" /D "%BACKEND%" cmd /k "npm run dev"
+start "ESport360 - BACKEND" cmd /k "cd /d "%BACKEND%" && npm run dev"
 
 timeout /t 5 >nul
 
@@ -227,10 +225,10 @@ REM --------------------------------------------------------
 REM 11. Khoi dong FRONTEND trong cua so rieng
 REM --------------------------------------------------------
 echo [...] Dang khoi dong FRONTEND tai http://localhost:5173 ...
-start "ESport360 - FRONTEND (dong cua so nay de tat)" /D "%FRONTEND%" cmd /k "npm run dev"
+start "ESport360 - FRONTEND" cmd /k "cd /d "%FRONTEND%" && npm run dev"
 
 timeout /t 6 >nul
-start http://localhost:5173
+start "" "http://localhost:5173"
 
 echo.
 echo ==========================================================
@@ -247,10 +245,17 @@ echo   - Neu chay that ^(khong phai may ca nhan de test^), MongoDB can
 echo     duoc cau hinh dang replica set thi giao dich chuyen san moi
 echo     chay dung. Chay tren may don le van duoc de phat trien/test,
 echo     he thong se tu canh bao trong cua so BACKEND.
-echo   - Muon hoan tien tu dong qua VNPay/MoMo, dien them thong tin
-echo     merchant that vao backend\.env ^(VNP_TMN_CODE, MOMO_SECRET_KEY...^).
-echo     Chua dien thi he thong van chay binh thuong, hoan tien se
-echo     chuyen sang xu ly thu cong tai trang Quan tri - Hoan tien.
+echo   - Thanh toan la CHUYEN KHOAN NGAN HANG truc tiep: khach chuyen vao
+echo     tai khoan cua CHU SAN va chu san xac nhan; hoan tien do chu san
+echo     chuyen khoan lai ^(trang Chu san - Hoan tien^). Khong can dang ky
+echo     VNPay/MoMo. Muon thu khoan bu khi chuyen san, dien BANK_BIN va
+echo     BANK_ACCOUNT_NUMBER trong backend\.env hoac trang Cai dat cua Admin.
+echo.
+echo   LUU Y VE DON DA QUA GIO CHOI:
+echo   - Khach KHONG huy duoc don da qua gio bat dau. Don da xac nhan ma
+echo     chu san quen bam "Hoan thanh" se tu dong chuyen sang "Hoan thanh"
+echo     sau 24 gio ke tu gio ket thuc ^(doi bang AUTO_COMPLETE_GRACE_HOURS
+echo     trong backend\.env^).
 echo ==========================================================
 echo.
 pause

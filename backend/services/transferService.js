@@ -99,6 +99,10 @@ async function createQuote({ booking, target, user }) {
         fail(400, 'Ngày hoặc khung giờ muốn chuyển đến không đúng định dạng');
     }
     if (durationHours(toStartTime, toEndTime) <= 0) fail(400, 'Khung giờ đến không hợp lệ');
+    // Đổi lịch và chuyển sân đều GIỮ NGUYÊN độ dài lượt đặt (không đổi 2 giờ thành 1 giờ để lách phí/giá).
+    if (Math.abs(durationHours(toStartTime, toEndTime) - durationHours(booking.startTime, booking.endTime)) > 1e-9) {
+        fail(400, `Khung giờ mới phải giữ nguyên độ dài lượt đặt hiện tại (${durationHours(booking.startTime, booking.endTime)} giờ)`);
+    }
 
     // BR-TR-07: không chuyển vào sân bảo trì hoặc địa điểm bị tạm ngưng
     const [toVenue, toCourt] = await Promise.all([Venue.findById(toVenueId), Court.findById(toCourtId)]);

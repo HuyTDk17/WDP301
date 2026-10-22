@@ -259,6 +259,15 @@ exports.cancelBooking = asyncHandler(async (req, res) => {
         return res.status(409).json({ message: 'Lượt đặt này không thể hủy ở trạng thái hiện tại' });
     }
 
+    // Đã qua giờ bắt đầu thì khách KHÔNG tự huỷ được nữa: buổi chơi đã (hoặc đang) diễn ra, chủ sân đã giữ sân và nhận tiền.
+    // Nếu chủ sân quên bấm "Hoàn thành", nút huỷ trước đây vẫn còn nhiều ngày sau và khách huỷ được để đòi hoàn tiền.
+    // Có vấn đề (chủ sân không cho chơi...) thì khách gửi khiếu nại để được xử lý.
+    if (leadTimeHours(booking.date, booking.startTime) <= 0) {
+        return res.status(409).json({
+            message: 'Lượt đặt này đã qua giờ bắt đầu nên không thể hủy. Nếu có vấn đề với buổi chơi, vui lòng gửi khiếu nại.',
+        });
+    }
+
     const wasAwaitingPayment = booking.status === 'awaiting_payment';
 
     // Khách đã báo "đã chuyển khoản" thì tiền có thể đã nằm trong tài khoản chủ

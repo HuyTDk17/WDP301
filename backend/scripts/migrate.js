@@ -254,7 +254,7 @@ async function tuneFeeDeadlines() {
  * bookingId sẽ coi mọi bài thiếu bookingId là trùng nhau, nên gỡ bản cũ và dựng bản mới. Idempotent.
  */
 async function fixPlayerPostIndex() {
-    await require('../models/PlayerPost').ensureIndexes();
+    await require('../models/PlayerPost').rebuildIndexes();
     console.log('✔ Chỉ mục bài tìm người chơi đã sẵn sàng cho bài đăng trực tiếp');
 }
 

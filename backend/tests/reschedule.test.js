@@ -76,6 +76,24 @@ test('RS-08 · API eligibility trả venueId/courtId để trang đổi lịch b
     assert.ok(routes.includes('/bookings/:bookingId/reschedule') && routes.includes('mode="reschedule"'));
 });
 
+test('RS-09 · chuyển sân sang sân/địa điểm khác cũng giữ nguyên độ dài (frontend dựng khung + backend chặn độ dài khác)', async () => {
+    const slots = mod.buildRescheduleSlots({ ...base, courtId: 'other-venue-court', bookedSlots: [] });
+    assert.ok(slots.length > 0 && slots.every((s) => mod.durationMinutes(s.start, s.end) === 120));
+    const page = fs.readFileSync(path.join(root, 'e360sport', 'src', 'pages', 'customer', 'TransferBooking', 'TransferBooking.jsx'), 'utf8');
+    assert.ok(!/if \(isReschedule && eligibility\?\.booking\)/.test(page), 'chuyển sân không được quay về khung 60 phút cố định');
+    const svc = fs.readFileSync(path.join(root, 'backend', 'services', 'transferService.js'), 'utf8');
+    assert.ok(svc.includes('phải giữ nguyên độ dài lượt đặt'));
+});
+test('RS-10 · khách không huỷ được đơn đã qua giờ bắt đầu (backend + ẩn nút ở frontend); đơn quên "Hoàn thành" tự đóng sau thời gian ân hạn', async () => {
+    const ctrl = fs.readFileSync(path.join(root, 'backend', 'controllers', 'bookingController.js'), 'utf8');
+    const cancel = ctrl.slice(ctrl.indexOf('exports.cancelBooking'));
+    assert.ok(/leadTimeHours\(booking\.date, booking\.startTime\) <= 0/.test(cancel.slice(0, 1800)));
+    const ui = fs.readFileSync(path.join(root, 'e360sport', 'src', 'pages', 'customer', 'BookingHistory', 'BookingHistory.jsx'), 'utf8');
+    assert.ok(ui.includes("&& !started"));
+    const jobs = fs.readFileSync(path.join(root, 'backend', 'jobs', 'index.js'), 'utf8');
+    assert.ok(jobs.includes('async function autoCompleteBookings') && jobs.includes('await autoCompleteBookings()'));
+});
+
 (async () => {
     for (const { name, fn } of queue) {
         try { await fn(); console.log(`  ✓ ${name}`); passed += 1; }

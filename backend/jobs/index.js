@@ -8,6 +8,7 @@ const credit = require('../utils/credit');
 const { getSettings } = require('../utils/platformSettings');
 const { voidOpenForBooking } = require('../utils/openPayments');
 const settlementService = require('../services/settlementService');
+const { leadTimeHours, toLocalDateString } = require('../utils/timeSlots');
 
 /**
  * TÁC VỤ NỀN.
@@ -79,6 +80,33 @@ async function expireStaleBookings() {
 }
 
 /**
+ * Tự chuyển đơn 'confirmed' đã qua giờ kết thúc sang 'completed' nếu chủ sân quên bấm.
+ * Có thời gian ân hạn (mặc định 24 giờ, AUTO_COMPLETE_GRACE_HOURS) để chủ sân kịp đánh dấu "Khách không đến".
+ * Đơn đã hoàn thành thì khách không huỷ/chuyển/đổi được nữa và vẫn tính vào đối soát như 'confirmed'.
+ */
+async function autoCompleteBookings() {
+    const graceHours = Number(process.env.AUTO_COMPLETE_GRACE_HOURS ?? 24);
+    const grace = Number.isFinite(graceHours) && graceHours >= 0 ? graceHours : 24;
+    const candidates = await Booking.find({
+        status: 'confirmed',
+        // Lọc thô theo ngày (hôm qua trở về trước) rồi tính chính xác theo giờ kết thúc bên dưới
+        date: { $lte: toLocalDateString() },
+    }).limit(500);
+
+    let count = 0;
+    for (const booking of candidates) {
+        if (leadTimeHours(booking.date, booking.endTime) > -grace) continue;
+        try {
+            const r = await Booking.updateOne({ _id: booking._id, status: 'confirmed' }, { status: 'completed' });
+            if (r.modifiedCount) count += 1;
+        } catch (err) {
+            console.error('autoCompleteBookings', booking._id.toString(), err.message);
+        }
+    }
+    return count;
+}
+
+/**
  * Đóng các yêu cầu chuyển sân hết hạn báo giá hoặc hết hạn chờ chủ sân duyệt —
  * NGOẠI TRỪ yêu cầu có khoản bù đang chờ xác nhận chuyển khoản, cùng lý do như
  * expireStaleBookings ở trên.
@@ -133,6 +161,7 @@ async function cleanExpiredResetTokens() {
 }
 
 async function runOnce() {
+    await autoCompleteBookings().catch((e) => console.error('autoCompleteBookings', e.message));
     const [bookings, transfers] = await Promise.all([
         expireStaleBookings().catch((e) => { console.error('expireStaleBookings', e.message); return 0; }),
         expireStaleTransfers().catch((e) => { console.error('expireStaleTransfers', e.message); return 0; }),
@@ -161,5 +190,5 @@ function start(intervalMs = 60 * 1000) {
 
 module.exports = {
     start, runOnce, runHourly,
-    expireStaleBookings, expireStaleTransfers, cleanConsumedHolds, cleanExpiredResetTokens,
+    expireStaleBookings, expireStaleTransfers, autoCompleteBookings, cleanConsumedHolds, cleanExpiredResetTokens,
 };

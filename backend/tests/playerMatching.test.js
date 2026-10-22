@@ -434,7 +434,7 @@ test('PM-17 · bài đăng thẳng: chủ nhóm đóng được, hết giờ th�
     assert.strictEqual((await postDirect(direct())).code, 201);
 });
 
-test('PM-18 · schema THẬT: bài không có bookingId hợp lệ; chỉ mục duy nhất bỏ qua bài thiếu bookingId; source sai bị từ chối; có ensureIndexes; đã gắn migrate + server', async () => {
+test('PM-18 · schema THẬT: bài không có bookingId hợp lệ; chỉ mục duy nhất bỏ qua bài thiếu bookingId; source sai bị từ chối; có rebuildIndexes (không ghi đè ensureIndexes của Mongoose); đã gắn migrate + server', async () => {
     const { execFileSync } = require('child_process');
     const root = path.join(__dirname, '..');
     const out = execFileSync(process.execPath, ['-e', `
@@ -446,13 +446,13 @@ test('PM-18 · schema THẬT: bài không có bookingId hợp lệ; chỉ mục 
             defaultSource: new M({ ...base, bookingId: '${oid(5)}' }).source,
             badSource: !!new M({ ...base, source: 'x' }).validateSync(),
             unique: idx[1].unique, partial: idx[1].partialFilterExpression,
-            hasEnsure: typeof M.ensureIndexes === 'function',
+            hasEnsure: typeof M.rebuildIndexes === 'function',
         }));`], { cwd: root, encoding: 'utf8' });
     const r = JSON.parse(out.trim().split('\n').pop());
     assert.deepStrictEqual([r.directOk, r.defaultSource, r.badSource, r.unique, r.hasEnsure], [true, 'booking', true, true, true]);
     assert.deepStrictEqual(r.partial, { active: true, bookingId: { $type: 'objectId' } }, 'chỉ tính bài có bookingId kiểu ObjectId');
-    assert.ok(fs.readFileSync(path.join(root, 'scripts', 'migrate.js'), 'utf8').includes('ensureIndexes()'), 'migrate dựng lại chỉ mục');
-    assert.ok(/PlayerPost'\)\.ensureIndexes\(\)/.test(fs.readFileSync(path.join(root, 'server.js'), 'utf8')), 'server tự sửa chỉ mục khi kết nối');
+    assert.ok(fs.readFileSync(path.join(root, 'scripts', 'migrate.js'), 'utf8').includes('rebuildIndexes()'), 'migrate dựng lại chỉ mục');
+    assert.ok(/PlayerPost'\)\.rebuildIndexes\(\)/.test(fs.readFileSync(path.join(root, 'server.js'), 'utf8')), 'server tự sửa chỉ mục khi kết nối');
 });
 
 (async () => {

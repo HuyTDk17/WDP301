@@ -116,7 +116,9 @@ export default function TransferBooking({ mode = 'transfer' }) {
 
   const slots = useMemo(() => {
     if (!venue || !court) return []
-    if (isReschedule && eligibility?.booking) {
+    // Đổi lịch lẫn chuyển sân đều GIỮ NGUYÊN độ dài lượt đặt (lượt 2 giờ → khung 2 giờ). Với chuyển sân sang sân/địa
+    // điểm khác, lượt đặt gốc không trùng sân nên không tự chặn khung nào của sân đích.
+    if (eligibility?.booking) {
       const bk = eligibility.booking
       const now = new Date()
       return buildRescheduleSlots({
@@ -136,7 +138,7 @@ export default function TransferBooking({ mode = 'transfer' }) {
       venue.openHours?.close || '22:00',
       60, date, slotsData?.bookedSlots || []
     )
-  }, [venue, court, date, slotsData, isReschedule, eligibility])
+  }, [venue, court, date, slotsData, eligibility])
 
   const selectVenue = async (v) => {
     try {
@@ -299,7 +301,7 @@ export default function TransferBooking({ mode = 'transfer' }) {
                   </p>
                 ) : (
                 <p>
-                  Phí chuyển tính trên giá sân của lượt đặt hiện tại. Nếu chuyển sang địa điểm của chủ sân
+                  Khung giờ mới giữ nguyên độ dài lượt đặt hiện tại. Phí chuyển tính trên giá sân của lượt đặt hiện tại. Nếu chuyển sang địa điểm của chủ sân
                   khác và sát giờ, bạn còn phải trả thêm khoản bồi thường cho chủ sân cũ vì họ không kịp
                   bán lại khung giờ. Đổi giờ hoặc đổi sân trong cùng địa điểm thường <strong>miễn phí</strong>.
                 </p>
@@ -371,15 +373,13 @@ export default function TransferBooking({ mode = 'transfer' }) {
                   : <p className={styles.emptyText}>Chọn một địa điểm ở bên trái để xem khung giờ trống</p>
               ) : (
                 <>
-                  {isReschedule && (
-                    <div className={styles.noteBox}>
-                      <Info size={15} />
-                      <p>
-                        Lịch hiện tại: <strong>{formatDate(b.date)} · {formatTime(b.startTime)}–{formatTime(b.endTime)}</strong> tại {b.venueName}.
-                        Giờ mới giữ nguyên độ dài {Math.round((durationMinutes(b.startTime, b.endTime) / 60) * 10) / 10} giờ.
-                      </p>
-                    </div>
-                  )}
+                  <div className={styles.noteBox}>
+                    <Info size={15} />
+                    <p>
+                      Lịch hiện tại: <strong>{formatDate(b.date)} · {formatTime(b.startTime)}–{formatTime(b.endTime)}</strong> tại {b.venueName}.
+                      {' '}{isReschedule ? 'Giờ mới' : 'Khung giờ mới'} giữ nguyên độ dài {Math.round((durationMinutes(b.startTime, b.endTime) / 60) * 10) / 10} giờ.
+                    </p>
+                  </div>
                   <div className={styles.fieldGroup}>
                     <label className={styles.label}>Sân</label>
                     <div className={styles.chips}>
@@ -428,7 +428,7 @@ export default function TransferBooking({ mode = 'transfer' }) {
                         loading={loadingSlots}
                         maxSlots={1}
                       />
-                      {isReschedule && slot && (
+                      {slot && (
                         <p className={styles.slotSummary}>
                           Lịch mới: <strong>{formatDate(date)} · {formatTime(slot.start)}–{formatTime(slot.end)}</strong>
                         </p>

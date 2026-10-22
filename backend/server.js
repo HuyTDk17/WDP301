@@ -37,7 +37,7 @@ connectDB();
 // Bài tìm người chơi đăng thẳng (không gắn lượt đặt) cần chỉ mục mới; tự sửa chỉ mục cũ khi đã kết nối DB để không
 // bắt buộc chạy migrate. Chạy nền, lỗi chỉ ghi log chứ không làm sập server.
 require('mongoose').connection.once('open', () => {
-    require('./models/PlayerPost').ensureIndexes()
+    require('./models/PlayerPost').rebuildIndexes()
         .catch((err) => console.error('Không thể cập nhật chỉ mục bài tìm người chơi:', err.message));
 });
 // Nạp tài khoản ngân hàng từ .env vào CSDL một lần cho lần triển khai đầu
