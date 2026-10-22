@@ -74,6 +74,7 @@ router.delete('/sport-categories/:id', writeLimiter, sportCategoryController.del
 // Mạng lưới chuyển sân: duyệt / từ chối / gỡ chủ sân
 router.get('/network', networkController.listOwners);
 router.post('/network/approve-pending', writeLimiter, networkController.approveAllPending);
+router.post('/network/:ownerId/invite', writeLimiter, networkController.inviteOwner);
 router.patch('/network/:ownerId', writeLimiter, networkController.reviewOwner);
 
 // Khiếu nại của khách hàng: xem danh sách, nhận xử lý, liên hệ khách/chủ sân, giải quyết + gửi phản hồi

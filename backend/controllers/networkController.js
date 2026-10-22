@@ -17,6 +17,7 @@ const shape = (u) => ({
     _id: u._id, name: u.name, email: u.email, phone: u.phone || '',
     status: u.transferNetwork?.status || 'none',
     requestedAt: u.transferNetwork?.requestedAt || null,
+    invitedAt: u.transferNetwork?.invitedAt || null,
     reviewedAt: u.transferNetwork?.reviewedAt || null,
     note: u.transferNetwork?.note || '',
 });
@@ -47,7 +48,7 @@ exports.requestToJoin = asyncHandler(async (req, res) => {
     // Cập nhật CÓ ĐIỀU KIỆN: hai lần bấm cùng lúc chỉ tạo một yêu cầu và chỉ báo admin một lần.
     const updated = await User.findOneAndUpdate(
         { _id: req.user._id, role: 'owner', $or: [{ 'transferNetwork.status': { $in: ['none', 'rejected'] } }, { 'transferNetwork.status': { $exists: false } }] },
-        { 'transferNetwork.status': 'pending', 'transferNetwork.requestedAt': new Date(), 'transferNetwork.note': '' },
+        { 'transferNetwork.status': 'pending', 'transferNetwork.requestedAt': new Date(), 'transferNetwork.invitedAt': null, 'transferNetwork.note': '' },
         { new: true }
     );
     if (!updated) return res.status(409).json({ message: 'Không thể gửi yêu cầu lúc này' });
@@ -59,6 +60,35 @@ exports.requestToJoin = asyncHandler(async (req, res) => {
         link: '/admin/network',
     })));
     res.status(201).json(shape(updated));
+});
+
+// @route POST /api/owner/network/respond   body: { accept: boolean }
+// Chủ sân trả lời lời mời của Admin: đồng ý → vào mạng lưới ngay (Admin đã chủ động mời nên không duyệt lại);
+// từ chối → chỉ xoá lời mời, vẫn có thể tự xin tham gia sau.
+exports.respondToInvite = asyncHandler(async (req, res) => {
+    const accept = req.body.accept === true || req.body.accept === 'true';
+    const owner = await User.findById(req.user._id).select('name transferNetwork');
+    const current = owner?.transferNetwork?.status || 'none';
+    if (current !== 'none' || !owner?.transferNetwork?.invitedAt) {
+        return res.status(409).json({ message: 'Hiện không có lời mời nào đang chờ bạn trả lời' });
+    }
+
+    const update = accept
+        ? { 'transferNetwork.status': 'approved', 'transferNetwork.reviewedAt': new Date(), 'transferNetwork.reviewedBy': null, 'transferNetwork.note': 'Chấp nhận lời mời của quản trị viên', 'transferNetwork.invitedAt': null }
+        : { 'transferNetwork.invitedAt': null };
+    // Cập nhật CÓ ĐIỀU KIỆN: bấm hai lần chỉ xử lý một lần.
+    const updated = await User.findOneAndUpdate(
+        { _id: req.user._id, role: 'owner', ...statusFilter('none'), 'transferNetwork.invitedAt': { $ne: null } },
+        update,
+        { new: true }
+    );
+    if (!updated) return res.status(409).json({ message: 'Lời mời này đã được xử lý' });
+
+    const admins = await User.find({ role: 'admin', status: { $ne: 'banned' } }).select('_id');
+    await Promise.all(admins.map((a) => notify(a._id, accept
+        ? { title: 'Chủ sân đã đồng ý tham gia mạng lưới', message: `${owner.name} đã chấp nhận lời mời và trở thành thành viên mạng lưới chuyển sân.`, link: '/admin/network' }
+        : { title: 'Chủ sân từ chối tham gia mạng lưới', message: `${owner.name} đã từ chối lời mời tham gia mạng lưới chuyển sân.`, link: '/admin/network' })));
+    res.json(shape(updated));
 });
 
 // ============================================================
@@ -130,6 +160,36 @@ exports.reviewOwner = asyncHandler(async (req, res) => {
         revoke: ['Tư cách thành viên mạng lưới chuyển sân đã bị gỡ', `Lý do: ${reason}. Chuyển sân sang chủ sân khác sẽ không còn áp dụng với địa điểm của bạn.`],
     }[req.body.action];
     await notify(owner._id, { title: messages[0], message: messages[1], link: '/owner/transfers' });
+    res.json({ owner: shape(updated) });
+});
+
+// Giãn cách giữa hai lần mời cùng một chủ sân, tránh bấm liên tục làm phiền người nhận.
+const INVITE_COOLDOWN_MS = 24 * 60 * 60 * 1000;
+
+// @route POST /api/admin/network/:ownerId/invite — hỏi ý kiến chủ sân CHƯA tham gia xem có muốn vào mạng lưới không
+exports.inviteOwner = asyncHandler(async (req, res) => {
+    if (!isId(req.params.ownerId)) return res.status(400).json({ message: 'Định dạng ID không hợp lệ' });
+    const owner = await User.findOne({ _id: req.params.ownerId, role: 'owner' }).select('name transferNetwork');
+    if (!owner) return res.status(404).json({ message: 'Không tìm thấy chủ sân này' });
+    const current = owner.transferNetwork?.status || 'none';
+    if (current !== 'none') return res.status(409).json({ message: 'Chỉ có thể gửi lời mời cho chủ sân chưa tham gia mạng lưới' });
+    const last = owner.transferNetwork?.invitedAt;
+    if (last && Date.now() - new Date(last).getTime() < INVITE_COOLDOWN_MS) {
+        return res.status(409).json({ message: 'Bạn vừa gửi lời mời cho chủ sân này, vui lòng thử lại sau' });
+    }
+
+    const updated = await User.findOneAndUpdate(
+        { _id: owner._id, role: 'owner', ...statusFilter('none') },
+        { 'transferNetwork.invitedAt': new Date() },
+        { new: true }
+    );
+    if (!updated) return res.status(409).json({ message: 'Trạng thái chủ sân vừa thay đổi, vui lòng tải lại' });
+
+    await notify(owner._id, {
+        title: 'Mời tham gia mạng lưới chuyển sân',
+        message: 'Quản trị viên mời bạn tham gia mạng lưới chuyển sân liên chủ sân. Bạn có muốn tham gia không?',
+        link: '/owner/transfers',
+    });
     res.json({ owner: shape(updated) });
 });
 

@@ -61,6 +61,7 @@ router.put('/cancellation-policy', writeLimiter, cancellationPolicyController.up
 // Mạng lưới chuyển sân: xem trạng thái thành viên và xin tham gia
 router.get('/network', networkController.getMyNetwork);
 router.post('/network/request', writeLimiter, networkController.requestToJoin);
+router.post('/network/respond', writeLimiter, networkController.respondToInvite);
 
 // Sự kiện (giải đấu / khuyến mãi) tại địa điểm của chủ sân: tạo, sửa, hủy
 router.get('/events', eventController.getOwnerEvents);

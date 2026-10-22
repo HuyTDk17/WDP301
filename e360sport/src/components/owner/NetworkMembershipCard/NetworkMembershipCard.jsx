@@ -41,7 +41,22 @@ export default function NetworkMembershipCard() {
     }
   }
 
-  const canRequest = ['none', 'rejected'].includes(info.status)
+  const respond = async (accept) => {
+    setSending(true)
+    try {
+      await networkService.respondToInvite(accept)
+      toast.success(accept ? 'Bạn đã trở thành thành viên mạng lưới chuyển sân' : 'Đã từ chối lời mời tham gia')
+    } catch (err) {
+      toast.error(err?.message || 'Không thể gửi phản hồi')
+    } finally {
+      setSending(false)
+      load()
+    }
+  }
+
+  // Admin đã mời và chủ sân chưa trả lời → hỏi "tham gia hay không" thay cho nút xin tham gia
+  const invited = info.status === 'none' && !!info.invitedAt
+  const canRequest = !invited && ['none', 'rejected'].includes(info.status)
 
   return (
     <div className={`${styles.card} ${info.status === 'approved' ? styles.ok : ''}`}>
@@ -51,11 +66,18 @@ export default function NetworkMembershipCard() {
           Mạng lưới chuyển sân
           <span className={`${styles.badge} ${styles[info.status]}`}>{NETWORK_STATUS_LABEL[info.status]}</span>
         </p>
-        <p className={styles.text}>{COPY[info.status]}</p>
+        <p className={styles.text}>{invited ? 'Quản trị viên mời bạn tham gia mạng lưới chuyển sân: khách có thể chuyển lượt đặt giữa địa điểm của bạn và các chủ sân khác. Bạn có muốn tham gia không?' : COPY[info.status]}</p>
         {info.note && ['rejected', 'revoked'].includes(info.status) && <p className={styles.note}>Lý do: {info.note}</p>}
         {!info.required && <p className={styles.hint}>Hiện quản trị viên chưa bật chế độ duyệt: mọi chủ sân đều đang tự động tham gia. Xin tham gia trước giúp bạn không bị gián đoạn khi chế độ này được bật.</p>}
+        {invited && <p className={styles.hint}>Lời mời gửi ngày {formatDate(info.invitedAt)}</p>}
         {info.status === 'pending' && info.requestedAt && <p className={styles.hint}>Gửi ngày {formatDate(info.requestedAt)}</p>}
       </div>
+      {invited && (
+        <div style={{ display: 'flex', gap: 8, flexShrink: 0 }}>
+          <Button size="sm" variant="outline" onClick={() => respond(false)} disabled={sending}>Không tham gia</Button>
+          <Button size="sm" onClick={() => respond(true)} loading={sending}>Tham gia</Button>
+        </div>
+      )}
       {canRequest && <Button size="sm" onClick={request} loading={sending}>{info.status === 'rejected' ? 'Gửi lại yêu cầu' : 'Xin tham gia'}</Button>}
     </div>
   )

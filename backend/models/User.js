@@ -50,6 +50,9 @@ const userSchema = new mongoose.Schema(
         transferNetwork: {
             status: { type: String, enum: ['none', 'pending', 'approved', 'rejected', 'revoked'], default: 'none' },
             requestedAt: { type: Date, default: null },
+            // Lần gần nhất Admin mời chủ sân (đang 'none') tham gia. Chỉ có nghĩa khi status vẫn là 'none';
+            // chủ sân trả lời (đồng ý/từ chối) hoặc tự xin tham gia thì về null.
+            invitedAt: { type: Date, default: null },
             reviewedAt: { type: Date, default: null },
             reviewedBy: { type: mongoose.Schema.Types.ObjectId, ref: 'User', default: null },
             note: { type: String, default: '' },

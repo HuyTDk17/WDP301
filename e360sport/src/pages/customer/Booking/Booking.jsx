@@ -8,6 +8,7 @@ import { settingsService } from '@/services/settingsService'
 import Button from '@/components/ui/Button/Button'
 import Spinner from '@/components/ui/Spinner/Spinner'
 import HoldTimer from '@/components/booking/HoldTimer/HoldTimer'
+import { summarizeSlots, courtAmount } from '@/utils/slotSelection'
 import { formatCurrency, formatDate, formatTime, getSport, getImageUrl, previewCommission } from '@/utils'
 import styles from './Booking.module.css'
 
@@ -113,9 +114,12 @@ export default function Booking() {
   }
 
   const pricePerHour = court.pricePerHour
-  const fee = previewCommission(pricePerHour, commissionRate, customerSharePct)
+  // Số giờ của khoảng đã chọn (có thể nhiều giờ liền nhau); tiền sân và phí dịch vụ tính trên cả khoảng, khớp máy chủ.
+  const hours = summarizeSlots([slot])?.hours || 1
+  const courtTotal = courtAmount(pricePerHour, hours)
+  const fee = previewCommission(courtTotal, commissionRate, customerSharePct)
   const serviceFee = fee.serviceFee
-  const total = pricePerHour + serviceFee
+  const total = courtTotal + serviceFee
 
   return (
     <div className={styles.page}>
@@ -137,7 +141,7 @@ export default function Booking() {
 
             <div className={styles.confirmDetails}>
               <div className={styles.confirmRow}><span><Calendar size={14} strokeWidth={2.25} /> Ngày</span><strong>{formatDate(date)}</strong></div>
-              <div className={styles.confirmRow}><span><Clock size={14} strokeWidth={2.25} /> Khung giờ</span><strong>{formatTime(slot.start)} – {formatTime(slot.end)}</strong></div>
+              <div className={styles.confirmRow}><span><Clock size={14} strokeWidth={2.25} /> Khung giờ</span><strong>{formatTime(slot.start)} – {formatTime(slot.end)} ({hours} giờ)</strong></div>
             </div>
 
             <div className={styles.formGrid}>
@@ -166,7 +170,7 @@ export default function Booking() {
             <div className={styles.summaryCard}>
               <h3 className={styles.summaryTitle}>Tóm tắt đơn</h3>
               <div className={styles.priceBreakdown}>
-                <div className={styles.priceRow}><span>{formatCurrency(pricePerHour)} × 1 giờ</span><span>{formatCurrency(pricePerHour)}</span></div>
+                <div className={styles.priceRow}><span>{formatCurrency(pricePerHour)} × {hours} giờ</span><span>{formatCurrency(courtTotal)}</span></div>
                 {serviceFee > 0 && (
                   <div className={styles.priceRow}><span>Phí dịch vụ</span><span>{formatCurrency(serviceFee)}</span></div>
                 )}

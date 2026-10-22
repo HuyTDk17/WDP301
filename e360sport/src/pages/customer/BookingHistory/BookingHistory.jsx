@@ -9,6 +9,7 @@ import ConfirmModal from '@/components/dashboard/ConfirmModal/ConfirmModal'
 import AssignBookingModal from '@/components/booking/AssignBookingModal/AssignBookingModal'
 import CreatePostModal from '@/components/players/CreatePostModal/CreatePostModal'
 import { bookingService, paymentService } from '@/services/bookingService'
+import { settingsService } from '@/services/settingsService'
 import { useToast } from '@/contexts/ToastContext'
 import { formatCurrency, formatDate, formatTime, BOOKING_STATUS } from '@/utils'
 import styles from './BookingHistory.module.css'
@@ -21,13 +22,24 @@ const TABS = [
   { value: 'cancelled', label: 'Đã hủy' },
 ]
 
-// Chỉ đơn đã xác nhận và còn đủ thời gian mới chuyển được. Điều kiện đầy đủ do
-// máy chủ quyết định (BR-TR-01..07); ở đây chỉ lọc sơ bộ để khỏi hiện nút vô ích.
-const MIN_TRANSFER_LEAD_HOURS = 2
-const canTransfer = (b) => {
-  if (b.status !== 'confirmed' || !b.customerId) return false
-  const start = new Date(`${b.date}T${b.startTime}:00`)
-  return (start.getTime() - Date.now()) / 3600000 >= MIN_TRANSFER_LEAD_HOURS
+// Chính sách chuyển sân lấy từ cài đặt nền tảng (GET /settings/public); đây chỉ là giá trị dự phòng khi chưa tải được.
+const DEFAULT_TRANSFER_POLICY = { enabled: true, minLeadHours: 2 }
+const startOf = (b) => new Date(`${b.date}T${b.startTime}:00+07:00`)
+
+/**
+ * Trạng thái các nút Chuyển sân / Đổi lịch / Sang tên của một lượt đặt:
+ *   null            → không áp dụng (đơn chưa xác nhận, đã qua giờ, đơn không có chủ tài khoản) — không hiện nút
+ *   { ok: true }    → dùng được
+ *   { ok: false, reason } → hiện nút mờ kèm lý do, để khách biết vì sao chưa chuyển được thay vì không thấy nút đâu cả.
+ * Điều kiện đầy đủ (BR-TR-01..07) do máy chủ quyết định; ở đây chỉ chặn sơ bộ.
+ */
+const transferState = (b, policy) => {
+  if (b.status !== 'confirmed' || !b.customerId) return null
+  const hoursLeft = (startOf(b).getTime() - Date.now()) / 3600000
+  if (hoursLeft <= 0) return null
+  if (!policy.enabled) return { ok: false, reason: 'Chức năng chuyển sân đang tạm ngưng' }
+  if (hoursLeft < policy.minLeadHours) return { ok: false, reason: `Chỉ chuyển/đổi lịch được khi còn ít nhất ${policy.minLeadHours} giờ trước giờ chơi` }
+  return { ok: true }
 }
 
 const PAYMENT_METHOD_LABEL = { bank_transfer: 'Chuyển khoản ngân hàng', credit: 'Số dư khuyến mãi', manual: 'Thanh toán tại sân' }
@@ -62,6 +74,13 @@ export default function BookingHistory() {
   // { [bookingId]: payment | null }. Để phân biệt "chưa chuyển khoản" với "đã báo
   // chuyển, đang chờ chủ sân xác nhận".
   const [payments, setPayments] = useState({})
+  const [policy, setPolicy] = useState(DEFAULT_TRANSFER_POLICY)
+
+  useEffect(() => {
+    settingsService.getPublicSettings()
+      .then((st) => setPolicy({ enabled: st.transferEnabled !== false, minLeadHours: Number(st.transferMinLeadTimeHours) || DEFAULT_TRANSFER_POLICY.minLeadHours }))
+      .catch(() => { /* giữ giá trị mặc định; máy chủ vẫn kiểm tra lại khi chuyển */ })
+  }, [])
 
   const loadBookings = useCallback(() => {
     setLoading(true)
@@ -126,7 +145,7 @@ export default function BookingHistory() {
           <div className={styles.list}>
             {bookings.map(booking => {
               const status = BOOKING_STATUS[booking.status] || BOOKING_STATUS.pending
-              const transferable = canTransfer(booking)
+              const transfer = transferState(booking, policy)
               const isExpanded = expandedId === booking._id
               const canCancel = ['pending', 'confirmed'].includes(booking.status)
 
@@ -149,6 +168,27 @@ export default function BookingHistory() {
                       <button className={styles.expandBtn} onClick={() => toggleExpand(booking)}>{isExpanded ? <><ChevronUp size={13} /> Thu gọn</> : <><ChevronDown size={13} /> Chi tiết</>}</button>
                     </div>
                   </div>
+
+                  {transfer && (
+                    <div className={styles.quickActions}>
+                      {transfer.ok ? (
+                        <>
+                          <Link to={`/bookings/${booking._id}/transfer`}>
+                            <Button size="sm" icon={<Repeat size={13} />}>Chuyển sân</Button>
+                          </Link>
+                          <Link to={`/bookings/${booking._id}/reschedule`}>
+                            <Button size="sm" variant="outline" icon={<CalendarClock size={13} />}>Đổi lịch</Button>
+                          </Link>
+                          <Button variant="outline" size="sm" icon={<Gift size={13} />} onClick={() => setAssignTarget(booking)}>Sang tên</Button>
+                        </>
+                      ) : (
+                        <>
+                          <Button size="sm" icon={<Repeat size={13} />} disabled title={transfer.reason}>Chuyển sân</Button>
+                          <span className={styles.quickHint}>{transfer.reason}</span>
+                        </>
+                      )}
+                    </div>
+                  )}
 
                   {isExpanded && (() => {
                     const payment = payments[booking._id]
@@ -212,21 +252,6 @@ export default function BookingHistory() {
                               giao dịch thứ hai cho cùng một đơn. */}
                           {awaitingPayment && !reportedTransfer && (
                             <Button size="sm" icon={<CreditCard size={13} />} disabled={!paymentLoaded} onClick={() => navigate(`/payment?bookingId=${booking._id}`)}>Thanh toán</Button>
-                          )}
-                          {/* Đặt TRƯỚC nút huỷ và làm nổi bật hơn: chuyển sân giữ
-                              lại giá trị cho cả ba bên, huỷ thì mất hết. */}
-                          {transferable && (
-                            <Link to={`/bookings/${booking._id}/reschedule`}>
-                              <Button size="sm" variant="outline" icon={<CalendarClock size={13} />}>Đổi lịch</Button>
-                            </Link>
-                          )}
-                          {transferable && (
-                            <Link to={`/bookings/${booking._id}/transfer`}>
-                              <Button size="sm" icon={<Repeat size={13} />}>Chuyển sân</Button>
-                            </Link>
-                          )}
-                          {transferable && (
-                            <Button variant="outline" size="sm" icon={<Gift size={13} />} onClick={() => setAssignTarget(booking)}>Sang tên</Button>
                           )}
                           {canCancelNow && <Button variant="danger" size="sm" icon={<X size={13} />} onClick={() => openCancel(booking)}>Hủy lượt đặt</Button>}
                           {booking.status === 'completed' && <Button variant="outline" size="sm" icon={<Star size={13} />} onClick={() => navigate(`/venues/${booking.venueId?._id || booking.venueId}?review=1`)}>Đánh giá</Button>}

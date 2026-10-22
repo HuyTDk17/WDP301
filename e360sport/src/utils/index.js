@@ -146,6 +146,8 @@ export const generateTimeSlots = (open = '06:00', close = '22:00', interval = 60
  * @param {Array<{start: string, end: string}>} bookedSlots - khung giờ đã có người đặt
  * @returns {Array<{start, end, label, isBooked, isPast}>}
  */
+const toMinutesOf = (t) => { const [h, m] = String(t).split(':').map(Number); return h * 60 + (m || 0) }
+
 export const buildAvailableSlots = (open, close, interval, date, bookedSlots = []) => {
   const allSlots = generateTimeSlots(open, close, interval)
   const today = toLocalISODate()
@@ -155,7 +157,10 @@ export const buildAvailableSlots = (open, close, interval, date, bookedSlots = [
   return allSlots.map(slot => {
     const [sh, sm] = slot.start.split(':').map(Number)
     const slotMinutes = sh * 60 + sm
-    const isBooked = bookedSlots.some(b => b.start === slot.start)
+    // Một ô là "đã đặt" nếu BẤT KỲ lượt đặt nào CHỒNG LẤN với nó — không chỉ lượt bắt đầu đúng giờ đó.
+    // So `start ===` thì đơn 18:00–20:00 chỉ khoá ô 18:00, còn ô 19:00 vẫn hiện trống (đặt xong mới bị từ chối).
+    const slotEnd = toMinutesOf(slot.end)
+    const isBooked = bookedSlots.some(b => toMinutesOf(b.start) < slotEnd && toMinutesOf(b.end) > slotMinutes)
     const isPast = isToday && slotMinutes <= nowMinutes
     return { ...slot, isBooked, isPast }
   })

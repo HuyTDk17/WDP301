@@ -15,7 +15,8 @@ import CancellationPolicy from '@/components/venue/CancellationPolicy/Cancellati
 import ConfirmModal from '@/components/dashboard/ConfirmModal/ConfirmModal'
 import { venueService } from '@/services/venueService'
 import { settingsService } from '@/services/settingsService'
-import { formatCurrency, formatDate, getSport, buildAvailableSlots, getAvatarPlaceholder, getImageUrl, previewCommission, toLocalISODate } from '@/utils'
+import { toggleSlotSelection, summarizeSlots, courtAmount, MAX_BOOKING_SLOTS } from '@/utils/slotSelection'
+import { formatCurrency, formatDate, formatTime, getSport, buildAvailableSlots, getAvatarPlaceholder, getImageUrl, previewCommission, toLocalISODate } from '@/utils'
 import { useAuth } from '@/contexts/authState'
 import { useToast } from '@/contexts/ToastContext'
 import { useBooking } from '@/contexts/BookingContext'
@@ -104,7 +105,7 @@ export default function VenueDetail() {
   // Trạng thái lựa chọn đặt sân
   const [selectedCourt, setSelectedCourt] = useState(null)
   const [selectedDate, setSelectedDate] = useState(toLocalISODate())
-  const [selectedSlot, setSelectedSlot] = useState(null)
+  const [selectedSlots, setSelectedSlots] = useState([])   // các khung 1 giờ LIỀN NHAU đã chọn
   const [slotsData, setSlotsData] = useState(null)
   const [slotsLoading, setSlotsLoading] = useState(false)
 
@@ -138,7 +139,7 @@ export default function VenueDetail() {
   const loadSlots = useCallback(() => {
     if (!venue || !selectedCourt) return
     setSlotsLoading(true)
-    setSelectedSlot(null)
+    setSelectedSlots([])
     venueService.getCourtSlots(venue._id, selectedCourt._id, selectedDate)
       .then((res) => setSlotsData(res))
       .catch(() => setSlotsData({ bookedSlots: [] }))
@@ -177,7 +178,9 @@ export default function VenueDetail() {
     ? buildAvailableSlots(venue.openHours?.open, venue.openHours?.close, 60, selectedDate, slotsData?.bookedSlots || [])
     : []
 
-  const totalPrice = selectedSlot ? (selectedCourt?.pricePerHour || 0) : 0
+  // Khoảng giờ đã chọn { start, end, hours } — tiền sân = đơn giá × số giờ (máy chủ tính lại khi tạo đơn)
+  const selection = summarizeSlots(selectedSlots)
+  const totalPrice = selection ? courtAmount(selectedCourt?.pricePerHour, selection.hours) : 0
   const serviceFee = previewCommission(totalPrice, commissionRate, customerSharePct).serviceFee
 
   const displayedAmenities = showAllAmenities ? venue.amenities : (venue.amenities || []).slice(0, 6)
@@ -186,14 +189,14 @@ export default function VenueDetail() {
     if (!isAuthenticated) { toast.info('Vui lòng đăng nhập để đặt sân này'); navigate('/login'); return }
     if (user?.role !== 'customer') { toast.info('Chỉ tài khoản khách hàng mới có thể đặt sân'); return }
     if (!selectedCourt) { toast.warning('Vui lòng chọn sân'); return }
-    if (!selectedSlot) { toast.warning('Vui lòng chọn khung giờ'); return }
+    if (!selection) { toast.warning('Vui lòng chọn khung giờ'); return }
 
     // Đưa lựa chọn vào BookingContext rồi chuyển sang trang đặt sân,
     // nơi sẽ gọi bookingService.holdSlot() để giữ chỗ tạm thời.
     setVenue(venue)
     setCourt(selectedCourt)
     setDate(selectedDate)
-    setSlot(selectedSlot)
+    setSlot({ start: selection.start, end: selection.end })
     navigate(`/booking/${venue._id}`)
   }
 
@@ -365,17 +368,21 @@ export default function VenueDetail() {
                 <label className={styles.bookingLabel}><Clock size={14} strokeWidth={2.25} /> Khung giờ trống</label>
                 <TimeSlotPicker
                   slots={slots}
-                  selected={selectedSlot ? [selectedSlot] : []}
-                  onToggle={(slot) => setSelectedSlot(prev => prev?.start === slot.start ? null : slot)}
+                  selected={selectedSlots}
+                  onToggle={(slot) => setSelectedSlots(prev => toggleSlotSelection(prev, slot, slots))}
                   loading={slotsLoading}
-                  maxSlots={1}
                 />
+                <p className={styles.bookingNote}>
+                  {selection
+                    ? `Đã chọn ${formatTime(selection.start)} – ${formatTime(selection.end)} (${selection.hours} giờ). Bấm thêm ô liền kề để đặt nhiều giờ (tối đa ${MAX_BOOKING_SLOTS} giờ).`
+                    : `Bấm nhiều ô liền kề để đặt nhiều giờ (tối đa ${MAX_BOOKING_SLOTS} giờ).`}
+                </p>
               </div>
             )}
 
-            {selectedSlot && selectedCourt && (
+            {selection && selectedCourt && (
               <div className={styles.priceSummary}>
-                <div className={styles.summaryRow}><span>{formatCurrency(selectedCourt.pricePerHour)} × 1 giờ</span><span>{formatCurrency(totalPrice)}</span></div>
+                <div className={styles.summaryRow}><span>{formatCurrency(selectedCourt.pricePerHour)} × {selection.hours} giờ</span><span>{formatCurrency(totalPrice)}</span></div>
                 {serviceFee > 0 && (
                   <div className={styles.summaryRow}><span>Phí dịch vụ</span><span>{formatCurrency(serviceFee)}</span></div>
                 )}
@@ -383,8 +390,8 @@ export default function VenueDetail() {
               </div>
             )}
 
-            <Button fullWidth size="lg" onClick={handleBook} disabled={!selectedCourt || !selectedSlot}>
-              {!selectedCourt ? 'Chọn sân' : !selectedSlot ? 'Chọn khung giờ' : `Đặt ngay — ${formatCurrency(totalPrice + serviceFee)}`}
+            <Button fullWidth size="lg" onClick={handleBook} disabled={!selectedCourt || !selection}>
+              {!selectedCourt ? 'Chọn sân' : !selection ? 'Chọn khung giờ' : `Đặt ngay — ${formatCurrency(totalPrice + serviceFee)}`}
             </Button>
 
             <p className={styles.bookingNote}><CreditCard size={13} strokeWidth={2.25} /> Thanh toán an toàn bằng chuyển khoản ngân hàng qua mã QR</p>

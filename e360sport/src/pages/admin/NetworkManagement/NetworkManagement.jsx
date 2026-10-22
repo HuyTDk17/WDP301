@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback } from 'react'
 import { Link } from 'react-router-dom'
-import { Network, Check, X, UserMinus, Info } from 'lucide-react'
+import { Network, Check, X, UserMinus, Info, Send } from 'lucide-react'
 import PageHeader from '@/components/dashboard/PageHeader/PageHeader'
 import DataTable from '@/components/dashboard/DataTable/DataTable'
 import StatusBadge from '@/components/dashboard/StatusBadge/StatusBadge'
@@ -70,6 +70,20 @@ export default function NetworkManagement() {
     }
   }
 
+  // Chủ sân chưa gửi yêu cầu thì không duyệt thay — chỉ gửi thông báo hỏi ý kiến họ.
+  const invite = async (owner) => {
+    setBusy(owner._id)
+    try {
+      await networkService.adminInvite(owner._id)
+      toast.success(`Đã gửi lời mời tới ${owner.name}`)
+    } catch (err) {
+      toast.error(err?.message || 'Không thể gửi lời mời')
+    } finally {
+      setBusy('')
+      reload()
+    }
+  }
+
   const approveAll = async () => {
     setApproveAllOpen(false)
     try {
@@ -84,7 +98,7 @@ export default function NetworkManagement() {
   const columns = [
     { header: 'Chủ sân', accessor: 'name', render: (v, o) => (<div><p className={f.cellTitle}>{v}</p><p className={f.cellSub}>{o.email}{o.phone ? ` · ${o.phone}` : ''}</p></div>) },
     { header: 'Trạng thái', accessor: 'status', render: (v) => <StatusBadge status={v} labels={{ none: 'Chưa tham gia' }} /> },
-    { header: 'Gửi yêu cầu', accessor: 'requestedAt', render: (v) => <span className={f.cellSub}>{v ? formatDate(v) : '—'}</span> },
+    { header: 'Gửi yêu cầu', accessor: 'requestedAt', render: (v, o) => (<div><span className={f.cellSub}>{v ? formatDate(v) : '—'}</span>{o.status === 'none' && o.invitedAt && <p className={f.cellSub}>Đã mời ngày {formatDate(o.invitedAt)}</p>}</div>) },
     { header: 'Xử lý', accessor: 'reviewedAt', render: (v, o) => (<div><span className={f.cellSub}>{v ? formatDate(v) : '—'}</span>{o.note && <p className={f.cellSub}>{o.note}</p>}</div>) },
   ]
 
@@ -124,7 +138,10 @@ export default function NetworkManagement() {
         server={{ page, totalPages, total, onPageChange: changePage, onSearchChange: changeSearch }}
         actions={(o) => (
           <>
-            {o.status !== 'approved' && (
+            {o.status === 'none' && (
+              <Button size="xs" variant="outline" icon={<Send size={13} />} loading={busy === o._id} onClick={() => invite(o)}>{o.invitedAt ? 'Mời lại' : 'Mời tham gia'}</Button>
+            )}
+            {['pending', 'rejected', 'revoked'].includes(o.status) && (
               <Button size="xs" variant="success" icon={<Check size={13} />} loading={busy === o._id} onClick={() => review(o, 'approve')}>Duyệt</Button>
             )}
             {o.status === 'pending' && <Button size="xs" variant="danger" icon={<X size={13} />} onClick={() => setReasonAction({ owner: o, action: 'reject' })}>Từ chối</Button>}

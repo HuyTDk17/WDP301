@@ -204,6 +204,57 @@ test('NW-10 · đã gắn đủ: kiểm tra ở báo giá + xác nhận + sau du
     assert.ok(fs.readFileSync(path.join(root, 'models', 'User.js'), 'utf8').includes('transferNetwork: {'));
 });
 
+test('NW-11 · admin MỜI chủ sân chưa tham gia: chỉ khi status none, gửi thông báo cho chủ sân, không đổi trạng thái, giãn cách 24h', async () => {
+    reset();
+    User.docs.push(owner(10, 'none'), owner(11), owner(12, 'pending'), owner(13, 'approved'), owner(14, 'rejected'), decorate({ _id: oid(20), name: 'Khách', role: 'customer' }));
+    const invite = (id) => call(ctrl.inviteOwner, { user: ADMIN, params: { ownerId: id } });
+    for (const n of [10, 11]) {
+        const r = await invite(oid(n));
+        assert.strictEqual(r.code, 200, `chủ sân ${n}`);
+        assert.ok(User.docs.find((d) => d._id === oid(n)).transferNetwork.invitedAt, 'ghi lại thời điểm mời');
+        assert.strictEqual(User.docs.find((d) => d._id === oid(n)).transferNetwork.status || 'none', 'none', 'mời KHÔNG tự duyệt');
+        assert.strictEqual(notesTo(oid(n)).length, 1);
+        assert.strictEqual(notesTo(oid(n))[0].link, '/owner/transfers');
+    }
+    assert.strictEqual((await invite(oid(10))).code, 409, 'vừa mời xong chưa được mời lại');
+    for (const n of [12, 13, 14]) assert.strictEqual((await invite(oid(n))).code, 409, `status khác none (${n}) không được mời`);
+    assert.strictEqual((await invite(oid(20))).code, 404, 'khách hàng không phải chủ sân');
+    assert.strictEqual((await invite('xyz')).code, 400);
+});
+test('NW-12 · chủ sân trả lời lời mời: đồng ý → thành viên + báo admin; từ chối → chỉ xoá lời mời; không có lời mời → 409', async () => {
+    reset();
+    User.docs.push(owner(10, 'none'), owner(11, 'none'), owner(12, 'none'));
+    await call(ctrl.inviteOwner, { user: ADMIN, params: { ownerId: oid(10) } });
+    await call(ctrl.inviteOwner, { user: ADMIN, params: { ownerId: oid(11) } });
+    Notification.docs = [];
+    const respond = (id, accept) => call(ctrl.respondToInvite, { user: { _id: oid(id) }, body: { accept } });
+
+    const ok = await respond(10, true);
+    assert.deepStrictEqual([ok.code, ok.body.status, ok.body.invitedAt], [200, 'approved', null]);
+    assert.strictEqual(notesTo(ADMIN._id).length, 1, 'admin được báo');
+    assert.strictEqual(notesTo(oid(2)).length, 0, 'admin bị khóa không nhận');
+    assert.strictEqual((await respond(10, true)).code, 409, 'trả lời lần hai bị chặn');
+
+    const no = await respond(11, false);
+    assert.deepStrictEqual([no.code, no.body.status, no.body.invitedAt], [200, 'none', null]);
+    assert.strictEqual((await respond(11, true)).code, 409, 'đã từ chối thì lời mời hết hiệu lực');
+
+    assert.strictEqual((await respond(12, true)).code, 409, 'chưa được mời thì không tự duyệt bằng cách này');
+    assert.strictEqual(User.docs.find((d) => d._id === oid(12)).transferNetwork.status, 'none');
+});
+test('NW-13 · chủ sân tự xin tham gia thì lời mời cũ bị xoá; route + model đã gắn đủ', async () => {
+    reset();
+    User.docs.push(owner(10, 'none'));
+    await call(ctrl.inviteOwner, { user: ADMIN, params: { ownerId: oid(10) } });
+    const r = await call(ctrl.requestToJoin, { user: { _id: oid(10) } });
+    assert.deepStrictEqual([r.code, r.body.status, r.body.invitedAt], [201, 'pending', null]);
+    const root = path.join(__dirname, '..');
+    assert.ok(fs.readFileSync(path.join(root, 'routes', 'ownerRoutes.js'), 'utf8').includes("'/network/respond', writeLimiter"));
+    const admin = fs.readFileSync(path.join(root, 'routes', 'adminRoutes.js'), 'utf8');
+    assert.ok(admin.indexOf("'/network/:ownerId/invite', writeLimiter") > admin.indexOf("router.use(protect, authorize('admin'))"));
+    assert.ok(fs.readFileSync(path.join(root, 'models', 'User.js'), 'utf8').includes('invitedAt: { type: Date, default: null }'));
+});
+
 (async () => {
     for (const { name, fn } of queue) {
         try { await fn(); console.log(`  ✓ ${name}`); passed += 1; }
