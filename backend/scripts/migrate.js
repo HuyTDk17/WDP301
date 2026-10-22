@@ -249,6 +249,15 @@ async function tuneFeeDeadlines() {
     console.log(`✔ Ân hạn nộp phí dịch vụ về mặc định 3 ngày: ${r.modifiedCount} cấu hình`);
 }
 
+/**
+ * Bài tìm người chơi giờ có thể đăng thẳng ở trang Tìm người chơi (không có bookingId). Chỉ mục duy nhất cũ theo
+ * bookingId sẽ coi mọi bài thiếu bookingId là trùng nhau, nên gỡ bản cũ và dựng bản mới. Idempotent.
+ */
+async function fixPlayerPostIndex() {
+    await require('../models/PlayerPost').ensureIndexes();
+    console.log('✔ Chỉ mục bài tìm người chơi đã sẵn sàng cho bài đăng trực tiếp');
+}
+
 (async () => {
     await connectDB();
     console.log('--- Bắt đầu migrate ---');
@@ -261,6 +270,7 @@ async function tuneFeeDeadlines() {
     await dropLoyaltyData();
     await tuneFeeDeadlines();
     await migrateOwnerDocsToPrivate();
+    await fixPlayerPostIndex();
     console.log('--- Hoàn tất ---');
     await mongoose.disconnect();
     process.exit(0);

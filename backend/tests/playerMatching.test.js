@@ -72,11 +72,15 @@ function makeModel(defaults = {}, uniques = []) {
     M.updateOne = async (f, update) => { const d = M.docs.find((x) => match(x, f)); if (d) applyUpdate(d, update); };
     return M;
 }
-const PlayerPost = makeModel({ status: 'open', active: true, acceptedCount: 0, level: 'any', note: '' }, [{ fields: ['bookingId'], when: (d) => d.active === true }]);
+const PlayerPost = makeModel({ status: 'open', active: true, acceptedCount: 0, level: 'any', note: '' }, [{ fields: ['bookingId'], when: (d) => d.active === true && d.bookingId != null }]);
 const JoinRequest = makeModel({ status: 'pending', active: true, message: '' }, [{ fields: ['postId', 'userId'], when: (d) => d.active === true }]);
 const Booking = makeModel(); const User = makeModel(); const Notification = makeModel();
 fake('models/PlayerPost.js', PlayerPost); fake('models/JoinRequest.js', JoinRequest);
+const Venue = makeModel(); const Court = makeModel();
+let blockedOwners = new Set();
 fake('models/Booking.js', Booking); fake('models/User.js', User); fake('models/Notification.js', Notification);
+fake('models/Venue.js', Venue); fake('models/Court.js', Court);
+fake('services/settlementService.js', { isOwnerBlocked: async (id) => blockedOwners.has(String(id)) });
 const ctrl = require('../controllers/playerController');
 const svc = require('../services/playerService');
 const { zaloUrl } = require('../utils/zalo');
@@ -91,7 +95,8 @@ const U = (n, over = {}) => ({ _id: oid(n), name: `Người ${n}`, role: 'custom
 const HOST = U(1); const P2 = U(2); const P3 = U(3); const P4 = U(4);
 const V1 = oid(50);
 function reset() {
-    for (const M of [PlayerPost, JoinRequest, Booking, User, Notification]) M.docs = [];
+    for (const M of [PlayerPost, JoinRequest, Booking, User, Notification, Venue, Court]) M.docs = [];
+    blockedOwners = new Set();
     [HOST, P2, P3, P4].forEach((u) => User.docs.push({ ...u, email: `u${u._id.slice(-2)}@x.vn`, avatar: null }));
 }
 const addBooking = (over = {}) => Booking.create({ customerId: HOST._id, venueId: V1, venueName: 'Sân Mỹ Đình', courtName: 'Sân 1', sport: 'football', date: vnDate(2 * DAY), startTime: '18:00', endTime: '20:00', status: 'confirmed', ...over });
@@ -299,6 +304,155 @@ test('PM-12 · đã gắn đủ: hook ở hủy đặt (khách + chủ sân) và
     assert.ok(rt.indexOf("'/mine'") < rt.indexOf("'/:id/join'") && rt.indexOf("'/requests/mine'") < rt.indexOf("'/:id/close'"));
     for (const f of ["'/requests/:requestId/respond', writeLimiter", "'/requests/:requestId/withdraw', writeLimiter", "'/:id/join', writeLimiter", "router.post('/', writeLimiter"]) assert.ok(rt.includes(f), f);
     assert.ok(fs.readFileSync(path.join(root, 'server.js'), 'utf8').includes("'/api/players'"));
+});
+
+
+// ── ĐĂNG THẲNG Ở TRANG TÌM NGƯỜI CHƠI (không cần lượt đặt) ──
+const VENUE = oid(60); const COURT = oid(61); const OWNER = oid(70);
+async function seedVenue() {
+    await Venue.create({ _id: VENUE, ownerId: OWNER, name: 'Sân Hòa Phát', status: 'approved', isActive: true });
+    await Court.create({ _id: COURT, venueId: VENUE, name: 'Sân số 3', type: 'badminton', status: 'active' });
+}
+const direct = (over = {}) => ({ venueId: VENUE, courtId: COURT, date: vnDate(2 * DAY), startTime: '18:00', endTime: '20:00', slotsNeeded: 2, level: 'any', note: 'Đánh vui', ...over });
+const postDirect = (body, user = HOST) => call(ctrl.createPost, { user, body });
+
+test('PM-13 · đăng thẳng: kiểm tra đầu vào, địa điểm/sân phải hợp lệ và đang hoạt động, thời gian chưa qua', async () => {
+    reset(); await seedVenue();
+    assert.strictEqual((await postDirect(direct(), { ...HOST, phone: '' })).code, 400, 'thiếu SĐT');
+    assert.strictEqual((await postDirect(direct({ venueId: undefined }))).code, 400, 'thiếu địa điểm');
+    assert.strictEqual((await postDirect(direct({ venueId: 'xyz' }))).code, 400);
+    assert.strictEqual((await postDirect(direct({ courtId: undefined }))).code, 400, 'thiếu sân');
+    for (const date of [undefined, '', 'abc', '2026-02-30', '2026-13-01']) assert.strictEqual((await postDirect(direct({ date }))).code, 400, `ngày ${date}`);
+    for (const t of [{ startTime: '25:00' }, { endTime: 'x' }, { startTime: undefined }]) assert.strictEqual((await postDirect(direct(t))).code, 400, JSON.stringify(t));
+    for (const t of [{ startTime: '20:00', endTime: '18:00' }, { startTime: '18:00', endTime: '18:00' }]) assert.strictEqual((await postDirect(direct(t))).code, 400, 'giờ kết thúc phải sau giờ bắt đầu');
+    for (const n of [0, 21, 1.5, 'x']) assert.strictEqual((await postDirect(direct({ slotsNeeded: n }))).code, 400, `số người ${n}`);
+    assert.strictEqual((await postDirect(direct({ level: 'god' }))).code, 400);
+    assert.strictEqual((await postDirect(direct({ note: 'x'.repeat(301) }))).code, 400);
+    assert.strictEqual((await postDirect(direct({ venueId: oid(999) }))).code, 404, 'địa điểm không tồn tại');
+    const other = await Venue.create({ ownerId: OWNER, name: 'Sân khác', status: 'approved', isActive: true });
+    assert.strictEqual((await postDirect(direct({ venueId: other._id }))).code, 404, 'sân không thuộc địa điểm đã chọn');
+    assert.strictEqual((await postDirect(direct({ courtId: oid(998) }))).code, 404, 'sân không tồn tại');
+    assert.strictEqual((await postDirect(direct({ date: vnDate(-DAY) }))).code, 409, 'ngày đã qua');
+    assert.strictEqual(PlayerPost.docs.length, 0, 'không bài nào lọt qua');
+
+    Venue.docs.find((v) => v._id === VENUE).status = 'pending';
+    assert.strictEqual((await postDirect(direct())).code, 404, 'địa điểm chưa duyệt');
+    Venue.docs.find((v) => v._id === VENUE).status = 'approved'; Venue.docs.find((v) => v._id === VENUE).isActive = false;
+    assert.strictEqual((await postDirect(direct())).code, 404, 'địa điểm đang ẩn');
+    Venue.docs.find((v) => v._id === VENUE).isActive = true; blockedOwners.add(OWNER);
+    assert.strictEqual((await postDirect(direct())).code, 404, 'chủ sân bị khoá');
+    blockedOwners.clear(); Court.docs.find((c) => c._id === COURT).status = 'maintenance';
+    assert.strictEqual((await postDirect(direct())).code, 409, 'sân không hoạt động');
+    Court.docs.find((c) => c._id === COURT).status = 'active';
+    assert.strictEqual((await postDirect(direct())).code, 201, 'hết lỗi thì đăng được');
+});
+
+test('PM-14 · đăng thẳng thành công: lấy tên/môn từ địa điểm + sân, không có bookingId, nhiều bài khác nhau được; trùng sân+giờ bị chặn; trần 5 bài dùng chung', async () => {
+    reset(); await seedVenue();
+    await Court.create({ _id: oid(62), venueId: VENUE, name: 'Sân số 4', type: 'badminton', status: 'active' });
+    const r = await postDirect(direct());
+    assert.strictEqual(r.code, 201, JSON.stringify(r.body));
+    const p = PlayerPost.docs.find((x) => x._id === r.body.post._id);
+    assert.deepStrictEqual([p.source, p.venueName, p.courtName, p.sport, p.hostId, p.slotsNeeded, p.level, p.note], ['direct', 'Sân Hòa Phát', 'Sân số 3', 'badminton', HOST._id, 2, 'any', 'Đánh vui']);
+    assert.strictEqual(p.bookingId, undefined, 'bài đăng thẳng không có bookingId');
+    assert.strictEqual(p.courtId, COURT);
+    assert.strictEqual(p.startsAt.toISOString(), new Date(`${p.date}T18:00:00+07:00`).toISOString(), 'giờ theo giờ Việt Nam');
+    assert.strictEqual(Booking.docs.length, 0, 'không cần tạo lượt đặt nào');
+
+    assert.strictEqual((await postDirect(direct())).code, 409, 'cùng sân + cùng giờ bắt đầu → trùng');
+    assert.strictEqual((await postDirect(direct({ courtId: oid(62) }))).code, 201, 'sân khác được (hai bài không bookingId không đụng nhau)');
+    assert.strictEqual((await postDirect(direct({ startTime: '20:00', endTime: '21:00' }))).code, 201, 'giờ khác được');
+    assert.strictEqual((await postDirect(direct(), P2)).code, 201, 'người khác đăng cùng sân + giờ vẫn được');
+
+    // trần 5 bài chưa diễn ra tính chung cả hai kiểu: đã có 3 bài direct của HOST → thêm 1 bài từ lượt đặt + 1 direct = 5, bài thứ 6 bị chặn
+    const b = await addBooking();
+    assert.strictEqual((await call(ctrl.createPost, { user: HOST, body: { bookingId: b._id, slotsNeeded: 1 } })).code, 201);
+    assert.strictEqual((await postDirect(direct({ startTime: '10:00', endTime: '11:00' }))).code, 201);
+    assert.strictEqual((await postDirect(direct({ startTime: '12:00', endTime: '13:00' }))).code, 429, 'bài thứ 6');
+});
+
+test('PM-15 · cách đăng cũ (từ lượt đặt) vẫn y nguyên: source=booking, có bookingId, mỗi lượt đặt một bài', async () => {
+    reset(); await seedVenue();
+    const { post, booking } = await newPost();
+    assert.deepStrictEqual([post.source, String(post.bookingId)], ['booking', String(booking._id)]);
+    const again = await call(ctrl.createPost, { user: HOST, body: { bookingId: booking._id, slotsNeeded: 2 } });
+    assert.strictEqual(again.code, 409);
+    // bookingId rỗng + không có venue/court → đi nhánh đăng thẳng và bị chặn đúng lý do, không lỗi 500
+    const none = await call(ctrl.createPost, { user: HOST, body: { slotsNeeded: 2 } });
+    assert.strictEqual(none.code, 400);
+    assert.strictEqual((await call(ctrl.createPost, { user: HOST, body: { bookingId: 'xyz', slotsNeeded: 2 } })).code, 400);
+});
+
+test('PM-16 · bài đăng thẳng: hiện trong danh sách (kèm source), lọc theo môn/ngày, KHÔNG lộ SĐT; xin → nhận → đầy người; hiện liên hệ sau khi được nhận', async () => {
+    reset(); await seedVenue();
+    const r = await postDirect(direct({ slotsNeeded: 1 }));
+    const post = PlayerPost.docs.find((x) => x._id === r.body.post._id);
+
+    const list = await call(ctrl.listPosts, { user: P2, query: {} });
+    assert.strictEqual(list.body.posts.length, 1, 'không cần lượt đặt vẫn hiện');
+    assert.strictEqual(list.body.posts[0].source, 'direct');
+    assert.strictEqual(list.body.posts[0].venueName, 'Sân Hòa Phát');
+    assert.ok(!JSON.stringify(list.body).includes(HOST.phone), 'không lộ SĐT chủ nhóm');
+    assert.strictEqual((await call(ctrl.listPosts, { user: P2, query: { sport: 'badminton' } })).body.posts.length, 1);
+    assert.strictEqual((await call(ctrl.listPosts, { user: P2, query: { sport: 'football' } })).body.posts.length, 0);
+    assert.strictEqual((await call(ctrl.listPosts, { user: P2, query: { date: post.date } })).body.posts.length, 1);
+    assert.strictEqual((await call(ctrl.listPosts, { user: HOST, query: {} })).body.posts[0].isMine, true);
+
+    const j = await join(P2, post, 'Mình chơi khá');
+    assert.strictEqual(j.code, 201, JSON.stringify(j.body));
+    assert.strictEqual(notesTo(HOST._id).length, 1, 'chủ nhóm được báo');
+    const mine = await call(ctrl.getMyPosts, { user: HOST });
+    assert.ok(!('contact' in mine.body.posts[0].requests[0]), 'chưa nhận thì chưa có liên hệ');
+
+    const ok = await respond(HOST, j.body.request._id, 'accept');
+    assert.strictEqual(ok.code, 200, JSON.stringify(ok.body));
+    assert.strictEqual(ok.body.contact.phone, P2.phone);
+    assert.strictEqual(post.status, 'full', 'đủ người');
+    assert.strictEqual((await join(P3, post)).code, 409, 'đã đủ người');
+    const reqs = await call(ctrl.getMyRequests, { user: P2 });
+    assert.strictEqual(reqs.body.requests[0].contact.phone, HOST.phone, 'người được nhận thấy liên hệ chủ nhóm');
+});
+
+test('PM-17 · bài đăng thẳng: chủ nhóm đóng được, hết giờ thì không xin được, closeForBooking không đụng tới', async () => {
+    reset(); await seedVenue();
+    const r = await postDirect(direct());
+    const post = PlayerPost.docs.find((x) => x._id === r.body.post._id);
+    const j = await join(P2, post);
+    await svc.closeForBooking(oid(12345), 'lượt đặt bất kỳ');
+    assert.strictEqual(post.status, 'open', 'bài không gắn lượt đặt thì hook hủy đặt không đóng nhầm');
+
+    post.startsAt = new Date(Date.now() - H);
+    assert.strictEqual((await join(P3, post)).code, 409, 'đã bắt đầu');
+    assert.strictEqual((await respond(HOST, j.body.request._id, 'accept')).code, 409, 'đã bắt đầu thì không nhận thêm');
+    post.startsAt = new Date(Date.now() + DAY);
+
+    assert.strictEqual((await call(ctrl.closeMyPost, { user: P2, params: { id: post._id } })).code, 404, 'người khác không đóng được');
+    assert.strictEqual((await call(ctrl.closeMyPost, { user: HOST, params: { id: post._id } })).code, 200);
+    assert.deepStrictEqual([post.status, post.active], ['closed', false]);
+    assert.strictEqual((await join(P3, post)).code, 409, 'đóng rồi không xin được');
+    // đóng rồi thì đăng lại cùng sân + giờ được
+    assert.strictEqual((await postDirect(direct())).code, 201);
+});
+
+test('PM-18 · schema THẬT: bài không có bookingId hợp lệ; chỉ mục duy nhất bỏ qua bài thiếu bookingId; source sai bị từ chối; có ensureIndexes; đã gắn migrate + server', async () => {
+    const { execFileSync } = require('child_process');
+    const root = path.join(__dirname, '..');
+    const out = execFileSync(process.execPath, ['-e', `
+        const M = require('./models/PlayerPost');
+        const base = { hostId: '${oid(1)}', venueId: '${oid(60)}', date: '2030-01-01', startTime: '18:00', endTime: '19:00', startsAt: new Date(), slotsNeeded: 2 };
+        const idx = M.schema.indexes().find(([k]) => k.bookingId === 1);
+        console.log(JSON.stringify({
+            directOk: !new M({ ...base, source: 'direct', courtId: '${oid(61)}' }).validateSync(),
+            defaultSource: new M({ ...base, bookingId: '${oid(5)}' }).source,
+            badSource: !!new M({ ...base, source: 'x' }).validateSync(),
+            unique: idx[1].unique, partial: idx[1].partialFilterExpression,
+            hasEnsure: typeof M.ensureIndexes === 'function',
+        }));`], { cwd: root, encoding: 'utf8' });
+    const r = JSON.parse(out.trim().split('\n').pop());
+    assert.deepStrictEqual([r.directOk, r.defaultSource, r.badSource, r.unique, r.hasEnsure], [true, 'booking', true, true, true]);
+    assert.deepStrictEqual(r.partial, { active: true, bookingId: { $type: 'objectId' } }, 'chỉ tính bài có bookingId kiểu ObjectId');
+    assert.ok(fs.readFileSync(path.join(root, 'scripts', 'migrate.js'), 'utf8').includes('ensureIndexes()'), 'migrate dựng lại chỉ mục');
+    assert.ok(/PlayerPost'\)\.ensureIndexes\(\)/.test(fs.readFileSync(path.join(root, 'server.js'), 'utf8')), 'server tự sửa chỉ mục khi kết nối');
 });
 
 (async () => {

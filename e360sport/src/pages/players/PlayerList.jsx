@@ -1,11 +1,12 @@
 import { useState, useEffect, useCallback } from 'react'
 import { Link } from 'react-router-dom'
-import { Users, CalendarDays, MapPin, Clock, AlertCircle } from 'lucide-react'
+import { Users, CalendarDays, MapPin, Clock, AlertCircle, Plus } from 'lucide-react'
 import Button from '@/components/ui/Button/Button'
 import Modal from '@/components/ui/Modal/Modal'
 import Avatar from '@/components/ui/Avatar/Avatar'
 import Spinner from '@/components/ui/Spinner/Spinner'
 import EmptyState from '@/components/ui/EmptyState/EmptyState'
+import NewPostModal from '@/components/players/NewPostModal/NewPostModal'
 import { playerService, LEVELS, levelLabel } from '@/services/playerService'
 import { useAuth } from '@/contexts/authState'
 import { useToast } from '@/contexts/ToastContext'
@@ -24,6 +25,7 @@ export default function PlayerList() {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(false)
 
+  const [creating, setCreating] = useState(false)   // đang mở form đăng bài
   const [target, setTarget] = useState(null)   // bài đang xin tham gia
   const [message, setMessage] = useState('')
   const [sending, setSending] = useState(false)
@@ -70,7 +72,10 @@ export default function PlayerList() {
           <p className={styles.eyebrow}>Tìm người chơi</p>
           <h1 className={styles.title}>Thiếu người? Ghép nhóm ngay</h1>
           <p className={styles.sub}>Xin vào các buổi chơi còn chỗ trống. Chủ nhóm duyệt xong, hai bên sẽ thấy số điện thoại để liên lạc.</p>
-          <Link to="/players/mine" className={styles.mineLink}>Nhóm &amp; yêu cầu của tôi →</Link>
+          <div className={styles.headActions}>
+            <Button icon={<Plus size={16} />} onClick={() => setCreating(true)} disabled={!user?.phone}>Đăng bài tìm người</Button>
+            <Link to="/players/mine" className={styles.mineLink}>Nhóm &amp; yêu cầu của tôi →</Link>
+          </div>
         </header>
 
         {!user?.phone && (
@@ -98,7 +103,7 @@ export default function PlayerList() {
         ) : error ? (
           <EmptyState icon={<Users size={48} />} title="Không tải được danh sách" description="Vui lòng thử lại sau ít phút." />
         ) : data.posts.length === 0 ? (
-          <EmptyState icon={<Users size={48} />} title="Chưa có nhóm nào đang tìm người" description="Bạn có lượt đặt sân sắp tới? Vào Lịch đặt sân và bấm “Tìm thêm người” để đăng bài." />
+          <EmptyState icon={<Users size={48} />} title="Chưa có nhóm nào đang tìm người" description="Bạn đang thiếu người? Bấm “Đăng bài tìm người” để chọn địa điểm, sân và đăng ngay." />
         ) : (
           <>
             <div className={styles.grid}>
@@ -111,6 +116,7 @@ export default function PlayerList() {
                       <span className={styles.sport}>{sport ? `${sport.icon} ${sport.name}` : 'Thể thao'}</span>
                       <span className={styles.level}>{levelLabel(p.level)}</span>
                     </div>
+                    {p.source === 'direct' && <span className={styles.tag} title="Chủ nhóm chưa đặt sân, nhóm tự đặt sân">Chưa đặt sân</span>}
                     <p className={styles.meta}><MapPin size={14} /> {p.venueName}{p.courtName ? ` · ${p.courtName}` : ''}</p>
                     <p className={styles.meta}><CalendarDays size={14} /> {formatDate(p.date)}</p>
                     <p className={styles.meta}><Clock size={14} /> {formatTime(p.startTime)}–{formatTime(p.endTime)}</p>
@@ -135,6 +141,8 @@ export default function PlayerList() {
           </>
         )}
       </div>
+
+      {creating && <NewPostModal onClose={() => setCreating(false)} onCreated={() => { setCreating(false); setPage(1); load() }} />}
 
       <Modal isOpen={!!target} onClose={() => !sending && setTarget(null)} title="Xin tham gia nhóm" footer={
         <>

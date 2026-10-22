@@ -3,9 +3,14 @@ const PlayerPost = require('../models/PlayerPost');
 const JoinRequest = require('../models/JoinRequest');
 const Booking = require('../models/Booking');
 const User = require('../models/User');
+const Venue = require('../models/Venue');
+const Court = require('../models/Court');
 const asyncHandler = require('../utils/asyncHandler');
 const { contactOf } = require('../utils/zalo');
 const { closePost, notify } = require('../services/playerService');
+const settlementService = require('../services/settlementService');
+const courtRules = require('../utils/courtRules');
+const { isValidDateString, isValidTimeString, toMinutes } = require('../utils/timeSlots');
 
 const isId = (v) => mongoose.isValidObjectId(v);
 const LEVELS = ['any', 'beginner', 'intermediate', 'advanced'];
@@ -22,44 +27,82 @@ async function bookingStillConfirmed(bookingId) {
     return !!(await Booking.exists({ _id: bookingId, status: 'confirmed' }));
 }
 
+/** Bài đăng thẳng ở trang Tìm người chơi (source='direct') không gắn lượt đặt nên không có gì để kiểm tra. */
+const postBookingOk = async (post) => !post.bookingId || bookingStillConfirmed(post.bookingId);
+
 // ============================================================
 // BÀI TÌM NGƯỜI
 // ============================================================
 
-// @route POST /api/players   body: { bookingId, slotsNeeded, level, note }
+// @route POST /api/players
+//   Cách 1 (từ lịch đặt sân): { bookingId, slotsNeeded, level, note }
+//   Cách 2 (đăng thẳng ở trang Tìm người chơi, KHÔNG cần lượt đặt): { venueId, courtId, date, startTime, endTime, slotsNeeded, level, note }
 exports.createPost = asyncHandler(async (req, res) => {
     if (!req.user.phone) return res.status(400).json(needPhone);
     const { bookingId, level = 'any' } = req.body;
     const note = String(req.body.note || '').trim();
     const slotsNeeded = Number(req.body.slotsNeeded);
 
-    if (!isId(bookingId)) return res.status(400).json({ message: 'Vui lòng chọn lượt đặt sân' });
     if (!Number.isInteger(slotsNeeded) || slotsNeeded < 1 || slotsNeeded > 20) return res.status(400).json({ message: 'Số người cần thêm phải từ 1 đến 20' });
     if (!LEVELS.includes(level)) return res.status(400).json({ message: 'Trình độ không hợp lệ' });
     if (note.length > 300) return res.status(400).json({ message: 'Ghi chú tối đa 300 ký tự' });
 
-    // Chỉ đăng cho lượt đặt CỦA CHÍNH MÌNH.
-    const booking = await Booking.findOne({ _id: bookingId, customerId: req.user._id });
-    if (!booking) return res.status(404).json({ message: 'Không tìm thấy lượt đặt này trong tài khoản của bạn' });
-    if (booking.status !== 'confirmed') return res.status(409).json({ message: 'Chỉ lượt đặt đã xác nhận mới đăng tìm người được' });
-    const startsAt = startsAtOf(booking.date, booking.startTime);
-    if (startsAt <= new Date()) return res.status(409).json({ message: 'Lượt đặt này đã bắt đầu hoặc đã qua' });
+    // Dữ liệu chung của bài, phần còn lại tuỳ cách đăng.
+    let data;
+    if (bookingId !== undefined && bookingId !== null && bookingId !== '') {
+        // ── Cách 1: lượt đặt CỦA CHÍNH MÌNH, đã xác nhận, chưa bắt đầu ──
+        if (!isId(bookingId)) return res.status(400).json({ message: 'Vui lòng chọn lượt đặt sân' });
+        const booking = await Booking.findOne({ _id: bookingId, customerId: req.user._id });
+        if (!booking) return res.status(404).json({ message: 'Không tìm thấy lượt đặt này trong tài khoản của bạn' });
+        if (booking.status !== 'confirmed') return res.status(409).json({ message: 'Chỉ lượt đặt đã xác nhận mới đăng tìm người được' });
+        const startsAt = startsAtOf(booking.date, booking.startTime);
+        if (startsAt <= new Date()) return res.status(409).json({ message: 'Lượt đặt này đã bắt đầu hoặc đã qua' });
+        if (await PlayerPost.exists({ bookingId: booking._id, active: true })) return res.status(409).json({ message: 'Lượt đặt này đã có bài tìm người đang mở' });
 
-    if (await PlayerPost.exists({ bookingId: booking._id, active: true })) return res.status(409).json({ message: 'Lượt đặt này đã có bài tìm người đang mở' });
+        data = {
+            source: 'booking', bookingId: booking._id, venueId: booking.venueId, courtId: booking.courtId,
+            venueName: booking.venueName, courtName: booking.courtName, sport: booking.sport,
+            date: booking.date, startTime: booking.startTime, endTime: booking.endTime, startsAt,
+        };
+    } else {
+        // ── Cách 2: chọn địa điểm + sân + thời gian; nhóm tự đặt sân nên bài không gắn lượt đặt ──
+        const { venueId, courtId, date, startTime, endTime } = req.body;
+        if (!isId(venueId)) return res.status(400).json({ message: 'Vui lòng chọn địa điểm' });
+        if (!isId(courtId)) return res.status(400).json({ message: 'Vui lòng chọn sân' });
+        if (!isValidDateString(date)) return res.status(400).json({ message: 'Ngày không hợp lệ' });
+        if (!isValidTimeString(startTime) || !isValidTimeString(endTime)) return res.status(400).json({ message: 'Giờ không hợp lệ' });
+        if (!(toMinutes(endTime) > toMinutes(startTime))) return res.status(400).json({ message: 'Giờ kết thúc phải sau giờ bắt đầu' });
+
+        // Cùng điều kiện hiển thị công khai như trang địa điểm: đã duyệt, đang bật, chủ sân không bị khoá.
+        const venue = await Venue.findOne({ _id: venueId, status: 'approved', isActive: true });
+        if (!venue || (await settlementService.isOwnerBlocked(venue.ownerId))) return res.status(404).json({ message: 'Không tìm thấy địa điểm này' });
+        const court = await Court.findOne({ _id: courtId, venueId: venue._id });
+        if (!court) return res.status(404).json({ message: 'Không tìm thấy sân này trong địa điểm đã chọn' });
+        if (court.status !== 'active') return res.status(409).json({ message: 'Sân này hiện không hoạt động' });
+        const startsAt = startsAtOf(date, startTime);
+        if (startsAt <= new Date()) return res.status(409).json({ message: 'Thời gian này đã bắt đầu hoặc đã qua' });
+        if (await PlayerPost.exists({ hostId: req.user._id, courtId: court._id, date, startTime, active: true })) {
+            return res.status(409).json({ message: 'Bạn đã có bài tìm người cho sân và khung giờ này' });
+        }
+
+        data = {
+            source: 'direct', venueId: venue._id, courtId: court._id,
+            venueName: venue.name, courtName: court.name, sport: courtRules.sportOf(court),
+            date, startTime, endTime, startsAt,
+        };
+    }
+
     if ((await PlayerPost.countDocuments({ hostId: req.user._id, active: true, startsAt: { $gt: new Date() } })) >= MAX_ACTIVE_POSTS) {
         return res.status(429).json({ message: `Bạn đang có ${MAX_ACTIVE_POSTS} bài tìm người chưa diễn ra. Hãy đóng bớt hoặc chờ diễn ra trước khi đăng thêm.` });
     }
 
     let post;
     try {
-        post = await PlayerPost.create({
-            hostId: req.user._id, bookingId: booking._id, venueId: booking.venueId,
-            venueName: booking.venueName, courtName: booking.courtName, sport: booking.sport,
-            date: booking.date, startTime: booking.startTime, endTime: booking.endTime, startsAt,
-            slotsNeeded, level, note,
-        });
+        post = await PlayerPost.create({ hostId: req.user._id, ...data, slotsNeeded, level, note });
     } catch (err) {
-        if (err.code === 11000) return res.status(409).json({ message: 'Lượt đặt này đã có bài tìm người đang mở' });
+        if (err.code === 11000) {
+            return res.status(409).json({ message: data.source === 'booking' ? 'Lượt đặt này đã có bài tìm người đang mở' : 'Bài tìm người này đã tồn tại hoặc dữ liệu chưa được cập nhật (chạy npm run migrate)' });
+        }
         throw err;
     }
     res.status(201).json({ post });
@@ -85,8 +128,9 @@ exports.listPosts = asyncHandler(async (req, res) => {
         PlayerPost.find(filter).sort({ startsAt: 1 }).skip((page - 1) * limit).limit(limit),
     ]);
     // Lượt đặt bị hủy/chuyển mà bài chưa kịp đóng (hook lỗi) thì vẫn không hiện ra.
-    const live = new Set((await Booking.find({ _id: { $in: posts.map((p) => p.bookingId) }, status: 'confirmed' }).select('_id')).map((b) => String(b._id)));
-    const visible = posts.filter((p) => live.has(String(p.bookingId)));
+    // Bài đăng thẳng (không có bookingId) không phụ thuộc lượt đặt nên luôn hiện.
+    const live = new Set((await Booking.find({ _id: { $in: posts.map((p) => p.bookingId).filter(Boolean) }, status: 'confirmed' }).select('_id')).map((b) => String(b._id)));
+    const visible = posts.filter((p) => !p.bookingId || live.has(String(p.bookingId)));
 
     const [hosts, mine] = await Promise.all([
         User.find({ _id: { $in: visible.map((p) => p.hostId) } }).select('name avatar'),
@@ -99,6 +143,7 @@ exports.listPosts = asyncHandler(async (req, res) => {
         posts: visible.map((p) => ({
             _id: p._id, venueId: p.venueId, venueName: p.venueName, courtName: p.courtName, sport: p.sport,
             date: p.date, startTime: p.startTime, endTime: p.endTime, startsAt: p.startsAt,
+            source: p.source || 'booking',
             slotsNeeded: p.slotsNeeded, acceptedCount: p.acceptedCount, level: p.level, note: p.note,
             host: publicUser(hostMap.get(String(p.hostId))),
             isMine: String(p.hostId) === String(req.user._id),
@@ -156,7 +201,7 @@ exports.joinPost = asyncHandler(async (req, res) => {
     if (String(post.hostId) === String(req.user._id)) return res.status(400).json({ message: 'Bạn không thể xin vào nhóm của chính mình' });
     if (post.status === 'full') return res.status(409).json({ message: 'Nhóm này đã đủ người' });
     if (post.status !== 'open' || post.startsAt <= new Date()) return res.status(409).json({ message: 'Bài này đã đóng hoặc đã bắt đầu' });
-    if (!(await bookingStillConfirmed(post.bookingId))) return res.status(409).json({ message: 'Lượt đặt của nhóm này không còn hiệu lực' });
+    if (!(await postBookingOk(post))) return res.status(409).json({ message: 'Lượt đặt của nhóm này không còn hiệu lực' });
 
     if ((await JoinRequest.countDocuments({ userId: req.user._id, status: 'pending' })) >= MAX_PENDING_REQUESTS) {
         return res.status(429).json({ message: `Bạn đang có ${MAX_PENDING_REQUESTS} yêu cầu chờ phản hồi. Hãy chờ hoặc rút bớt trước khi xin thêm.` });
@@ -198,7 +243,7 @@ exports.respondToRequest = asyncHandler(async (req, res) => {
     }
 
     if (post.startsAt <= new Date()) return res.status(409).json({ message: 'Buổi chơi đã bắt đầu' });
-    if (!(await bookingStillConfirmed(post.bookingId))) return res.status(409).json({ message: 'Lượt đặt của nhóm không còn hiệu lực' });
+    if (!(await postBookingOk(post))) return res.status(409).json({ message: 'Lượt đặt của nhóm không còn hiệu lực' });
 
     // Giữ chỗ NGUYÊN TỬ: chỉ tăng khi bài còn mở và chưa đủ người — hai lần chấp nhận cùng lúc không vượt quá số chỗ.
     const claimed = await PlayerPost.findOneAndUpdate(
