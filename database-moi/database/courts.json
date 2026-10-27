@@ -1,0 +1,4262 @@
+[
+  {
+    "_id": {
+      "$oid": "c000001a0000000000000000"
+    },
+    "venueId": {
+      "$oid": "0e00e0010000000000000000"
+    },
+    "name": "Sân 5 người - A",
+    "type": "football",
+    "size": "5 người",
+    "surface": "Cỏ nhân tạo",
+    "pricePerHour": 300000,
+    "status": "active",
+    "createdAt": {
+      "$date": "2026-01-20T02:00:00Z"
+    },
+    "updatedAt": {
+      "$date": "2026-01-20T02:00:00Z"
+    }
+  },
+  {
+    "_id": {
+      "$oid": "c000001b0000000000000000"
+    },
+    "venueId": {
+      "$oid": "0e00e0010000000000000000"
+    },
+    "name": "Sân 7 người - B",
+    "type": "football",
+    "size": "7 người",
+    "surface": "Cỏ nhân tạo",
+    "pricePerHour": 450000,
+    "status": "active",
+    "createdAt": {
+      "$date": "2026-01-20T02:00:00Z"
+    },
+    "updatedAt": {
+      "$date": "2026-01-20T02:00:00Z"
+    }
+  },
+  {
+    "_id": {
+      "$oid": "c000002a0000000000000000"
+    },
+    "venueId": {
+      "$oid": "0e00e0020000000000000000"
+    },
+    "name": "Sân cầu lông số 1",
+    "type": "badminton",
+    "size": "",
+    "surface": "Sàn gỗ",
+    "pricePerHour": 120000,
+    "status": "active",
+    "createdAt": {
+      "$date": "2026-01-20T02:00:00Z"
+    },
+    "updatedAt": {
+      "$date": "2026-01-20T02:00:00Z"
+    }
+  },
+  {
+    "_id": {
+      "$oid": "c000002b0000000000000000"
+    },
+    "venueId": {
+      "$oid": "0e00e0020000000000000000"
+    },
+    "name": "Sân cầu lông số 2",
+    "type": "badminton",
+    "size": "",
+    "surface": "Sàn gỗ",
+    "pricePerHour": 120000,
+    "status": "active",
+    "createdAt": {
+      "$date": "2026-01-20T02:00:00Z"
+    },
+    "updatedAt": {
+      "$date": "2026-01-20T02:00:00Z"
+    }
+  },
+  {
+    "_id": {
+      "$oid": "c000003a0000000000000000"
+    },
+    "venueId": {
+      "$oid": "0e00e0030000000000000000"
+    },
+    "name": "Sân tennis ngoài trời 1",
+    "type": "tennis",
+    "size": "",
+    "surface": "Mặt cứng",
+    "pricePerHour": 200000,
+    "status": "active",
+    "createdAt": {
+      "$date": "2026-01-20T02:00:00Z"
+    },
+    "updatedAt": {
+      "$date": "2026-01-20T02:00:00Z"
+    }
+  },
+  {
+    "_id": {
+      "$oid": "c000003b0000000000000000"
+    },
+    "venueId": {
+      "$oid": "0e00e0030000000000000000"
+    },
+    "name": "Sân tennis trong nhà 2",
+    "type": "tennis",
+    "size": "",
+    "surface": "Thảm cao su",
+    "pricePerHour": 280000,
+    "status": "active",
+    "createdAt": {
+      "$date": "2026-01-20T02:00:00Z"
+    },
+    "updatedAt": {
+      "$date": "2026-01-20T02:00:00Z"
+    }
+  },
+  {
+    "_id": {
+      "$oid": "c000004a0000000000000000"
+    },
+    "venueId": {
+      "$oid": "0e00e0040000000000000000"
+    },
+    "name": "Sân bóng rổ chính",
+    "type": "basketball",
+    "size": "Sân đầy",
+    "surface": "Sàn gỗ PU",
+    "pricePerHour": 350000,
+    "status": "active",
+    "createdAt": {
+      "$date": "2026-01-20T02:00:00Z"
+    },
+    "updatedAt": {
+      "$date": "2026-01-20T02:00:00Z"
+    }
+  },
+  {
+    "_id": {
+      "$oid": "c000004b0000000000000000"
+    },
+    "venueId": {
+      "$oid": "0e00e0040000000000000000"
+    },
+    "name": "Khu Gym tự do",
+    "type": "gym",
+    "size": "",
+    "surface": "",
+    "pricePerHour": 80000,
+    "status": "active",
+    "createdAt": {
+      "$date": "2026-01-20T02:00:00Z"
+    },
+    "updatedAt": {
+      "$date": "2026-01-20T02:00:00Z"
+    }
+  },
+  {
+    "_id": {
+      "$oid": "c000005a0000000000000000"
+    },
+    "venueId": {
+      "$oid": "0e00e0050000000000000000"
+    },
+    "name": "Bể bơi trong nhà",
+    "type": "swimming",
+    "size": "25m",
+    "surface": "",
+    "pricePerHour": 100000,
+    "status": "active",
+    "createdAt": {
+      "$date": "2026-01-20T02:00:00Z"
+    },
+    "updatedAt": {
+      "$date": "2026-01-20T02:00:00Z"
+    }
+  },
+  {
+    "_id": {
+      "$oid": "c000005b0000000000000000"
+    },
+    "venueId": {
+      "$oid": "0e00e0050000000000000000"
+    },
+    "name": "Phòng Yoga",
+    "type": "yoga",
+    "size": "",
+    "surface": "Sàn gỗ",
+    "pricePerHour": 150000,
+    "status": "maintenance",
+    "createdAt": {
+      "$date": "2026-01-20T02:00:00Z"
+    },
+    "updatedAt": {
+      "$date": "2026-01-20T02:00:00Z"
+    }
+  },
+  {
+    "_id": {
+      "$oid": "c000006a0000000000000000"
+    },
+    "venueId": {
+      "$oid": "0e00e0060000000000000000"
+    },
+    "name": "Sân bóng chuyền bãi biển",
+    "type": "volleyball",
+    "size": "",
+    "surface": "Cát",
+    "pricePerHour": 180000,
+    "status": "active",
+    "createdAt": {
+      "$date": "2026-01-20T02:00:00Z"
+    },
+    "updatedAt": {
+      "$date": "2026-01-20T02:00:00Z"
+    }
+  },
+  {
+    "_id": {
+      "$oid": "c000006b0000000000000000"
+    },
+    "venueId": {
+      "$oid": "0e00e0060000000000000000"
+    },
+    "name": "Sân bóng chuyền trong nhà",
+    "type": "volleyball",
+    "size": "",
+    "surface": "Sàn gỗ",
+    "pricePerHour": 160000,
+    "status": "active",
+    "createdAt": {
+      "$date": "2026-01-20T02:00:00Z"
+    },
+    "updatedAt": {
+      "$date": "2026-01-20T02:00:00Z"
+    }
+  },
+  {
+    "_id": {
+      "$oid": "400000000000000000000065"
+    },
+    "venueId": {
+      "$oid": "300000000000000000000065"
+    },
+    "name": "Sân 5 người - A",
+    "type": "football",
+    "size": "5 người",
+    "surface": "Cỏ nhân tạo",
+    "pricePerHour": 270000,
+    "status": "active",
+    "createdAt": {
+      "$date": "2026-03-01T10:24:45Z"
+    },
+    "updatedAt": {
+      "$date": "2026-03-01T10:24:45Z"
+    }
+  },
+  {
+    "_id": {
+      "$oid": "400000000000000000000066"
+    },
+    "venueId": {
+      "$oid": "300000000000000000000065"
+    },
+    "name": "Sân 5 người - B",
+    "type": "football",
+    "size": "5 người",
+    "surface": "Cỏ nhân tạo",
+    "pricePerHour": 370000,
+    "status": "active",
+    "createdAt": {
+      "$date": "2026-03-01T10:24:45Z"
+    },
+    "updatedAt": {
+      "$date": "2026-03-01T10:24:45Z"
+    }
+  },
+  {
+    "_id": {
+      "$oid": "400000000000000000000067"
+    },
+    "venueId": {
+      "$oid": "300000000000000000000066"
+    },
+    "name": "Sân bóng chuyền trong nhà",
+    "type": "volleyball",
+    "size": "",
+    "surface": "Sàn gỗ",
+    "pricePerHour": 170000,
+    "status": "active",
+    "createdAt": {
+      "$date": "2026-08-27T07:37:39Z"
+    },
+    "updatedAt": {
+      "$date": "2026-08-27T07:37:39Z"
+    }
+  },
+  {
+    "_id": {
+      "$oid": "400000000000000000000068"
+    },
+    "venueId": {
+      "$oid": "300000000000000000000066"
+    },
+    "name": "Sân bóng chuyền bãi biển",
+    "type": "volleyball",
+    "size": "",
+    "surface": "Cát",
+    "pricePerHour": 140000,
+    "status": "active",
+    "createdAt": {
+      "$date": "2026-08-27T07:37:39Z"
+    },
+    "updatedAt": {
+      "$date": "2026-08-27T07:37:39Z"
+    }
+  },
+  {
+    "_id": {
+      "$oid": "400000000000000000000069"
+    },
+    "venueId": {
+      "$oid": "300000000000000000000067"
+    },
+    "name": "Sân 5 người - A",
+    "type": "football",
+    "size": "5 người",
+    "surface": "Cỏ nhân tạo",
+    "pricePerHour": 330000,
+    "status": "active",
+    "createdAt": {
+      "$date": "2026-08-11T04:59:33Z"
+    },
+    "updatedAt": {
+      "$date": "2026-08-11T04:59:33Z"
+    }
+  },
+  {
+    "_id": {
+      "$oid": "40000000000000000000006a"
+    },
+    "venueId": {
+      "$oid": "300000000000000000000067"
+    },
+    "name": "Sân 5 người - B",
+    "type": "football",
+    "size": "5 người",
+    "surface": "Cỏ nhân tạo",
+    "pricePerHour": 260000,
+    "status": "active",
+    "createdAt": {
+      "$date": "2026-08-11T04:59:33Z"
+    },
+    "updatedAt": {
+      "$date": "2026-08-11T04:59:33Z"
+    }
+  },
+  {
+    "_id": {
+      "$oid": "40000000000000000000006b"
+    },
+    "venueId": {
+      "$oid": "300000000000000000000068"
+    },
+    "name": "Sân 5 người - A",
+    "type": "football",
+    "size": "5 người",
+    "surface": "Cỏ nhân tạo",
+    "pricePerHour": 320000,
+    "status": "active",
+    "createdAt": {
+      "$date": "2026-06-11T03:54:35Z"
+    },
+    "updatedAt": {
+      "$date": "2026-06-11T03:54:35Z"
+    }
+  },
+  {
+    "_id": {
+      "$oid": "40000000000000000000006c"
+    },
+    "venueId": {
+      "$oid": "300000000000000000000068"
+    },
+    "name": "Sân 5 người - B",
+    "type": "football",
+    "size": "5 người",
+    "surface": "Cỏ nhân tạo",
+    "pricePerHour": 260000,
+    "status": "active",
+    "createdAt": {
+      "$date": "2026-06-11T03:54:35Z"
+    },
+    "updatedAt": {
+      "$date": "2026-06-11T03:54:35Z"
+    }
+  },
+  {
+    "_id": {
+      "$oid": "40000000000000000000006d"
+    },
+    "venueId": {
+      "$oid": "300000000000000000000068"
+    },
+    "name": "Sân 7 người - C",
+    "type": "football",
+    "size": "7 người",
+    "surface": "Cỏ nhân tạo",
+    "pricePerHour": 470000,
+    "status": "active",
+    "createdAt": {
+      "$date": "2026-06-11T03:54:35Z"
+    },
+    "updatedAt": {
+      "$date": "2026-06-11T03:54:35Z"
+    }
+  },
+  {
+    "_id": {
+      "$oid": "40000000000000000000006e"
+    },
+    "venueId": {
+      "$oid": "300000000000000000000068"
+    },
+    "name": "Sân 7 người - D",
+    "type": "football",
+    "size": "7 người",
+    "surface": "Cỏ nhân tạo",
+    "pricePerHour": 450000,
+    "status": "active",
+    "createdAt": {
+      "$date": "2026-06-11T03:54:35Z"
+    },
+    "updatedAt": {
+      "$date": "2026-06-11T03:54:35Z"
+    }
+  },
+  {
+    "_id": {
+      "$oid": "40000000000000000000006f"
+    },
+    "venueId": {
+      "$oid": "300000000000000000000069"
+    },
+    "name": "Sân cầu lông số 1",
+    "type": "badminton",
+    "size": "",
+    "surface": "Sàn gỗ",
+    "pricePerHour": 90000,
+    "status": "active",
+    "createdAt": {
+      "$date": "2026-08-15T19:21:28Z"
+    },
+    "updatedAt": {
+      "$date": "2026-08-15T19:21:28Z"
+    }
+  },
+  {
+    "_id": {
+      "$oid": "400000000000000000000070"
+    },
+    "venueId": {
+      "$oid": "300000000000000000000069"
+    },
+    "name": "Sân cầu lông số 2",
+    "type": "badminton",
+    "size": "",
+    "surface": "Sàn gỗ",
+    "pricePerHour": 110000,
+    "status": "active",
+    "createdAt": {
+      "$date": "2026-08-15T19:21:28Z"
+    },
+    "updatedAt": {
+      "$date": "2026-08-15T19:21:28Z"
+    }
+  },
+  {
+    "_id": {
+      "$oid": "400000000000000000000071"
+    },
+    "venueId": {
+      "$oid": "300000000000000000000069"
+    },
+    "name": "Sân cầu lông số 3",
+    "type": "badminton",
+    "size": "",
+    "surface": "Sàn gỗ",
+    "pricePerHour": 150000,
+    "status": "active",
+    "createdAt": {
+      "$date": "2026-08-15T19:21:28Z"
+    },
+    "updatedAt": {
+      "$date": "2026-08-15T19:21:28Z"
+    }
+  },
+  {
+    "_id": {
+      "$oid": "400000000000000000000072"
+    },
+    "venueId": {
+      "$oid": "300000000000000000000069"
+    },
+    "name": "Sân cầu lông số 4",
+    "type": "badminton",
+    "size": "",
+    "surface": "Sàn gỗ",
+    "pricePerHour": 120000,
+    "status": "active",
+    "createdAt": {
+      "$date": "2026-08-15T19:21:28Z"
+    },
+    "updatedAt": {
+      "$date": "2026-08-15T19:21:28Z"
+    }
+  },
+  {
+    "_id": {
+      "$oid": "400000000000000000000073"
+    },
+    "venueId": {
+      "$oid": "300000000000000000000069"
+    },
+    "name": "Sân cầu lông số 5",
+    "type": "badminton",
+    "size": "",
+    "surface": "Sàn gỗ",
+    "pricePerHour": 140000,
+    "status": "active",
+    "createdAt": {
+      "$date": "2026-08-15T19:21:28Z"
+    },
+    "updatedAt": {
+      "$date": "2026-08-15T19:21:28Z"
+    }
+  },
+  {
+    "_id": {
+      "$oid": "400000000000000000000074"
+    },
+    "venueId": {
+      "$oid": "300000000000000000000069"
+    },
+    "name": "Sân cầu lông số 6",
+    "type": "badminton",
+    "size": "",
+    "surface": "Sàn gỗ",
+    "pricePerHour": 90000,
+    "status": "active",
+    "createdAt": {
+      "$date": "2026-08-15T19:21:28Z"
+    },
+    "updatedAt": {
+      "$date": "2026-08-15T19:21:28Z"
+    }
+  },
+  {
+    "_id": {
+      "$oid": "400000000000000000000075"
+    },
+    "venueId": {
+      "$oid": "30000000000000000000006a"
+    },
+    "name": "Sân bóng rổ chính",
+    "type": "basketball",
+    "size": "Sân đầy",
+    "surface": "Sàn gỗ PU",
+    "pricePerHour": 430000,
+    "status": "active",
+    "createdAt": {
+      "$date": "2026-02-03T16:40:58Z"
+    },
+    "updatedAt": {
+      "$date": "2026-02-03T16:40:58Z"
+    }
+  },
+  {
+    "_id": {
+      "$oid": "400000000000000000000076"
+    },
+    "venueId": {
+      "$oid": "30000000000000000000006a"
+    },
+    "name": "Sân bóng rổ phụ",
+    "type": "basketball",
+    "size": "Nửa sân",
+    "surface": "Sàn gỗ PU",
+    "pricePerHour": 220000,
+    "status": "active",
+    "createdAt": {
+      "$date": "2026-02-03T16:40:58Z"
+    },
+    "updatedAt": {
+      "$date": "2026-02-03T16:40:58Z"
+    }
+  },
+  {
+    "_id": {
+      "$oid": "400000000000000000000077"
+    },
+    "venueId": {
+      "$oid": "30000000000000000000006a"
+    },
+    "name": "Khu Gym tự do",
+    "type": "gym",
+    "size": "",
+    "surface": "",
+    "pricePerHour": 100000,
+    "status": "active",
+    "createdAt": {
+      "$date": "2026-02-03T16:40:58Z"
+    },
+    "updatedAt": {
+      "$date": "2026-02-03T16:40:58Z"
+    }
+  },
+  {
+    "_id": {
+      "$oid": "400000000000000000000078"
+    },
+    "venueId": {
+      "$oid": "30000000000000000000006b"
+    },
+    "name": "Sân 5 người - A",
+    "type": "football",
+    "size": "5 người",
+    "surface": "Cỏ nhân tạo",
+    "pricePerHour": 370000,
+    "status": "active",
+    "createdAt": {
+      "$date": "2026-04-09T21:54:14Z"
+    },
+    "updatedAt": {
+      "$date": "2026-04-09T21:54:14Z"
+    }
+  },
+  {
+    "_id": {
+      "$oid": "400000000000000000000079"
+    },
+    "venueId": {
+      "$oid": "30000000000000000000006b"
+    },
+    "name": "Sân 5 người - B",
+    "type": "football",
+    "size": "5 người",
+    "surface": "Cỏ nhân tạo",
+    "pricePerHour": 350000,
+    "status": "active",
+    "createdAt": {
+      "$date": "2026-04-09T21:54:14Z"
+    },
+    "updatedAt": {
+      "$date": "2026-04-09T21:54:14Z"
+    }
+  },
+  {
+    "_id": {
+      "$oid": "40000000000000000000007a"
+    },
+    "venueId": {
+      "$oid": "30000000000000000000006c"
+    },
+    "name": "Sân cầu lông số 1",
+    "type": "badminton",
+    "size": "",
+    "surface": "Sàn gỗ",
+    "pricePerHour": 150000,
+    "status": "active",
+    "createdAt": {
+      "$date": "2026-04-20T10:34:41Z"
+    },
+    "updatedAt": {
+      "$date": "2026-04-20T10:34:41Z"
+    }
+  },
+  {
+    "_id": {
+      "$oid": "40000000000000000000007b"
+    },
+    "venueId": {
+      "$oid": "30000000000000000000006c"
+    },
+    "name": "Sân cầu lông số 2",
+    "type": "badminton",
+    "size": "",
+    "surface": "Sàn gỗ",
+    "pricePerHour": 110000,
+    "status": "active",
+    "createdAt": {
+      "$date": "2026-04-20T10:34:41Z"
+    },
+    "updatedAt": {
+      "$date": "2026-04-20T10:34:41Z"
+    }
+  },
+  {
+    "_id": {
+      "$oid": "40000000000000000000007c"
+    },
+    "venueId": {
+      "$oid": "30000000000000000000006d"
+    },
+    "name": "Sân 5 người - A",
+    "type": "football",
+    "size": "5 người",
+    "surface": "Cỏ nhân tạo",
+    "pricePerHour": 250000,
+    "status": "active",
+    "createdAt": {
+      "$date": "2026-06-20T19:23:32Z"
+    },
+    "updatedAt": {
+      "$date": "2026-06-20T19:23:32Z"
+    }
+  },
+  {
+    "_id": {
+      "$oid": "40000000000000000000007d"
+    },
+    "venueId": {
+      "$oid": "30000000000000000000006d"
+    },
+    "name": "Sân 5 người - B",
+    "type": "football",
+    "size": "5 người",
+    "surface": "Cỏ nhân tạo",
+    "pricePerHour": 250000,
+    "status": "active",
+    "createdAt": {
+      "$date": "2026-06-20T19:23:32Z"
+    },
+    "updatedAt": {
+      "$date": "2026-06-20T19:23:32Z"
+    }
+  },
+  {
+    "_id": {
+      "$oid": "40000000000000000000007e"
+    },
+    "venueId": {
+      "$oid": "30000000000000000000006d"
+    },
+    "name": "Sân 7 người - C",
+    "type": "football",
+    "size": "7 người",
+    "surface": "Cỏ nhân tạo",
+    "pricePerHour": 500000,
+    "status": "active",
+    "createdAt": {
+      "$date": "2026-06-20T19:23:32Z"
+    },
+    "updatedAt": {
+      "$date": "2026-06-20T19:23:32Z"
+    }
+  },
+  {
+    "_id": {
+      "$oid": "40000000000000000000007f"
+    },
+    "venueId": {
+      "$oid": "30000000000000000000006e"
+    },
+    "name": "Bể bơi trong nhà",
+    "type": "swimming",
+    "size": "25m",
+    "surface": "",
+    "pricePerHour": 80000,
+    "status": "active",
+    "createdAt": {
+      "$date": "2026-07-28T16:01:10Z"
+    },
+    "updatedAt": {
+      "$date": "2026-07-28T16:01:10Z"
+    }
+  },
+  {
+    "_id": {
+      "$oid": "400000000000000000000080"
+    },
+    "venueId": {
+      "$oid": "30000000000000000000006e"
+    },
+    "name": "Phòng Yoga 1",
+    "type": "yoga",
+    "size": "",
+    "surface": "Sàn gỗ",
+    "pricePerHour": 120000,
+    "status": "active",
+    "createdAt": {
+      "$date": "2026-07-28T16:01:10Z"
+    },
+    "updatedAt": {
+      "$date": "2026-07-28T16:01:10Z"
+    }
+  },
+  {
+    "_id": {
+      "$oid": "400000000000000000000081"
+    },
+    "venueId": {
+      "$oid": "30000000000000000000006e"
+    },
+    "name": "Phòng Yoga 2",
+    "type": "yoga",
+    "size": "",
+    "surface": "Sàn gỗ",
+    "pricePerHour": 80000,
+    "status": "active",
+    "createdAt": {
+      "$date": "2026-07-28T16:01:10Z"
+    },
+    "updatedAt": {
+      "$date": "2026-07-28T16:01:10Z"
+    }
+  },
+  {
+    "_id": {
+      "$oid": "400000000000000000000082"
+    },
+    "venueId": {
+      "$oid": "30000000000000000000006f"
+    },
+    "name": "Sân cầu lông số 1",
+    "type": "badminton",
+    "size": "",
+    "surface": "Sàn gỗ",
+    "pricePerHour": 100000,
+    "status": "active",
+    "createdAt": {
+      "$date": "2026-08-01T08:50:30Z"
+    },
+    "updatedAt": {
+      "$date": "2026-08-01T08:50:30Z"
+    }
+  },
+  {
+    "_id": {
+      "$oid": "400000000000000000000083"
+    },
+    "venueId": {
+      "$oid": "30000000000000000000006f"
+    },
+    "name": "Sân cầu lông số 2",
+    "type": "badminton",
+    "size": "",
+    "surface": "Sàn gỗ",
+    "pricePerHour": 80000,
+    "status": "maintenance",
+    "createdAt": {
+      "$date": "2026-08-01T08:50:30Z"
+    },
+    "updatedAt": {
+      "$date": "2026-08-01T08:50:30Z"
+    }
+  },
+  {
+    "_id": {
+      "$oid": "400000000000000000000084"
+    },
+    "venueId": {
+      "$oid": "30000000000000000000006f"
+    },
+    "name": "Sân cầu lông số 3",
+    "type": "badminton",
+    "size": "",
+    "surface": "Sàn gỗ",
+    "pricePerHour": 100000,
+    "status": "maintenance",
+    "createdAt": {
+      "$date": "2026-08-01T08:50:30Z"
+    },
+    "updatedAt": {
+      "$date": "2026-08-01T08:50:30Z"
+    }
+  },
+  {
+    "_id": {
+      "$oid": "400000000000000000000085"
+    },
+    "venueId": {
+      "$oid": "300000000000000000000070"
+    },
+    "name": "Sân bóng rổ chính",
+    "type": "basketball",
+    "size": "Sân đầy",
+    "surface": "Sàn gỗ PU",
+    "pricePerHour": 410000,
+    "status": "active",
+    "createdAt": {
+      "$date": "2026-06-26T13:08:35Z"
+    },
+    "updatedAt": {
+      "$date": "2026-06-26T13:08:35Z"
+    }
+  },
+  {
+    "_id": {
+      "$oid": "400000000000000000000086"
+    },
+    "venueId": {
+      "$oid": "300000000000000000000070"
+    },
+    "name": "Sân bóng rổ phụ",
+    "type": "basketball",
+    "size": "Nửa sân",
+    "surface": "Sàn gỗ PU",
+    "pricePerHour": 250000,
+    "status": "active",
+    "createdAt": {
+      "$date": "2026-06-26T13:08:35Z"
+    },
+    "updatedAt": {
+      "$date": "2026-06-26T13:08:35Z"
+    }
+  },
+  {
+    "_id": {
+      "$oid": "400000000000000000000087"
+    },
+    "venueId": {
+      "$oid": "300000000000000000000070"
+    },
+    "name": "Khu Gym tự do",
+    "type": "gym",
+    "size": "",
+    "surface": "",
+    "pricePerHour": 70000,
+    "status": "active",
+    "createdAt": {
+      "$date": "2026-06-26T13:08:35Z"
+    },
+    "updatedAt": {
+      "$date": "2026-06-26T13:08:35Z"
+    }
+  },
+  {
+    "_id": {
+      "$oid": "400000000000000000000088"
+    },
+    "venueId": {
+      "$oid": "300000000000000000000071"
+    },
+    "name": "Sân cầu lông số 1",
+    "type": "badminton",
+    "size": "",
+    "surface": "Sàn gỗ",
+    "pricePerHour": 140000,
+    "status": "active",
+    "createdAt": {
+      "$date": "2026-04-16T01:25:19Z"
+    },
+    "updatedAt": {
+      "$date": "2026-04-16T01:25:19Z"
+    }
+  },
+  {
+    "_id": {
+      "$oid": "400000000000000000000089"
+    },
+    "venueId": {
+      "$oid": "300000000000000000000071"
+    },
+    "name": "Sân cầu lông số 2",
+    "type": "badminton",
+    "size": "",
+    "surface": "Sàn gỗ",
+    "pricePerHour": 70000,
+    "status": "active",
+    "createdAt": {
+      "$date": "2026-04-16T01:25:19Z"
+    },
+    "updatedAt": {
+      "$date": "2026-04-16T01:25:19Z"
+    }
+  },
+  {
+    "_id": {
+      "$oid": "40000000000000000000008a"
+    },
+    "venueId": {
+      "$oid": "300000000000000000000072"
+    },
+    "name": "Sân cầu lông số 1",
+    "type": "badminton",
+    "size": "",
+    "surface": "Sàn gỗ",
+    "pricePerHour": 140000,
+    "status": "active",
+    "createdAt": {
+      "$date": "2026-06-09T18:02:28Z"
+    },
+    "updatedAt": {
+      "$date": "2026-06-09T18:02:28Z"
+    }
+  },
+  {
+    "_id": {
+      "$oid": "40000000000000000000008b"
+    },
+    "venueId": {
+      "$oid": "300000000000000000000072"
+    },
+    "name": "Sân cầu lông số 2",
+    "type": "badminton",
+    "size": "",
+    "surface": "Sàn gỗ",
+    "pricePerHour": 80000,
+    "status": "active",
+    "createdAt": {
+      "$date": "2026-06-09T18:02:28Z"
+    },
+    "updatedAt": {
+      "$date": "2026-06-09T18:02:28Z"
+    }
+  },
+  {
+    "_id": {
+      "$oid": "40000000000000000000008c"
+    },
+    "venueId": {
+      "$oid": "300000000000000000000072"
+    },
+    "name": "Sân cầu lông số 3",
+    "type": "badminton",
+    "size": "",
+    "surface": "Sàn gỗ",
+    "pricePerHour": 90000,
+    "status": "maintenance",
+    "createdAt": {
+      "$date": "2026-06-09T18:02:28Z"
+    },
+    "updatedAt": {
+      "$date": "2026-06-09T18:02:28Z"
+    }
+  },
+  {
+    "_id": {
+      "$oid": "40000000000000000000008d"
+    },
+    "venueId": {
+      "$oid": "300000000000000000000073"
+    },
+    "name": "Sân 5 người - A",
+    "type": "football",
+    "size": "5 người",
+    "surface": "Cỏ nhân tạo",
+    "pricePerHour": 390000,
+    "status": "active",
+    "createdAt": {
+      "$date": "2026-04-01T05:25:33Z"
+    },
+    "updatedAt": {
+      "$date": "2026-04-01T05:25:33Z"
+    }
+  },
+  {
+    "_id": {
+      "$oid": "40000000000000000000008e"
+    },
+    "venueId": {
+      "$oid": "300000000000000000000073"
+    },
+    "name": "Sân 5 người - B",
+    "type": "football",
+    "size": "5 người",
+    "surface": "Cỏ nhân tạo",
+    "pricePerHour": 300000,
+    "status": "active",
+    "createdAt": {
+      "$date": "2026-04-01T05:25:33Z"
+    },
+    "updatedAt": {
+      "$date": "2026-04-01T05:25:33Z"
+    }
+  },
+  {
+    "_id": {
+      "$oid": "40000000000000000000008f"
+    },
+    "venueId": {
+      "$oid": "300000000000000000000073"
+    },
+    "name": "Sân 7 người - C",
+    "type": "football",
+    "size": "7 người",
+    "surface": "Cỏ nhân tạo",
+    "pricePerHour": 500000,
+    "status": "active",
+    "createdAt": {
+      "$date": "2026-04-01T05:25:33Z"
+    },
+    "updatedAt": {
+      "$date": "2026-04-01T05:25:33Z"
+    }
+  },
+  {
+    "_id": {
+      "$oid": "400000000000000000000090"
+    },
+    "venueId": {
+      "$oid": "300000000000000000000073"
+    },
+    "name": "Sân 7 người - D",
+    "type": "football",
+    "size": "7 người",
+    "surface": "Cỏ nhân tạo",
+    "pricePerHour": 550000,
+    "status": "maintenance",
+    "createdAt": {
+      "$date": "2026-04-01T05:25:33Z"
+    },
+    "updatedAt": {
+      "$date": "2026-04-01T05:25:33Z"
+    }
+  },
+  {
+    "_id": {
+      "$oid": "400000000000000000000091"
+    },
+    "venueId": {
+      "$oid": "300000000000000000000074"
+    },
+    "name": "Bể bơi trong nhà",
+    "type": "swimming",
+    "size": "25m",
+    "surface": "",
+    "pricePerHour": 70000,
+    "status": "active",
+    "createdAt": {
+      "$date": "2026-03-27T23:04:24Z"
+    },
+    "updatedAt": {
+      "$date": "2026-03-27T23:04:24Z"
+    }
+  },
+  {
+    "_id": {
+      "$oid": "400000000000000000000092"
+    },
+    "venueId": {
+      "$oid": "300000000000000000000074"
+    },
+    "name": "Phòng Yoga 1",
+    "type": "yoga",
+    "size": "",
+    "surface": "Sàn gỗ",
+    "pricePerHour": 80000,
+    "status": "active",
+    "createdAt": {
+      "$date": "2026-03-27T23:04:24Z"
+    },
+    "updatedAt": {
+      "$date": "2026-03-27T23:04:24Z"
+    }
+  },
+  {
+    "_id": {
+      "$oid": "400000000000000000000093"
+    },
+    "venueId": {
+      "$oid": "300000000000000000000075"
+    },
+    "name": "Sân bóng chuyền trong nhà",
+    "type": "volleyball",
+    "size": "",
+    "surface": "Sàn gỗ",
+    "pricePerHour": 180000,
+    "status": "active",
+    "createdAt": {
+      "$date": "2026-02-05T14:06:38Z"
+    },
+    "updatedAt": {
+      "$date": "2026-02-05T14:06:38Z"
+    }
+  },
+  {
+    "_id": {
+      "$oid": "400000000000000000000094"
+    },
+    "venueId": {
+      "$oid": "300000000000000000000075"
+    },
+    "name": "Sân bóng chuyền bãi biển",
+    "type": "volleyball",
+    "size": "",
+    "surface": "Cát",
+    "pricePerHour": 130000,
+    "status": "active",
+    "createdAt": {
+      "$date": "2026-02-05T14:06:38Z"
+    },
+    "updatedAt": {
+      "$date": "2026-02-05T14:06:38Z"
+    }
+  },
+  {
+    "_id": {
+      "$oid": "400000000000000000000095"
+    },
+    "venueId": {
+      "$oid": "300000000000000000000076"
+    },
+    "name": "Sân cầu lông số 1",
+    "type": "badminton",
+    "size": "",
+    "surface": "Sàn gỗ",
+    "pricePerHour": 80000,
+    "status": "active",
+    "createdAt": {
+      "$date": "2026-07-01T04:12:45Z"
+    },
+    "updatedAt": {
+      "$date": "2026-07-01T04:12:45Z"
+    }
+  },
+  {
+    "_id": {
+      "$oid": "400000000000000000000096"
+    },
+    "venueId": {
+      "$oid": "300000000000000000000076"
+    },
+    "name": "Sân cầu lông số 2",
+    "type": "badminton",
+    "size": "",
+    "surface": "Sàn gỗ",
+    "pricePerHour": 100000,
+    "status": "active",
+    "createdAt": {
+      "$date": "2026-07-01T04:12:45Z"
+    },
+    "updatedAt": {
+      "$date": "2026-07-01T04:12:45Z"
+    }
+  },
+  {
+    "_id": {
+      "$oid": "400000000000000000000097"
+    },
+    "venueId": {
+      "$oid": "300000000000000000000076"
+    },
+    "name": "Sân cầu lông số 3",
+    "type": "badminton",
+    "size": "",
+    "surface": "Sàn gỗ",
+    "pricePerHour": 80000,
+    "status": "active",
+    "createdAt": {
+      "$date": "2026-07-01T04:12:45Z"
+    },
+    "updatedAt": {
+      "$date": "2026-07-01T04:12:45Z"
+    }
+  },
+  {
+    "_id": {
+      "$oid": "400000000000000000000098"
+    },
+    "venueId": {
+      "$oid": "300000000000000000000076"
+    },
+    "name": "Sân cầu lông số 4",
+    "type": "badminton",
+    "size": "",
+    "surface": "Sàn gỗ",
+    "pricePerHour": 140000,
+    "status": "active",
+    "createdAt": {
+      "$date": "2026-07-01T04:12:45Z"
+    },
+    "updatedAt": {
+      "$date": "2026-07-01T04:12:45Z"
+    }
+  },
+  {
+    "_id": {
+      "$oid": "400000000000000000000099"
+    },
+    "venueId": {
+      "$oid": "300000000000000000000076"
+    },
+    "name": "Sân cầu lông số 5",
+    "type": "badminton",
+    "size": "",
+    "surface": "Sàn gỗ",
+    "pricePerHour": 80000,
+    "status": "active",
+    "createdAt": {
+      "$date": "2026-07-01T04:12:45Z"
+    },
+    "updatedAt": {
+      "$date": "2026-07-01T04:12:45Z"
+    }
+  },
+  {
+    "_id": {
+      "$oid": "40000000000000000000009a"
+    },
+    "venueId": {
+      "$oid": "300000000000000000000076"
+    },
+    "name": "Sân cầu lông số 6",
+    "type": "badminton",
+    "size": "",
+    "surface": "Sàn gỗ",
+    "pricePerHour": 120000,
+    "status": "active",
+    "createdAt": {
+      "$date": "2026-07-01T04:12:45Z"
+    },
+    "updatedAt": {
+      "$date": "2026-07-01T04:12:45Z"
+    }
+  },
+  {
+    "_id": {
+      "$oid": "40000000000000000000009b"
+    },
+    "venueId": {
+      "$oid": "300000000000000000000077"
+    },
+    "name": "Sân cầu lông số 1",
+    "type": "badminton",
+    "size": "",
+    "surface": "Sàn gỗ",
+    "pricePerHour": 120000,
+    "status": "active",
+    "createdAt": {
+      "$date": "2026-08-30T15:00:39Z"
+    },
+    "updatedAt": {
+      "$date": "2026-08-30T15:00:39Z"
+    }
+  },
+  {
+    "_id": {
+      "$oid": "40000000000000000000009c"
+    },
+    "venueId": {
+      "$oid": "300000000000000000000077"
+    },
+    "name": "Sân cầu lông số 2",
+    "type": "badminton",
+    "size": "",
+    "surface": "Sàn gỗ",
+    "pricePerHour": 80000,
+    "status": "active",
+    "createdAt": {
+      "$date": "2026-08-30T15:00:39Z"
+    },
+    "updatedAt": {
+      "$date": "2026-08-30T15:00:39Z"
+    }
+  },
+  {
+    "_id": {
+      "$oid": "40000000000000000000009d"
+    },
+    "venueId": {
+      "$oid": "300000000000000000000078"
+    },
+    "name": "Sân tennis ngoài trời 1",
+    "type": "tennis",
+    "size": "",
+    "surface": "Mặt cứng",
+    "pricePerHour": 160000,
+    "status": "active",
+    "createdAt": {
+      "$date": "2026-03-01T01:00:36Z"
+    },
+    "updatedAt": {
+      "$date": "2026-03-01T01:00:36Z"
+    }
+  },
+  {
+    "_id": {
+      "$oid": "40000000000000000000009e"
+    },
+    "venueId": {
+      "$oid": "300000000000000000000078"
+    },
+    "name": "Sân tennis ngoài trời 2",
+    "type": "tennis",
+    "size": "",
+    "surface": "Mặt cứng",
+    "pricePerHour": 180000,
+    "status": "active",
+    "createdAt": {
+      "$date": "2026-03-01T01:00:36Z"
+    },
+    "updatedAt": {
+      "$date": "2026-03-01T01:00:36Z"
+    }
+  },
+  {
+    "_id": {
+      "$oid": "40000000000000000000009f"
+    },
+    "venueId": {
+      "$oid": "300000000000000000000078"
+    },
+    "name": "Sân tennis trong nhà 3",
+    "type": "tennis",
+    "size": "",
+    "surface": "Thảm cao su",
+    "pricePerHour": 300000,
+    "status": "active",
+    "createdAt": {
+      "$date": "2026-03-01T01:00:36Z"
+    },
+    "updatedAt": {
+      "$date": "2026-03-01T01:00:36Z"
+    }
+  },
+  {
+    "_id": {
+      "$oid": "4000000000000000000000a0"
+    },
+    "venueId": {
+      "$oid": "300000000000000000000079"
+    },
+    "name": "Sân cầu lông số 1",
+    "type": "badminton",
+    "size": "",
+    "surface": "Sàn gỗ",
+    "pricePerHour": 90000,
+    "status": "active",
+    "createdAt": {
+      "$date": "2026-06-19T02:47:49Z"
+    },
+    "updatedAt": {
+      "$date": "2026-06-19T02:47:49Z"
+    }
+  },
+  {
+    "_id": {
+      "$oid": "4000000000000000000000a1"
+    },
+    "venueId": {
+      "$oid": "300000000000000000000079"
+    },
+    "name": "Sân cầu lông số 2",
+    "type": "badminton",
+    "size": "",
+    "surface": "Sàn gỗ",
+    "pricePerHour": 130000,
+    "status": "active",
+    "createdAt": {
+      "$date": "2026-06-19T02:47:49Z"
+    },
+    "updatedAt": {
+      "$date": "2026-06-19T02:47:49Z"
+    }
+  },
+  {
+    "_id": {
+      "$oid": "4000000000000000000000a2"
+    },
+    "venueId": {
+      "$oid": "300000000000000000000079"
+    },
+    "name": "Sân cầu lông số 3",
+    "type": "badminton",
+    "size": "",
+    "surface": "Sàn gỗ",
+    "pricePerHour": 110000,
+    "status": "active",
+    "createdAt": {
+      "$date": "2026-06-19T02:47:49Z"
+    },
+    "updatedAt": {
+      "$date": "2026-06-19T02:47:49Z"
+    }
+  },
+  {
+    "_id": {
+      "$oid": "4000000000000000000000a3"
+    },
+    "venueId": {
+      "$oid": "30000000000000000000007a"
+    },
+    "name": "Sân 5 người - A",
+    "type": "football",
+    "size": "5 người",
+    "surface": "Cỏ nhân tạo",
+    "pricePerHour": 260000,
+    "status": "active",
+    "createdAt": {
+      "$date": "2026-02-02T15:30:28Z"
+    },
+    "updatedAt": {
+      "$date": "2026-02-02T15:30:28Z"
+    }
+  },
+  {
+    "_id": {
+      "$oid": "4000000000000000000000a4"
+    },
+    "venueId": {
+      "$oid": "30000000000000000000007a"
+    },
+    "name": "Sân 5 người - B",
+    "type": "football",
+    "size": "5 người",
+    "surface": "Cỏ nhân tạo",
+    "pricePerHour": 320000,
+    "status": "active",
+    "createdAt": {
+      "$date": "2026-02-02T15:30:28Z"
+    },
+    "updatedAt": {
+      "$date": "2026-02-02T15:30:28Z"
+    }
+  },
+  {
+    "_id": {
+      "$oid": "4000000000000000000000a5"
+    },
+    "venueId": {
+      "$oid": "30000000000000000000007b"
+    },
+    "name": "Sân bóng rổ chính",
+    "type": "basketball",
+    "size": "Sân đầy",
+    "surface": "Sàn gỗ PU",
+    "pricePerHour": 260000,
+    "status": "active",
+    "createdAt": {
+      "$date": "2026-03-27T08:07:20Z"
+    },
+    "updatedAt": {
+      "$date": "2026-03-27T08:07:20Z"
+    }
+  },
+  {
+    "_id": {
+      "$oid": "4000000000000000000000a6"
+    },
+    "venueId": {
+      "$oid": "30000000000000000000007b"
+    },
+    "name": "Sân bóng rổ phụ",
+    "type": "basketball",
+    "size": "Nửa sân",
+    "surface": "Sàn gỗ PU",
+    "pricePerHour": 220000,
+    "status": "active",
+    "createdAt": {
+      "$date": "2026-03-27T08:07:20Z"
+    },
+    "updatedAt": {
+      "$date": "2026-03-27T08:07:20Z"
+    }
+  },
+  {
+    "_id": {
+      "$oid": "4000000000000000000000a7"
+    },
+    "venueId": {
+      "$oid": "30000000000000000000007b"
+    },
+    "name": "Khu Gym tự do",
+    "type": "gym",
+    "size": "",
+    "surface": "",
+    "pricePerHour": 100000,
+    "status": "active",
+    "createdAt": {
+      "$date": "2026-03-27T08:07:20Z"
+    },
+    "updatedAt": {
+      "$date": "2026-03-27T08:07:20Z"
+    }
+  },
+  {
+    "_id": {
+      "$oid": "4000000000000000000000a8"
+    },
+    "venueId": {
+      "$oid": "30000000000000000000007c"
+    },
+    "name": "Bể bơi trong nhà",
+    "type": "swimming",
+    "size": "25m",
+    "surface": "",
+    "pricePerHour": 80000,
+    "status": "active",
+    "createdAt": {
+      "$date": "2026-05-12T00:18:18Z"
+    },
+    "updatedAt": {
+      "$date": "2026-05-12T00:18:18Z"
+    }
+  },
+  {
+    "_id": {
+      "$oid": "4000000000000000000000a9"
+    },
+    "venueId": {
+      "$oid": "30000000000000000000007c"
+    },
+    "name": "Phòng Yoga 1",
+    "type": "yoga",
+    "size": "",
+    "surface": "Sàn gỗ",
+    "pricePerHour": 120000,
+    "status": "active",
+    "createdAt": {
+      "$date": "2026-05-12T00:18:18Z"
+    },
+    "updatedAt": {
+      "$date": "2026-05-12T00:18:18Z"
+    }
+  },
+  {
+    "_id": {
+      "$oid": "4000000000000000000000aa"
+    },
+    "venueId": {
+      "$oid": "30000000000000000000007d"
+    },
+    "name": "Sân bóng rổ chính",
+    "type": "basketball",
+    "size": "Sân đầy",
+    "surface": "Sàn gỗ PU",
+    "pricePerHour": 400000,
+    "status": "active",
+    "createdAt": {
+      "$date": "2026-06-30T20:20:55Z"
+    },
+    "updatedAt": {
+      "$date": "2026-06-30T20:20:55Z"
+    }
+  },
+  {
+    "_id": {
+      "$oid": "4000000000000000000000ab"
+    },
+    "venueId": {
+      "$oid": "30000000000000000000007d"
+    },
+    "name": "Sân bóng rổ phụ",
+    "type": "basketball",
+    "size": "Nửa sân",
+    "surface": "Sàn gỗ PU",
+    "pricePerHour": 220000,
+    "status": "maintenance",
+    "createdAt": {
+      "$date": "2026-06-30T20:20:55Z"
+    },
+    "updatedAt": {
+      "$date": "2026-06-30T20:20:55Z"
+    }
+  },
+  {
+    "_id": {
+      "$oid": "4000000000000000000000ac"
+    },
+    "venueId": {
+      "$oid": "30000000000000000000007d"
+    },
+    "name": "Khu Gym tự do",
+    "type": "gym",
+    "size": "",
+    "surface": "",
+    "pricePerHour": 60000,
+    "status": "active",
+    "createdAt": {
+      "$date": "2026-06-30T20:20:55Z"
+    },
+    "updatedAt": {
+      "$date": "2026-06-30T20:20:55Z"
+    }
+  },
+  {
+    "_id": {
+      "$oid": "4000000000000000000000ad"
+    },
+    "venueId": {
+      "$oid": "30000000000000000000007e"
+    },
+    "name": "Sân cầu lông số 1",
+    "type": "badminton",
+    "size": "",
+    "surface": "Sàn gỗ",
+    "pricePerHour": 80000,
+    "status": "active",
+    "createdAt": {
+      "$date": "2026-03-13T10:38:28Z"
+    },
+    "updatedAt": {
+      "$date": "2026-03-13T10:38:28Z"
+    }
+  },
+  {
+    "_id": {
+      "$oid": "4000000000000000000000ae"
+    },
+    "venueId": {
+      "$oid": "30000000000000000000007e"
+    },
+    "name": "Sân cầu lông số 2",
+    "type": "badminton",
+    "size": "",
+    "surface": "Sàn gỗ",
+    "pricePerHour": 90000,
+    "status": "active",
+    "createdAt": {
+      "$date": "2026-03-13T10:38:28Z"
+    },
+    "updatedAt": {
+      "$date": "2026-03-13T10:38:28Z"
+    }
+  },
+  {
+    "_id": {
+      "$oid": "4000000000000000000000af"
+    },
+    "venueId": {
+      "$oid": "30000000000000000000007e"
+    },
+    "name": "Sân cầu lông số 3",
+    "type": "badminton",
+    "size": "",
+    "surface": "Sàn gỗ",
+    "pricePerHour": 100000,
+    "status": "inactive",
+    "createdAt": {
+      "$date": "2026-03-13T10:38:28Z"
+    },
+    "updatedAt": {
+      "$date": "2026-03-13T10:38:28Z"
+    }
+  },
+  {
+    "_id": {
+      "$oid": "4000000000000000000000b0"
+    },
+    "venueId": {
+      "$oid": "30000000000000000000007f"
+    },
+    "name": "Bể bơi trong nhà",
+    "type": "swimming",
+    "size": "25m",
+    "surface": "",
+    "pricePerHour": 80000,
+    "status": "active",
+    "createdAt": {
+      "$date": "2026-03-19T21:31:50Z"
+    },
+    "updatedAt": {
+      "$date": "2026-03-19T21:31:50Z"
+    }
+  },
+  {
+    "_id": {
+      "$oid": "4000000000000000000000b1"
+    },
+    "venueId": {
+      "$oid": "30000000000000000000007f"
+    },
+    "name": "Phòng Yoga 1",
+    "type": "yoga",
+    "size": "",
+    "surface": "Sàn gỗ",
+    "pricePerHour": 130000,
+    "status": "active",
+    "createdAt": {
+      "$date": "2026-03-19T21:31:50Z"
+    },
+    "updatedAt": {
+      "$date": "2026-03-19T21:31:50Z"
+    }
+  },
+  {
+    "_id": {
+      "$oid": "4000000000000000000000b2"
+    },
+    "venueId": {
+      "$oid": "300000000000000000000080"
+    },
+    "name": "Sân 5 người - A",
+    "type": "football",
+    "size": "5 người",
+    "surface": "Cỏ nhân tạo",
+    "pricePerHour": 350000,
+    "status": "active",
+    "createdAt": {
+      "$date": "2026-02-04T12:20:22Z"
+    },
+    "updatedAt": {
+      "$date": "2026-02-04T12:20:22Z"
+    }
+  },
+  {
+    "_id": {
+      "$oid": "4000000000000000000000b3"
+    },
+    "venueId": {
+      "$oid": "300000000000000000000080"
+    },
+    "name": "Sân 5 người - B",
+    "type": "football",
+    "size": "5 người",
+    "surface": "Cỏ nhân tạo",
+    "pricePerHour": 360000,
+    "status": "active",
+    "createdAt": {
+      "$date": "2026-02-04T12:20:22Z"
+    },
+    "updatedAt": {
+      "$date": "2026-02-04T12:20:22Z"
+    }
+  },
+  {
+    "_id": {
+      "$oid": "4000000000000000000000b4"
+    },
+    "venueId": {
+      "$oid": "300000000000000000000080"
+    },
+    "name": "Sân 7 người - C",
+    "type": "football",
+    "size": "7 người",
+    "surface": "Cỏ nhân tạo",
+    "pricePerHour": 530000,
+    "status": "active",
+    "createdAt": {
+      "$date": "2026-02-04T12:20:22Z"
+    },
+    "updatedAt": {
+      "$date": "2026-02-04T12:20:22Z"
+    }
+  },
+  {
+    "_id": {
+      "$oid": "4000000000000000000000b5"
+    },
+    "venueId": {
+      "$oid": "300000000000000000000080"
+    },
+    "name": "Sân 7 người - D",
+    "type": "football",
+    "size": "7 người",
+    "surface": "Cỏ nhân tạo",
+    "pricePerHour": 590000,
+    "status": "active",
+    "createdAt": {
+      "$date": "2026-02-04T12:20:22Z"
+    },
+    "updatedAt": {
+      "$date": "2026-02-04T12:20:22Z"
+    }
+  },
+  {
+    "_id": {
+      "$oid": "4000000000000000000000b6"
+    },
+    "venueId": {
+      "$oid": "300000000000000000000081"
+    },
+    "name": "Sân 5 người - A",
+    "type": "football",
+    "size": "5 người",
+    "surface": "Cỏ nhân tạo",
+    "pricePerHour": 280000,
+    "status": "maintenance",
+    "createdAt": {
+      "$date": "2026-03-09T21:32:44Z"
+    },
+    "updatedAt": {
+      "$date": "2026-03-09T21:32:44Z"
+    }
+  },
+  {
+    "_id": {
+      "$oid": "4000000000000000000000b7"
+    },
+    "venueId": {
+      "$oid": "300000000000000000000081"
+    },
+    "name": "Sân 5 người - B",
+    "type": "football",
+    "size": "5 người",
+    "surface": "Cỏ nhân tạo",
+    "pricePerHour": 370000,
+    "status": "active",
+    "createdAt": {
+      "$date": "2026-03-09T21:32:44Z"
+    },
+    "updatedAt": {
+      "$date": "2026-03-09T21:32:44Z"
+    }
+  },
+  {
+    "_id": {
+      "$oid": "4000000000000000000000b8"
+    },
+    "venueId": {
+      "$oid": "300000000000000000000081"
+    },
+    "name": "Sân 7 người - C",
+    "type": "football",
+    "size": "7 người",
+    "surface": "Cỏ nhân tạo",
+    "pricePerHour": 510000,
+    "status": "active",
+    "createdAt": {
+      "$date": "2026-03-09T21:32:44Z"
+    },
+    "updatedAt": {
+      "$date": "2026-03-09T21:32:44Z"
+    }
+  },
+  {
+    "_id": {
+      "$oid": "4000000000000000000000b9"
+    },
+    "venueId": {
+      "$oid": "300000000000000000000081"
+    },
+    "name": "Sân 7 người - D",
+    "type": "football",
+    "size": "7 người",
+    "surface": "Cỏ nhân tạo",
+    "pricePerHour": 550000,
+    "status": "active",
+    "createdAt": {
+      "$date": "2026-03-09T21:32:44Z"
+    },
+    "updatedAt": {
+      "$date": "2026-03-09T21:32:44Z"
+    }
+  },
+  {
+    "_id": {
+      "$oid": "4000000000000000000000ba"
+    },
+    "venueId": {
+      "$oid": "300000000000000000000082"
+    },
+    "name": "Sân cầu lông số 1",
+    "type": "badminton",
+    "size": "",
+    "surface": "Sàn gỗ",
+    "pricePerHour": 80000,
+    "status": "active",
+    "createdAt": {
+      "$date": "2026-08-22T16:29:38Z"
+    },
+    "updatedAt": {
+      "$date": "2026-08-22T16:29:38Z"
+    }
+  },
+  {
+    "_id": {
+      "$oid": "4000000000000000000000bb"
+    },
+    "venueId": {
+      "$oid": "300000000000000000000082"
+    },
+    "name": "Sân cầu lông số 2",
+    "type": "badminton",
+    "size": "",
+    "surface": "Sàn gỗ",
+    "pricePerHour": 90000,
+    "status": "active",
+    "createdAt": {
+      "$date": "2026-08-22T16:29:38Z"
+    },
+    "updatedAt": {
+      "$date": "2026-08-22T16:29:38Z"
+    }
+  },
+  {
+    "_id": {
+      "$oid": "4000000000000000000000bc"
+    },
+    "venueId": {
+      "$oid": "300000000000000000000082"
+    },
+    "name": "Sân cầu lông số 3",
+    "type": "badminton",
+    "size": "",
+    "surface": "Sàn gỗ",
+    "pricePerHour": 140000,
+    "status": "active",
+    "createdAt": {
+      "$date": "2026-08-22T16:29:38Z"
+    },
+    "updatedAt": {
+      "$date": "2026-08-22T16:29:38Z"
+    }
+  },
+  {
+    "_id": {
+      "$oid": "4000000000000000000000bd"
+    },
+    "venueId": {
+      "$oid": "300000000000000000000083"
+    },
+    "name": "Sân 5 người - A",
+    "type": "football",
+    "size": "5 người",
+    "surface": "Cỏ nhân tạo",
+    "pricePerHour": 350000,
+    "status": "active",
+    "createdAt": {
+      "$date": "2026-06-12T06:29:54Z"
+    },
+    "updatedAt": {
+      "$date": "2026-06-12T06:29:54Z"
+    }
+  },
+  {
+    "_id": {
+      "$oid": "4000000000000000000000be"
+    },
+    "venueId": {
+      "$oid": "300000000000000000000083"
+    },
+    "name": "Sân 5 người - B",
+    "type": "football",
+    "size": "5 người",
+    "surface": "Cỏ nhân tạo",
+    "pricePerHour": 340000,
+    "status": "active",
+    "createdAt": {
+      "$date": "2026-06-12T06:29:54Z"
+    },
+    "updatedAt": {
+      "$date": "2026-06-12T06:29:54Z"
+    }
+  },
+  {
+    "_id": {
+      "$oid": "4000000000000000000000bf"
+    },
+    "venueId": {
+      "$oid": "300000000000000000000084"
+    },
+    "name": "Sân bóng rổ chính",
+    "type": "basketball",
+    "size": "Sân đầy",
+    "surface": "Sàn gỗ PU",
+    "pricePerHour": 450000,
+    "status": "inactive",
+    "createdAt": {
+      "$date": "2026-02-04T21:15:20Z"
+    },
+    "updatedAt": {
+      "$date": "2026-02-04T21:15:20Z"
+    }
+  },
+  {
+    "_id": {
+      "$oid": "4000000000000000000000c0"
+    },
+    "venueId": {
+      "$oid": "300000000000000000000084"
+    },
+    "name": "Sân bóng rổ phụ",
+    "type": "basketball",
+    "size": "Nửa sân",
+    "surface": "Sàn gỗ PU",
+    "pricePerHour": 150000,
+    "status": "active",
+    "createdAt": {
+      "$date": "2026-02-04T21:15:20Z"
+    },
+    "updatedAt": {
+      "$date": "2026-02-04T21:15:20Z"
+    }
+  },
+  {
+    "_id": {
+      "$oid": "4000000000000000000000c1"
+    },
+    "venueId": {
+      "$oid": "300000000000000000000085"
+    },
+    "name": "Sân tennis ngoài trời 1",
+    "type": "tennis",
+    "size": "",
+    "surface": "Mặt cứng",
+    "pricePerHour": 150000,
+    "status": "maintenance",
+    "createdAt": {
+      "$date": "2026-04-15T02:37:56Z"
+    },
+    "updatedAt": {
+      "$date": "2026-04-15T02:37:56Z"
+    }
+  },
+  {
+    "_id": {
+      "$oid": "4000000000000000000000c2"
+    },
+    "venueId": {
+      "$oid": "300000000000000000000085"
+    },
+    "name": "Sân tennis ngoài trời 2",
+    "type": "tennis",
+    "size": "",
+    "surface": "Mặt cứng",
+    "pricePerHour": 200000,
+    "status": "active",
+    "createdAt": {
+      "$date": "2026-04-15T02:37:56Z"
+    },
+    "updatedAt": {
+      "$date": "2026-04-15T02:37:56Z"
+    }
+  },
+  {
+    "_id": {
+      "$oid": "4000000000000000000000c3"
+    },
+    "venueId": {
+      "$oid": "300000000000000000000085"
+    },
+    "name": "Sân tennis trong nhà 3",
+    "type": "tennis",
+    "size": "",
+    "surface": "Thảm cao su",
+    "pricePerHour": 220000,
+    "status": "active",
+    "createdAt": {
+      "$date": "2026-04-15T02:37:56Z"
+    },
+    "updatedAt": {
+      "$date": "2026-04-15T02:37:56Z"
+    }
+  },
+  {
+    "_id": {
+      "$oid": "4000000000000000000000c4"
+    },
+    "venueId": {
+      "$oid": "300000000000000000000086"
+    },
+    "name": "Sân 5 người - A",
+    "type": "football",
+    "size": "5 người",
+    "surface": "Cỏ nhân tạo",
+    "pricePerHour": 350000,
+    "status": "inactive",
+    "createdAt": {
+      "$date": "2026-07-05T06:08:30Z"
+    },
+    "updatedAt": {
+      "$date": "2026-07-05T06:08:30Z"
+    }
+  },
+  {
+    "_id": {
+      "$oid": "4000000000000000000000c5"
+    },
+    "venueId": {
+      "$oid": "300000000000000000000086"
+    },
+    "name": "Sân 5 người - B",
+    "type": "football",
+    "size": "5 người",
+    "surface": "Cỏ nhân tạo",
+    "pricePerHour": 340000,
+    "status": "active",
+    "createdAt": {
+      "$date": "2026-07-05T06:08:30Z"
+    },
+    "updatedAt": {
+      "$date": "2026-07-05T06:08:30Z"
+    }
+  },
+  {
+    "_id": {
+      "$oid": "4000000000000000000000c6"
+    },
+    "venueId": {
+      "$oid": "300000000000000000000087"
+    },
+    "name": "Sân cầu lông số 1",
+    "type": "badminton",
+    "size": "",
+    "surface": "Sàn gỗ",
+    "pricePerHour": 80000,
+    "status": "active",
+    "createdAt": {
+      "$date": "2026-03-12T00:38:48Z"
+    },
+    "updatedAt": {
+      "$date": "2026-03-12T00:38:48Z"
+    }
+  },
+  {
+    "_id": {
+      "$oid": "4000000000000000000000c7"
+    },
+    "venueId": {
+      "$oid": "300000000000000000000087"
+    },
+    "name": "Sân cầu lông số 2",
+    "type": "badminton",
+    "size": "",
+    "surface": "Sàn gỗ",
+    "pricePerHour": 130000,
+    "status": "active",
+    "createdAt": {
+      "$date": "2026-03-12T00:38:48Z"
+    },
+    "updatedAt": {
+      "$date": "2026-03-12T00:38:48Z"
+    }
+  },
+  {
+    "_id": {
+      "$oid": "4000000000000000000000c8"
+    },
+    "venueId": {
+      "$oid": "300000000000000000000087"
+    },
+    "name": "Sân cầu lông số 3",
+    "type": "badminton",
+    "size": "",
+    "surface": "Sàn gỗ",
+    "pricePerHour": 140000,
+    "status": "active",
+    "createdAt": {
+      "$date": "2026-03-12T00:38:48Z"
+    },
+    "updatedAt": {
+      "$date": "2026-03-12T00:38:48Z"
+    }
+  },
+  {
+    "_id": {
+      "$oid": "4000000000000000000000c9"
+    },
+    "venueId": {
+      "$oid": "300000000000000000000088"
+    },
+    "name": "Sân 5 người - A",
+    "type": "football",
+    "size": "5 người",
+    "surface": "Cỏ nhân tạo",
+    "pricePerHour": 270000,
+    "status": "active",
+    "createdAt": {
+      "$date": "2026-03-17T00:31:14Z"
+    },
+    "updatedAt": {
+      "$date": "2026-03-17T00:31:14Z"
+    }
+  },
+  {
+    "_id": {
+      "$oid": "4000000000000000000000ca"
+    },
+    "venueId": {
+      "$oid": "300000000000000000000088"
+    },
+    "name": "Sân 5 người - B",
+    "type": "football",
+    "size": "5 người",
+    "surface": "Cỏ nhân tạo",
+    "pricePerHour": 300000,
+    "status": "active",
+    "createdAt": {
+      "$date": "2026-03-17T00:31:14Z"
+    },
+    "updatedAt": {
+      "$date": "2026-03-17T00:31:14Z"
+    }
+  },
+  {
+    "_id": {
+      "$oid": "4000000000000000000000cb"
+    },
+    "venueId": {
+      "$oid": "300000000000000000000088"
+    },
+    "name": "Sân 7 người - C",
+    "type": "football",
+    "size": "7 người",
+    "surface": "Cỏ nhân tạo",
+    "pricePerHour": 540000,
+    "status": "active",
+    "createdAt": {
+      "$date": "2026-03-17T00:31:14Z"
+    },
+    "updatedAt": {
+      "$date": "2026-03-17T00:31:14Z"
+    }
+  },
+  {
+    "_id": {
+      "$oid": "4000000000000000000000cc"
+    },
+    "venueId": {
+      "$oid": "300000000000000000000089"
+    },
+    "name": "Sân cầu lông số 1",
+    "type": "badminton",
+    "size": "",
+    "surface": "Sàn gỗ",
+    "pricePerHour": 80000,
+    "status": "active",
+    "createdAt": {
+      "$date": "2026-07-11T12:18:52Z"
+    },
+    "updatedAt": {
+      "$date": "2026-07-11T12:18:52Z"
+    }
+  },
+  {
+    "_id": {
+      "$oid": "4000000000000000000000cd"
+    },
+    "venueId": {
+      "$oid": "300000000000000000000089"
+    },
+    "name": "Sân cầu lông số 2",
+    "type": "badminton",
+    "size": "",
+    "surface": "Sàn gỗ",
+    "pricePerHour": 120000,
+    "status": "active",
+    "createdAt": {
+      "$date": "2026-07-11T12:18:52Z"
+    },
+    "updatedAt": {
+      "$date": "2026-07-11T12:18:52Z"
+    }
+  },
+  {
+    "_id": {
+      "$oid": "4000000000000000000000ce"
+    },
+    "venueId": {
+      "$oid": "300000000000000000000089"
+    },
+    "name": "Sân cầu lông số 3",
+    "type": "badminton",
+    "size": "",
+    "surface": "Sàn gỗ",
+    "pricePerHour": 80000,
+    "status": "active",
+    "createdAt": {
+      "$date": "2026-07-11T12:18:52Z"
+    },
+    "updatedAt": {
+      "$date": "2026-07-11T12:18:52Z"
+    }
+  },
+  {
+    "_id": {
+      "$oid": "4000000000000000000000cf"
+    },
+    "venueId": {
+      "$oid": "30000000000000000000008a"
+    },
+    "name": "Sân cầu lông số 1",
+    "type": "badminton",
+    "size": "",
+    "surface": "Sàn gỗ",
+    "pricePerHour": 90000,
+    "status": "active",
+    "createdAt": {
+      "$date": "2026-04-24T15:08:35Z"
+    },
+    "updatedAt": {
+      "$date": "2026-04-24T15:08:35Z"
+    }
+  },
+  {
+    "_id": {
+      "$oid": "4000000000000000000000d0"
+    },
+    "venueId": {
+      "$oid": "30000000000000000000008a"
+    },
+    "name": "Sân cầu lông số 2",
+    "type": "badminton",
+    "size": "",
+    "surface": "Sàn gỗ",
+    "pricePerHour": 70000,
+    "status": "active",
+    "createdAt": {
+      "$date": "2026-04-24T15:08:35Z"
+    },
+    "updatedAt": {
+      "$date": "2026-04-24T15:08:35Z"
+    }
+  },
+  {
+    "_id": {
+      "$oid": "4000000000000000000000d1"
+    },
+    "venueId": {
+      "$oid": "30000000000000000000008b"
+    },
+    "name": "Sân 5 người - A",
+    "type": "football",
+    "size": "5 người",
+    "surface": "Cỏ nhân tạo",
+    "pricePerHour": 350000,
+    "status": "active",
+    "createdAt": {
+      "$date": "2026-04-23T01:09:33Z"
+    },
+    "updatedAt": {
+      "$date": "2026-04-23T01:09:33Z"
+    }
+  },
+  {
+    "_id": {
+      "$oid": "4000000000000000000000d2"
+    },
+    "venueId": {
+      "$oid": "30000000000000000000008b"
+    },
+    "name": "Sân 5 người - B",
+    "type": "football",
+    "size": "5 người",
+    "surface": "Cỏ nhân tạo",
+    "pricePerHour": 260000,
+    "status": "active",
+    "createdAt": {
+      "$date": "2026-04-23T01:09:33Z"
+    },
+    "updatedAt": {
+      "$date": "2026-04-23T01:09:33Z"
+    }
+  },
+  {
+    "_id": {
+      "$oid": "4000000000000000000000d3"
+    },
+    "venueId": {
+      "$oid": "30000000000000000000008b"
+    },
+    "name": "Sân 7 người - C",
+    "type": "football",
+    "size": "7 người",
+    "surface": "Cỏ nhân tạo",
+    "pricePerHour": 430000,
+    "status": "active",
+    "createdAt": {
+      "$date": "2026-04-23T01:09:33Z"
+    },
+    "updatedAt": {
+      "$date": "2026-04-23T01:09:33Z"
+    }
+  },
+  {
+    "_id": {
+      "$oid": "4000000000000000000000d4"
+    },
+    "venueId": {
+      "$oid": "30000000000000000000008b"
+    },
+    "name": "Sân 7 người - D",
+    "type": "football",
+    "size": "7 người",
+    "surface": "Cỏ nhân tạo",
+    "pricePerHour": 600000,
+    "status": "active",
+    "createdAt": {
+      "$date": "2026-04-23T01:09:33Z"
+    },
+    "updatedAt": {
+      "$date": "2026-04-23T01:09:33Z"
+    }
+  },
+  {
+    "_id": {
+      "$oid": "4000000000000000000000d5"
+    },
+    "venueId": {
+      "$oid": "30000000000000000000008c"
+    },
+    "name": "Sân tennis ngoài trời 1",
+    "type": "tennis",
+    "size": "",
+    "surface": "Mặt cứng",
+    "pricePerHour": 180000,
+    "status": "active",
+    "createdAt": {
+      "$date": "2026-03-28T23:00:16Z"
+    },
+    "updatedAt": {
+      "$date": "2026-03-28T23:00:16Z"
+    }
+  },
+  {
+    "_id": {
+      "$oid": "4000000000000000000000d6"
+    },
+    "venueId": {
+      "$oid": "30000000000000000000008c"
+    },
+    "name": "Sân tennis ngoài trời 2",
+    "type": "tennis",
+    "size": "",
+    "surface": "Mặt cứng",
+    "pricePerHour": 190000,
+    "status": "active",
+    "createdAt": {
+      "$date": "2026-03-28T23:00:16Z"
+    },
+    "updatedAt": {
+      "$date": "2026-03-28T23:00:16Z"
+    }
+  },
+  {
+    "_id": {
+      "$oid": "4000000000000000000000d7"
+    },
+    "venueId": {
+      "$oid": "30000000000000000000008c"
+    },
+    "name": "Sân tennis trong nhà 3",
+    "type": "tennis",
+    "size": "",
+    "surface": "Thảm cao su",
+    "pricePerHour": 260000,
+    "status": "active",
+    "createdAt": {
+      "$date": "2026-03-28T23:00:16Z"
+    },
+    "updatedAt": {
+      "$date": "2026-03-28T23:00:16Z"
+    }
+  },
+  {
+    "_id": {
+      "$oid": "4000000000000000000000d8"
+    },
+    "venueId": {
+      "$oid": "30000000000000000000008d"
+    },
+    "name": "Bể bơi trong nhà",
+    "type": "swimming",
+    "size": "25m",
+    "surface": "",
+    "pricePerHour": 80000,
+    "status": "inactive",
+    "createdAt": {
+      "$date": "2026-07-13T02:09:29Z"
+    },
+    "updatedAt": {
+      "$date": "2026-07-13T02:09:29Z"
+    }
+  },
+  {
+    "_id": {
+      "$oid": "4000000000000000000000d9"
+    },
+    "venueId": {
+      "$oid": "30000000000000000000008d"
+    },
+    "name": "Phòng Yoga 1",
+    "type": "yoga",
+    "size": "",
+    "surface": "Sàn gỗ",
+    "pricePerHour": 90000,
+    "status": "active",
+    "createdAt": {
+      "$date": "2026-07-13T02:09:29Z"
+    },
+    "updatedAt": {
+      "$date": "2026-07-13T02:09:29Z"
+    }
+  },
+  {
+    "_id": {
+      "$oid": "4000000000000000000000da"
+    },
+    "venueId": {
+      "$oid": "30000000000000000000008e"
+    },
+    "name": "Sân 5 người - A",
+    "type": "football",
+    "size": "5 người",
+    "surface": "Cỏ nhân tạo",
+    "pricePerHour": 360000,
+    "status": "active",
+    "createdAt": {
+      "$date": "2026-08-30T06:16:21Z"
+    },
+    "updatedAt": {
+      "$date": "2026-08-30T06:16:21Z"
+    }
+  },
+  {
+    "_id": {
+      "$oid": "4000000000000000000000db"
+    },
+    "venueId": {
+      "$oid": "30000000000000000000008e"
+    },
+    "name": "Sân 5 người - B",
+    "type": "football",
+    "size": "5 người",
+    "surface": "Cỏ nhân tạo",
+    "pricePerHour": 390000,
+    "status": "active",
+    "createdAt": {
+      "$date": "2026-08-30T06:16:21Z"
+    },
+    "updatedAt": {
+      "$date": "2026-08-30T06:16:21Z"
+    }
+  },
+  {
+    "_id": {
+      "$oid": "4000000000000000000000dc"
+    },
+    "venueId": {
+      "$oid": "30000000000000000000008e"
+    },
+    "name": "Sân 7 người - C",
+    "type": "football",
+    "size": "7 người",
+    "surface": "Cỏ nhân tạo",
+    "pricePerHour": 550000,
+    "status": "active",
+    "createdAt": {
+      "$date": "2026-08-30T06:16:21Z"
+    },
+    "updatedAt": {
+      "$date": "2026-08-30T06:16:21Z"
+    }
+  },
+  {
+    "_id": {
+      "$oid": "4000000000000000000000dd"
+    },
+    "venueId": {
+      "$oid": "30000000000000000000008e"
+    },
+    "name": "Sân 7 người - D",
+    "type": "football",
+    "size": "7 người",
+    "surface": "Cỏ nhân tạo",
+    "pricePerHour": 460000,
+    "status": "inactive",
+    "createdAt": {
+      "$date": "2026-08-30T06:16:21Z"
+    },
+    "updatedAt": {
+      "$date": "2026-08-30T06:16:21Z"
+    }
+  },
+  {
+    "_id": {
+      "$oid": "4000000000000000000000de"
+    },
+    "venueId": {
+      "$oid": "30000000000000000000008f"
+    },
+    "name": "Bể bơi trong nhà",
+    "type": "swimming",
+    "size": "25m",
+    "surface": "",
+    "pricePerHour": 60000,
+    "status": "active",
+    "createdAt": {
+      "$date": "2026-05-11T14:24:22Z"
+    },
+    "updatedAt": {
+      "$date": "2026-05-11T14:24:22Z"
+    }
+  },
+  {
+    "_id": {
+      "$oid": "4000000000000000000000df"
+    },
+    "venueId": {
+      "$oid": "30000000000000000000008f"
+    },
+    "name": "Phòng Yoga 1",
+    "type": "yoga",
+    "size": "",
+    "surface": "Sàn gỗ",
+    "pricePerHour": 90000,
+    "status": "active",
+    "createdAt": {
+      "$date": "2026-05-11T14:24:22Z"
+    },
+    "updatedAt": {
+      "$date": "2026-05-11T14:24:22Z"
+    }
+  },
+  {
+    "_id": {
+      "$oid": "4000000000000000000000e0"
+    },
+    "venueId": {
+      "$oid": "300000000000000000000090"
+    },
+    "name": "Sân cầu lông số 1",
+    "type": "badminton",
+    "size": "",
+    "surface": "Sàn gỗ",
+    "pricePerHour": 80000,
+    "status": "active",
+    "createdAt": {
+      "$date": "2026-07-03T14:54:11Z"
+    },
+    "updatedAt": {
+      "$date": "2026-07-03T14:54:11Z"
+    }
+  },
+  {
+    "_id": {
+      "$oid": "4000000000000000000000e1"
+    },
+    "venueId": {
+      "$oid": "300000000000000000000090"
+    },
+    "name": "Sân cầu lông số 2",
+    "type": "badminton",
+    "size": "",
+    "surface": "Sàn gỗ",
+    "pricePerHour": 80000,
+    "status": "active",
+    "createdAt": {
+      "$date": "2026-07-03T14:54:11Z"
+    },
+    "updatedAt": {
+      "$date": "2026-07-03T14:54:11Z"
+    }
+  },
+  {
+    "_id": {
+      "$oid": "4000000000000000000000e2"
+    },
+    "venueId": {
+      "$oid": "300000000000000000000090"
+    },
+    "name": "Sân cầu lông số 3",
+    "type": "badminton",
+    "size": "",
+    "surface": "Sàn gỗ",
+    "pricePerHour": 140000,
+    "status": "active",
+    "createdAt": {
+      "$date": "2026-07-03T14:54:11Z"
+    },
+    "updatedAt": {
+      "$date": "2026-07-03T14:54:11Z"
+    }
+  },
+  {
+    "_id": {
+      "$oid": "4000000000000000000000e3"
+    },
+    "venueId": {
+      "$oid": "300000000000000000000091"
+    },
+    "name": "Sân cầu lông số 1",
+    "type": "badminton",
+    "size": "",
+    "surface": "Sàn gỗ",
+    "pricePerHour": 80000,
+    "status": "active",
+    "createdAt": {
+      "$date": "2026-03-29T11:16:44Z"
+    },
+    "updatedAt": {
+      "$date": "2026-03-29T11:16:44Z"
+    }
+  },
+  {
+    "_id": {
+      "$oid": "4000000000000000000000e4"
+    },
+    "venueId": {
+      "$oid": "300000000000000000000091"
+    },
+    "name": "Sân cầu lông số 2",
+    "type": "badminton",
+    "size": "",
+    "surface": "Sàn gỗ",
+    "pricePerHour": 150000,
+    "status": "active",
+    "createdAt": {
+      "$date": "2026-03-29T11:16:44Z"
+    },
+    "updatedAt": {
+      "$date": "2026-03-29T11:16:44Z"
+    }
+  },
+  {
+    "_id": {
+      "$oid": "4000000000000000000000e5"
+    },
+    "venueId": {
+      "$oid": "300000000000000000000091"
+    },
+    "name": "Sân cầu lông số 3",
+    "type": "badminton",
+    "size": "",
+    "surface": "Sàn gỗ",
+    "pricePerHour": 90000,
+    "status": "active",
+    "createdAt": {
+      "$date": "2026-03-29T11:16:44Z"
+    },
+    "updatedAt": {
+      "$date": "2026-03-29T11:16:44Z"
+    }
+  },
+  {
+    "_id": {
+      "$oid": "4000000000000000000000e6"
+    },
+    "venueId": {
+      "$oid": "300000000000000000000092"
+    },
+    "name": "Sân tennis ngoài trời 1",
+    "type": "tennis",
+    "size": "",
+    "surface": "Mặt cứng",
+    "pricePerHour": 210000,
+    "status": "active",
+    "createdAt": {
+      "$date": "2026-03-01T19:57:57Z"
+    },
+    "updatedAt": {
+      "$date": "2026-03-01T19:57:57Z"
+    }
+  },
+  {
+    "_id": {
+      "$oid": "4000000000000000000000e7"
+    },
+    "venueId": {
+      "$oid": "300000000000000000000092"
+    },
+    "name": "Sân tennis ngoài trời 2",
+    "type": "tennis",
+    "size": "",
+    "surface": "Mặt cứng",
+    "pricePerHour": 160000,
+    "status": "active",
+    "createdAt": {
+      "$date": "2026-03-01T19:57:57Z"
+    },
+    "updatedAt": {
+      "$date": "2026-03-01T19:57:57Z"
+    }
+  },
+  {
+    "_id": {
+      "$oid": "4000000000000000000000e8"
+    },
+    "venueId": {
+      "$oid": "300000000000000000000093"
+    },
+    "name": "Sân bóng chuyền trong nhà",
+    "type": "volleyball",
+    "size": "",
+    "surface": "Sàn gỗ",
+    "pricePerHour": 170000,
+    "status": "active",
+    "createdAt": {
+      "$date": "2026-06-25T13:41:51Z"
+    },
+    "updatedAt": {
+      "$date": "2026-06-25T13:41:51Z"
+    }
+  },
+  {
+    "_id": {
+      "$oid": "4000000000000000000000e9"
+    },
+    "venueId": {
+      "$oid": "300000000000000000000093"
+    },
+    "name": "Sân bóng chuyền bãi biển",
+    "type": "volleyball",
+    "size": "",
+    "surface": "Cát",
+    "pricePerHour": 100000,
+    "status": "active",
+    "createdAt": {
+      "$date": "2026-06-25T13:41:51Z"
+    },
+    "updatedAt": {
+      "$date": "2026-06-25T13:41:51Z"
+    }
+  },
+  {
+    "_id": {
+      "$oid": "4000000000000000000000ea"
+    },
+    "venueId": {
+      "$oid": "300000000000000000000093"
+    },
+    "name": "Sân bóng chuyền trong nhà 2",
+    "type": "volleyball",
+    "size": "",
+    "surface": "Sàn gỗ",
+    "pricePerHour": 140000,
+    "status": "active",
+    "createdAt": {
+      "$date": "2026-06-25T13:41:51Z"
+    },
+    "updatedAt": {
+      "$date": "2026-06-25T13:41:51Z"
+    }
+  },
+  {
+    "_id": {
+      "$oid": "4000000000000000000000eb"
+    },
+    "venueId": {
+      "$oid": "300000000000000000000094"
+    },
+    "name": "Sân bóng rổ chính",
+    "type": "basketball",
+    "size": "Sân đầy",
+    "surface": "Sàn gỗ PU",
+    "pricePerHour": 400000,
+    "status": "active",
+    "createdAt": {
+      "$date": "2026-03-19T05:42:31Z"
+    },
+    "updatedAt": {
+      "$date": "2026-03-19T05:42:31Z"
+    }
+  },
+  {
+    "_id": {
+      "$oid": "4000000000000000000000ec"
+    },
+    "venueId": {
+      "$oid": "300000000000000000000094"
+    },
+    "name": "Sân bóng rổ phụ",
+    "type": "basketball",
+    "size": "Nửa sân",
+    "surface": "Sàn gỗ PU",
+    "pricePerHour": 250000,
+    "status": "active",
+    "createdAt": {
+      "$date": "2026-03-19T05:42:31Z"
+    },
+    "updatedAt": {
+      "$date": "2026-03-19T05:42:31Z"
+    }
+  },
+  {
+    "_id": {
+      "$oid": "4000000000000000000000ed"
+    },
+    "venueId": {
+      "$oid": "300000000000000000000095"
+    },
+    "name": "Sân 5 người - A",
+    "type": "football",
+    "size": "5 người",
+    "surface": "Cỏ nhân tạo",
+    "pricePerHour": 320000,
+    "status": "active",
+    "createdAt": {
+      "$date": "2026-04-17T08:36:41Z"
+    },
+    "updatedAt": {
+      "$date": "2026-04-17T08:36:41Z"
+    }
+  },
+  {
+    "_id": {
+      "$oid": "4000000000000000000000ee"
+    },
+    "venueId": {
+      "$oid": "300000000000000000000095"
+    },
+    "name": "Sân 5 người - B",
+    "type": "football",
+    "size": "5 người",
+    "surface": "Cỏ nhân tạo",
+    "pricePerHour": 370000,
+    "status": "active",
+    "createdAt": {
+      "$date": "2026-04-17T08:36:41Z"
+    },
+    "updatedAt": {
+      "$date": "2026-04-17T08:36:41Z"
+    }
+  },
+  {
+    "_id": {
+      "$oid": "4000000000000000000000ef"
+    },
+    "venueId": {
+      "$oid": "300000000000000000000095"
+    },
+    "name": "Sân 7 người - C",
+    "type": "football",
+    "size": "7 người",
+    "surface": "Cỏ nhân tạo",
+    "pricePerHour": 460000,
+    "status": "active",
+    "createdAt": {
+      "$date": "2026-04-17T08:36:41Z"
+    },
+    "updatedAt": {
+      "$date": "2026-04-17T08:36:41Z"
+    }
+  },
+  {
+    "_id": {
+      "$oid": "4000000000000000000000f0"
+    },
+    "venueId": {
+      "$oid": "300000000000000000000096"
+    },
+    "name": "Sân cầu lông số 1",
+    "type": "badminton",
+    "size": "",
+    "surface": "Sàn gỗ",
+    "pricePerHour": 120000,
+    "status": "active",
+    "createdAt": {
+      "$date": "2026-04-05T18:08:35Z"
+    },
+    "updatedAt": {
+      "$date": "2026-04-05T18:08:35Z"
+    }
+  },
+  {
+    "_id": {
+      "$oid": "4000000000000000000000f1"
+    },
+    "venueId": {
+      "$oid": "300000000000000000000096"
+    },
+    "name": "Sân cầu lông số 2",
+    "type": "badminton",
+    "size": "",
+    "surface": "Sàn gỗ",
+    "pricePerHour": 130000,
+    "status": "active",
+    "createdAt": {
+      "$date": "2026-04-05T18:08:35Z"
+    },
+    "updatedAt": {
+      "$date": "2026-04-05T18:08:35Z"
+    }
+  },
+  {
+    "_id": {
+      "$oid": "4000000000000000000000f2"
+    },
+    "venueId": {
+      "$oid": "300000000000000000000096"
+    },
+    "name": "Sân cầu lông số 3",
+    "type": "badminton",
+    "size": "",
+    "surface": "Sàn gỗ",
+    "pricePerHour": 130000,
+    "status": "active",
+    "createdAt": {
+      "$date": "2026-04-05T18:08:35Z"
+    },
+    "updatedAt": {
+      "$date": "2026-04-05T18:08:35Z"
+    }
+  },
+  {
+    "_id": {
+      "$oid": "4000000000000000000000f3"
+    },
+    "venueId": {
+      "$oid": "300000000000000000000096"
+    },
+    "name": "Sân cầu lông số 4",
+    "type": "badminton",
+    "size": "",
+    "surface": "Sàn gỗ",
+    "pricePerHour": 130000,
+    "status": "active",
+    "createdAt": {
+      "$date": "2026-04-05T18:08:35Z"
+    },
+    "updatedAt": {
+      "$date": "2026-04-05T18:08:35Z"
+    }
+  },
+  {
+    "_id": {
+      "$oid": "4000000000000000000000f4"
+    },
+    "venueId": {
+      "$oid": "300000000000000000000096"
+    },
+    "name": "Sân cầu lông số 5",
+    "type": "badminton",
+    "size": "",
+    "surface": "Sàn gỗ",
+    "pricePerHour": 80000,
+    "status": "active",
+    "createdAt": {
+      "$date": "2026-04-05T18:08:35Z"
+    },
+    "updatedAt": {
+      "$date": "2026-04-05T18:08:35Z"
+    }
+  },
+  {
+    "_id": {
+      "$oid": "4000000000000000000000f5"
+    },
+    "venueId": {
+      "$oid": "300000000000000000000097"
+    },
+    "name": "Sân cầu lông số 1",
+    "type": "badminton",
+    "size": "",
+    "surface": "Sàn gỗ",
+    "pricePerHour": 130000,
+    "status": "active",
+    "createdAt": {
+      "$date": "2026-07-24T00:51:55Z"
+    },
+    "updatedAt": {
+      "$date": "2026-07-24T00:51:55Z"
+    }
+  },
+  {
+    "_id": {
+      "$oid": "4000000000000000000000f6"
+    },
+    "venueId": {
+      "$oid": "300000000000000000000097"
+    },
+    "name": "Sân cầu lông số 2",
+    "type": "badminton",
+    "size": "",
+    "surface": "Sàn gỗ",
+    "pricePerHour": 140000,
+    "status": "active",
+    "createdAt": {
+      "$date": "2026-07-24T00:51:55Z"
+    },
+    "updatedAt": {
+      "$date": "2026-07-24T00:51:55Z"
+    }
+  },
+  {
+    "_id": {
+      "$oid": "4000000000000000000000f7"
+    },
+    "venueId": {
+      "$oid": "300000000000000000000097"
+    },
+    "name": "Sân cầu lông số 3",
+    "type": "badminton",
+    "size": "",
+    "surface": "Sàn gỗ",
+    "pricePerHour": 130000,
+    "status": "active",
+    "createdAt": {
+      "$date": "2026-07-24T00:51:55Z"
+    },
+    "updatedAt": {
+      "$date": "2026-07-24T00:51:55Z"
+    }
+  },
+  {
+    "_id": {
+      "$oid": "4000000000000000000000f8"
+    },
+    "venueId": {
+      "$oid": "300000000000000000000098"
+    },
+    "name": "Sân cầu lông số 1",
+    "type": "badminton",
+    "size": "",
+    "surface": "Sàn gỗ",
+    "pricePerHour": 120000,
+    "status": "active",
+    "createdAt": {
+      "$date": "2026-05-27T11:28:19Z"
+    },
+    "updatedAt": {
+      "$date": "2026-05-27T11:28:19Z"
+    }
+  },
+  {
+    "_id": {
+      "$oid": "4000000000000000000000f9"
+    },
+    "venueId": {
+      "$oid": "300000000000000000000098"
+    },
+    "name": "Sân cầu lông số 2",
+    "type": "badminton",
+    "size": "",
+    "surface": "Sàn gỗ",
+    "pricePerHour": 110000,
+    "status": "active",
+    "createdAt": {
+      "$date": "2026-05-27T11:28:19Z"
+    },
+    "updatedAt": {
+      "$date": "2026-05-27T11:28:19Z"
+    }
+  },
+  {
+    "_id": {
+      "$oid": "4000000000000000000000fa"
+    },
+    "venueId": {
+      "$oid": "300000000000000000000098"
+    },
+    "name": "Sân cầu lông số 3",
+    "type": "badminton",
+    "size": "",
+    "surface": "Sàn gỗ",
+    "pricePerHour": 80000,
+    "status": "active",
+    "createdAt": {
+      "$date": "2026-05-27T11:28:19Z"
+    },
+    "updatedAt": {
+      "$date": "2026-05-27T11:28:19Z"
+    }
+  },
+  {
+    "_id": {
+      "$oid": "4000000000000000000000fb"
+    },
+    "venueId": {
+      "$oid": "300000000000000000000099"
+    },
+    "name": "Sân cầu lông số 1",
+    "type": "badminton",
+    "size": "",
+    "surface": "Sàn gỗ",
+    "pricePerHour": 110000,
+    "status": "active",
+    "createdAt": {
+      "$date": "2026-06-23T16:13:18Z"
+    },
+    "updatedAt": {
+      "$date": "2026-06-23T16:13:18Z"
+    }
+  },
+  {
+    "_id": {
+      "$oid": "4000000000000000000000fc"
+    },
+    "venueId": {
+      "$oid": "300000000000000000000099"
+    },
+    "name": "Sân cầu lông số 2",
+    "type": "badminton",
+    "size": "",
+    "surface": "Sàn gỗ",
+    "pricePerHour": 130000,
+    "status": "active",
+    "createdAt": {
+      "$date": "2026-06-23T16:13:18Z"
+    },
+    "updatedAt": {
+      "$date": "2026-06-23T16:13:18Z"
+    }
+  },
+  {
+    "_id": {
+      "$oid": "4000000000000000000000fd"
+    },
+    "venueId": {
+      "$oid": "300000000000000000000099"
+    },
+    "name": "Sân cầu lông số 3",
+    "type": "badminton",
+    "size": "",
+    "surface": "Sàn gỗ",
+    "pricePerHour": 130000,
+    "status": "active",
+    "createdAt": {
+      "$date": "2026-06-23T16:13:18Z"
+    },
+    "updatedAt": {
+      "$date": "2026-06-23T16:13:18Z"
+    }
+  },
+  {
+    "_id": {
+      "$oid": "4000000000000000000000fe"
+    },
+    "venueId": {
+      "$oid": "300000000000000000000099"
+    },
+    "name": "Sân cầu lông số 4",
+    "type": "badminton",
+    "size": "",
+    "surface": "Sàn gỗ",
+    "pricePerHour": 120000,
+    "status": "active",
+    "createdAt": {
+      "$date": "2026-06-23T16:13:18Z"
+    },
+    "updatedAt": {
+      "$date": "2026-06-23T16:13:18Z"
+    }
+  },
+  {
+    "_id": {
+      "$oid": "4000000000000000000000ff"
+    },
+    "venueId": {
+      "$oid": "300000000000000000000099"
+    },
+    "name": "Sân cầu lông số 5",
+    "type": "badminton",
+    "size": "",
+    "surface": "Sàn gỗ",
+    "pricePerHour": 120000,
+    "status": "active",
+    "createdAt": {
+      "$date": "2026-06-23T16:13:18Z"
+    },
+    "updatedAt": {
+      "$date": "2026-06-23T16:13:18Z"
+    }
+  },
+  {
+    "_id": {
+      "$oid": "400000000000000000000100"
+    },
+    "venueId": {
+      "$oid": "30000000000000000000009a"
+    },
+    "name": "Sân tennis ngoài trời 1",
+    "type": "tennis",
+    "size": "",
+    "surface": "Mặt cứng",
+    "pricePerHour": 190000,
+    "status": "active",
+    "createdAt": {
+      "$date": "2026-03-06T12:38:29Z"
+    },
+    "updatedAt": {
+      "$date": "2026-03-06T12:38:29Z"
+    }
+  },
+  {
+    "_id": {
+      "$oid": "400000000000000000000101"
+    },
+    "venueId": {
+      "$oid": "30000000000000000000009a"
+    },
+    "name": "Sân tennis ngoài trời 2",
+    "type": "tennis",
+    "size": "",
+    "surface": "Mặt cứng",
+    "pricePerHour": 180000,
+    "status": "active",
+    "createdAt": {
+      "$date": "2026-03-06T12:38:29Z"
+    },
+    "updatedAt": {
+      "$date": "2026-03-06T12:38:29Z"
+    }
+  },
+  {
+    "_id": {
+      "$oid": "400000000000000000000102"
+    },
+    "venueId": {
+      "$oid": "30000000000000000000009a"
+    },
+    "name": "Sân tennis trong nhà 3",
+    "type": "tennis",
+    "size": "",
+    "surface": "Thảm cao su",
+    "pricePerHour": 270000,
+    "status": "active",
+    "createdAt": {
+      "$date": "2026-03-06T12:38:29Z"
+    },
+    "updatedAt": {
+      "$date": "2026-03-06T12:38:29Z"
+    }
+  },
+  {
+    "_id": {
+      "$oid": "400000000000000000000103"
+    },
+    "venueId": {
+      "$oid": "30000000000000000000009b"
+    },
+    "name": "Sân 5 người - A",
+    "type": "football",
+    "size": "5 người",
+    "surface": "Cỏ nhân tạo",
+    "pricePerHour": 380000,
+    "status": "active",
+    "createdAt": {
+      "$date": "2026-06-27T09:16:10Z"
+    },
+    "updatedAt": {
+      "$date": "2026-06-27T09:16:10Z"
+    }
+  },
+  {
+    "_id": {
+      "$oid": "400000000000000000000104"
+    },
+    "venueId": {
+      "$oid": "30000000000000000000009b"
+    },
+    "name": "Sân 5 người - B",
+    "type": "football",
+    "size": "5 người",
+    "surface": "Cỏ nhân tạo",
+    "pricePerHour": 310000,
+    "status": "active",
+    "createdAt": {
+      "$date": "2026-06-27T09:16:10Z"
+    },
+    "updatedAt": {
+      "$date": "2026-06-27T09:16:10Z"
+    }
+  },
+  {
+    "_id": {
+      "$oid": "400000000000000000000105"
+    },
+    "venueId": {
+      "$oid": "30000000000000000000009b"
+    },
+    "name": "Sân 7 người - C",
+    "type": "football",
+    "size": "7 người",
+    "surface": "Cỏ nhân tạo",
+    "pricePerHour": 420000,
+    "status": "active",
+    "createdAt": {
+      "$date": "2026-06-27T09:16:10Z"
+    },
+    "updatedAt": {
+      "$date": "2026-06-27T09:16:10Z"
+    }
+  },
+  {
+    "_id": {
+      "$oid": "400000000000000000000106"
+    },
+    "venueId": {
+      "$oid": "30000000000000000000009b"
+    },
+    "name": "Sân 7 người - D",
+    "type": "football",
+    "size": "7 người",
+    "surface": "Cỏ nhân tạo",
+    "pricePerHour": 440000,
+    "status": "active",
+    "createdAt": {
+      "$date": "2026-06-27T09:16:10Z"
+    },
+    "updatedAt": {
+      "$date": "2026-06-27T09:16:10Z"
+    }
+  },
+  {
+    "_id": {
+      "$oid": "400000000000000000000107"
+    },
+    "venueId": {
+      "$oid": "30000000000000000000009c"
+    },
+    "name": "Sân cầu lông số 1",
+    "type": "badminton",
+    "size": "",
+    "surface": "Sàn gỗ",
+    "pricePerHour": 110000,
+    "status": "active",
+    "createdAt": {
+      "$date": "2026-08-27T11:49:50Z"
+    },
+    "updatedAt": {
+      "$date": "2026-08-27T11:49:50Z"
+    }
+  },
+  {
+    "_id": {
+      "$oid": "400000000000000000000108"
+    },
+    "venueId": {
+      "$oid": "30000000000000000000009c"
+    },
+    "name": "Sân cầu lông số 2",
+    "type": "badminton",
+    "size": "",
+    "surface": "Sàn gỗ",
+    "pricePerHour": 100000,
+    "status": "active",
+    "createdAt": {
+      "$date": "2026-08-27T11:49:50Z"
+    },
+    "updatedAt": {
+      "$date": "2026-08-27T11:49:50Z"
+    }
+  },
+  {
+    "_id": {
+      "$oid": "400000000000000000000109"
+    },
+    "venueId": {
+      "$oid": "30000000000000000000009c"
+    },
+    "name": "Sân cầu lông số 3",
+    "type": "badminton",
+    "size": "",
+    "surface": "Sàn gỗ",
+    "pricePerHour": 130000,
+    "status": "active",
+    "createdAt": {
+      "$date": "2026-08-27T11:49:50Z"
+    },
+    "updatedAt": {
+      "$date": "2026-08-27T11:49:50Z"
+    }
+  },
+  {
+    "_id": {
+      "$oid": "40000000000000000000010a"
+    },
+    "venueId": {
+      "$oid": "30000000000000000000009c"
+    },
+    "name": "Sân cầu lông số 4",
+    "type": "badminton",
+    "size": "",
+    "surface": "Sàn gỗ",
+    "pricePerHour": 130000,
+    "status": "active",
+    "createdAt": {
+      "$date": "2026-08-27T11:49:50Z"
+    },
+    "updatedAt": {
+      "$date": "2026-08-27T11:49:50Z"
+    }
+  },
+  {
+    "_id": {
+      "$oid": "40000000000000000000010b"
+    },
+    "venueId": {
+      "$oid": "30000000000000000000009d"
+    },
+    "name": "Sân tennis ngoài trời 1",
+    "type": "tennis",
+    "size": "",
+    "surface": "Mặt cứng",
+    "pricePerHour": 190000,
+    "status": "inactive",
+    "createdAt": {
+      "$date": "2026-07-25T10:03:12Z"
+    },
+    "updatedAt": {
+      "$date": "2026-07-25T10:03:12Z"
+    }
+  },
+  {
+    "_id": {
+      "$oid": "40000000000000000000010c"
+    },
+    "venueId": {
+      "$oid": "30000000000000000000009d"
+    },
+    "name": "Sân tennis ngoài trời 2",
+    "type": "tennis",
+    "size": "",
+    "surface": "Mặt cứng",
+    "pricePerHour": 170000,
+    "status": "active",
+    "createdAt": {
+      "$date": "2026-07-25T10:03:12Z"
+    },
+    "updatedAt": {
+      "$date": "2026-07-25T10:03:12Z"
+    }
+  },
+  {
+    "_id": {
+      "$oid": "40000000000000000000010d"
+    },
+    "venueId": {
+      "$oid": "30000000000000000000009d"
+    },
+    "name": "Sân tennis trong nhà 3",
+    "type": "tennis",
+    "size": "",
+    "surface": "Thảm cao su",
+    "pricePerHour": 320000,
+    "status": "active",
+    "createdAt": {
+      "$date": "2026-07-25T10:03:12Z"
+    },
+    "updatedAt": {
+      "$date": "2026-07-25T10:03:12Z"
+    }
+  },
+  {
+    "_id": {
+      "$oid": "40000000000000000000010e"
+    },
+    "venueId": {
+      "$oid": "30000000000000000000009e"
+    },
+    "name": "Sân cầu lông số 1",
+    "type": "badminton",
+    "size": "",
+    "surface": "Sàn gỗ",
+    "pricePerHour": 110000,
+    "status": "active",
+    "createdAt": {
+      "$date": "2026-07-24T04:30:39Z"
+    },
+    "updatedAt": {
+      "$date": "2026-07-24T04:30:39Z"
+    }
+  },
+  {
+    "_id": {
+      "$oid": "40000000000000000000010f"
+    },
+    "venueId": {
+      "$oid": "30000000000000000000009e"
+    },
+    "name": "Sân cầu lông số 2",
+    "type": "badminton",
+    "size": "",
+    "surface": "Sàn gỗ",
+    "pricePerHour": 100000,
+    "status": "active",
+    "createdAt": {
+      "$date": "2026-07-24T04:30:39Z"
+    },
+    "updatedAt": {
+      "$date": "2026-07-24T04:30:39Z"
+    }
+  },
+  {
+    "_id": {
+      "$oid": "400000000000000000000110"
+    },
+    "venueId": {
+      "$oid": "30000000000000000000009f"
+    },
+    "name": "Sân cầu lông số 1",
+    "type": "badminton",
+    "size": "",
+    "surface": "Sàn gỗ",
+    "pricePerHour": 90000,
+    "status": "inactive",
+    "createdAt": {
+      "$date": "2026-08-22T09:09:30Z"
+    },
+    "updatedAt": {
+      "$date": "2026-08-22T09:09:30Z"
+    }
+  },
+  {
+    "_id": {
+      "$oid": "400000000000000000000111"
+    },
+    "venueId": {
+      "$oid": "30000000000000000000009f"
+    },
+    "name": "Sân cầu lông số 2",
+    "type": "badminton",
+    "size": "",
+    "surface": "Sàn gỗ",
+    "pricePerHour": 80000,
+    "status": "active",
+    "createdAt": {
+      "$date": "2026-08-22T09:09:30Z"
+    },
+    "updatedAt": {
+      "$date": "2026-08-22T09:09:30Z"
+    }
+  },
+  {
+    "_id": {
+      "$oid": "400000000000000000000112"
+    },
+    "venueId": {
+      "$oid": "30000000000000000000009f"
+    },
+    "name": "Sân cầu lông số 3",
+    "type": "badminton",
+    "size": "",
+    "surface": "Sàn gỗ",
+    "pricePerHour": 80000,
+    "status": "active",
+    "createdAt": {
+      "$date": "2026-08-22T09:09:30Z"
+    },
+    "updatedAt": {
+      "$date": "2026-08-22T09:09:30Z"
+    }
+  },
+  {
+    "_id": {
+      "$oid": "400000000000000000000113"
+    },
+    "venueId": {
+      "$oid": "3000000000000000000000a0"
+    },
+    "name": "Sân 5 người - A",
+    "type": "football",
+    "size": "5 người",
+    "surface": "Cỏ nhân tạo",
+    "pricePerHour": 320000,
+    "status": "active",
+    "createdAt": {
+      "$date": "2026-02-06T13:56:34Z"
+    },
+    "updatedAt": {
+      "$date": "2026-02-06T13:56:34Z"
+    }
+  },
+  {
+    "_id": {
+      "$oid": "400000000000000000000114"
+    },
+    "venueId": {
+      "$oid": "3000000000000000000000a0"
+    },
+    "name": "Sân 5 người - B",
+    "type": "football",
+    "size": "5 người",
+    "surface": "Cỏ nhân tạo",
+    "pricePerHour": 360000,
+    "status": "active",
+    "createdAt": {
+      "$date": "2026-02-06T13:56:34Z"
+    },
+    "updatedAt": {
+      "$date": "2026-02-06T13:56:34Z"
+    }
+  },
+  {
+    "_id": {
+      "$oid": "400000000000000000000115"
+    },
+    "venueId": {
+      "$oid": "3000000000000000000000a1"
+    },
+    "name": "Sân bóng rổ chính",
+    "type": "basketball",
+    "size": "Sân đầy",
+    "surface": "Sàn gỗ PU",
+    "pricePerHour": 350000,
+    "status": "active",
+    "createdAt": {
+      "$date": "2026-05-28T06:45:19Z"
+    },
+    "updatedAt": {
+      "$date": "2026-05-28T06:45:19Z"
+    }
+  },
+  {
+    "_id": {
+      "$oid": "400000000000000000000116"
+    },
+    "venueId": {
+      "$oid": "3000000000000000000000a1"
+    },
+    "name": "Sân bóng rổ phụ",
+    "type": "basketball",
+    "size": "Nửa sân",
+    "surface": "Sàn gỗ PU",
+    "pricePerHour": 220000,
+    "status": "maintenance",
+    "createdAt": {
+      "$date": "2026-05-28T06:45:19Z"
+    },
+    "updatedAt": {
+      "$date": "2026-05-28T06:45:19Z"
+    }
+  },
+  {
+    "_id": {
+      "$oid": "400000000000000000000117"
+    },
+    "venueId": {
+      "$oid": "3000000000000000000000a1"
+    },
+    "name": "Khu Gym tự do",
+    "type": "gym",
+    "size": "",
+    "surface": "",
+    "pricePerHour": 100000,
+    "status": "active",
+    "createdAt": {
+      "$date": "2026-05-28T06:45:19Z"
+    },
+    "updatedAt": {
+      "$date": "2026-05-28T06:45:19Z"
+    }
+  },
+  {
+    "_id": {
+      "$oid": "400000000000000000000118"
+    },
+    "venueId": {
+      "$oid": "3000000000000000000000a2"
+    },
+    "name": "Sân 5 người - A",
+    "type": "football",
+    "size": "5 người",
+    "surface": "Cỏ nhân tạo",
+    "pricePerHour": 290000,
+    "status": "active",
+    "createdAt": {
+      "$date": "2026-04-29T01:54:03Z"
+    },
+    "updatedAt": {
+      "$date": "2026-04-29T01:54:03Z"
+    }
+  },
+  {
+    "_id": {
+      "$oid": "400000000000000000000119"
+    },
+    "venueId": {
+      "$oid": "3000000000000000000000a2"
+    },
+    "name": "Sân 5 người - B",
+    "type": "football",
+    "size": "5 người",
+    "surface": "Cỏ nhân tạo",
+    "pricePerHour": 280000,
+    "status": "active",
+    "createdAt": {
+      "$date": "2026-04-29T01:54:03Z"
+    },
+    "updatedAt": {
+      "$date": "2026-04-29T01:54:03Z"
+    }
+  },
+  {
+    "_id": {
+      "$oid": "40000000000000000000011a"
+    },
+    "venueId": {
+      "$oid": "3000000000000000000000a3"
+    },
+    "name": "Sân bóng rổ chính",
+    "type": "basketball",
+    "size": "Sân đầy",
+    "surface": "Sàn gỗ PU",
+    "pricePerHour": 390000,
+    "status": "active",
+    "createdAt": {
+      "$date": "2026-05-20T14:55:17Z"
+    },
+    "updatedAt": {
+      "$date": "2026-05-20T14:55:17Z"
+    }
+  },
+  {
+    "_id": {
+      "$oid": "40000000000000000000011b"
+    },
+    "venueId": {
+      "$oid": "3000000000000000000000a3"
+    },
+    "name": "Sân bóng rổ phụ",
+    "type": "basketball",
+    "size": "Nửa sân",
+    "surface": "Sàn gỗ PU",
+    "pricePerHour": 220000,
+    "status": "active",
+    "createdAt": {
+      "$date": "2026-05-20T14:55:17Z"
+    },
+    "updatedAt": {
+      "$date": "2026-05-20T14:55:17Z"
+    }
+  },
+  {
+    "_id": {
+      "$oid": "40000000000000000000011c"
+    },
+    "venueId": {
+      "$oid": "3000000000000000000000a3"
+    },
+    "name": "Khu Gym tự do",
+    "type": "gym",
+    "size": "",
+    "surface": "",
+    "pricePerHour": 100000,
+    "status": "active",
+    "createdAt": {
+      "$date": "2026-05-20T14:55:17Z"
+    },
+    "updatedAt": {
+      "$date": "2026-05-20T14:55:17Z"
+    }
+  },
+  {
+    "_id": {
+      "$oid": "40000000000000000000011d"
+    },
+    "venueId": {
+      "$oid": "3000000000000000000000a4"
+    },
+    "name": "Sân 5 người - A",
+    "type": "football",
+    "size": "5 người",
+    "surface": "Cỏ nhân tạo",
+    "pricePerHour": 250000,
+    "status": "inactive",
+    "createdAt": {
+      "$date": "2026-02-18T15:31:19Z"
+    },
+    "updatedAt": {
+      "$date": "2026-02-18T15:31:19Z"
+    }
+  },
+  {
+    "_id": {
+      "$oid": "40000000000000000000011e"
+    },
+    "venueId": {
+      "$oid": "3000000000000000000000a4"
+    },
+    "name": "Sân 5 người - B",
+    "type": "football",
+    "size": "5 người",
+    "surface": "Cỏ nhân tạo",
+    "pricePerHour": 360000,
+    "status": "maintenance",
+    "createdAt": {
+      "$date": "2026-02-18T15:31:19Z"
+    },
+    "updatedAt": {
+      "$date": "2026-02-18T15:31:19Z"
+    }
+  },
+  {
+    "_id": {
+      "$oid": "40000000000000000000011f"
+    },
+    "venueId": {
+      "$oid": "3000000000000000000000a4"
+    },
+    "name": "Sân 7 người - C",
+    "type": "football",
+    "size": "7 người",
+    "surface": "Cỏ nhân tạo",
+    "pricePerHour": 470000,
+    "status": "active",
+    "createdAt": {
+      "$date": "2026-02-18T15:31:19Z"
+    },
+    "updatedAt": {
+      "$date": "2026-02-18T15:31:19Z"
+    }
+  },
+  {
+    "_id": {
+      "$oid": "400000000000000000000120"
+    },
+    "venueId": {
+      "$oid": "3000000000000000000000a5"
+    },
+    "name": "Sân 5 người - A",
+    "type": "football",
+    "size": "5 người",
+    "surface": "Cỏ nhân tạo",
+    "pricePerHour": 340000,
+    "status": "active",
+    "createdAt": {
+      "$date": "2026-04-23T16:15:42Z"
+    },
+    "updatedAt": {
+      "$date": "2026-04-23T16:15:42Z"
+    }
+  },
+  {
+    "_id": {
+      "$oid": "400000000000000000000121"
+    },
+    "venueId": {
+      "$oid": "3000000000000000000000a5"
+    },
+    "name": "Sân 5 người - B",
+    "type": "football",
+    "size": "5 người",
+    "surface": "Cỏ nhân tạo",
+    "pricePerHour": 340000,
+    "status": "active",
+    "createdAt": {
+      "$date": "2026-04-23T16:15:42Z"
+    },
+    "updatedAt": {
+      "$date": "2026-04-23T16:15:42Z"
+    }
+  },
+  {
+    "_id": {
+      "$oid": "400000000000000000000122"
+    },
+    "venueId": {
+      "$oid": "3000000000000000000000a5"
+    },
+    "name": "Sân 7 người - C",
+    "type": "football",
+    "size": "7 người",
+    "surface": "Cỏ nhân tạo",
+    "pricePerHour": 440000,
+    "status": "active",
+    "createdAt": {
+      "$date": "2026-04-23T16:15:42Z"
+    },
+    "updatedAt": {
+      "$date": "2026-04-23T16:15:42Z"
+    }
+  },
+  {
+    "_id": {
+      "$oid": "400000000000000000000123"
+    },
+    "venueId": {
+      "$oid": "3000000000000000000000a5"
+    },
+    "name": "Sân 7 người - D",
+    "type": "football",
+    "size": "7 người",
+    "surface": "Cỏ nhân tạo",
+    "pricePerHour": 490000,
+    "status": "active",
+    "createdAt": {
+      "$date": "2026-04-23T16:15:42Z"
+    },
+    "updatedAt": {
+      "$date": "2026-04-23T16:15:42Z"
+    }
+  },
+  {
+    "_id": {
+      "$oid": "400000000000000000000124"
+    },
+    "venueId": {
+      "$oid": "3000000000000000000000a6"
+    },
+    "name": "Sân bóng rổ chính",
+    "type": "basketball",
+    "size": "Sân đầy",
+    "surface": "Sàn gỗ PU",
+    "pricePerHour": 330000,
+    "status": "active",
+    "createdAt": {
+      "$date": "2026-03-30T13:55:03Z"
+    },
+    "updatedAt": {
+      "$date": "2026-03-30T13:55:03Z"
+    }
+  },
+  {
+    "_id": {
+      "$oid": "400000000000000000000125"
+    },
+    "venueId": {
+      "$oid": "3000000000000000000000a6"
+    },
+    "name": "Sân bóng rổ phụ",
+    "type": "basketball",
+    "size": "Nửa sân",
+    "surface": "Sàn gỗ PU",
+    "pricePerHour": 240000,
+    "status": "active",
+    "createdAt": {
+      "$date": "2026-03-30T13:55:03Z"
+    },
+    "updatedAt": {
+      "$date": "2026-03-30T13:55:03Z"
+    }
+  },
+  {
+    "_id": {
+      "$oid": "400000000000000000000126"
+    },
+    "venueId": {
+      "$oid": "3000000000000000000000a6"
+    },
+    "name": "Khu Gym tự do",
+    "type": "gym",
+    "size": "",
+    "surface": "",
+    "pricePerHour": 100000,
+    "status": "active",
+    "createdAt": {
+      "$date": "2026-03-30T13:55:03Z"
+    },
+    "updatedAt": {
+      "$date": "2026-03-30T13:55:03Z"
+    }
+  },
+  {
+    "_id": {
+      "$oid": "400000000000000000000127"
+    },
+    "venueId": {
+      "$oid": "3000000000000000000000a7"
+    },
+    "name": "Sân 5 người - A",
+    "type": "football",
+    "size": "5 người",
+    "surface": "Cỏ nhân tạo",
+    "pricePerHour": 310000,
+    "status": "active",
+    "createdAt": {
+      "$date": "2026-03-10T09:16:29Z"
+    },
+    "updatedAt": {
+      "$date": "2026-03-10T09:16:29Z"
+    }
+  },
+  {
+    "_id": {
+      "$oid": "400000000000000000000128"
+    },
+    "venueId": {
+      "$oid": "3000000000000000000000a7"
+    },
+    "name": "Sân 5 người - B",
+    "type": "football",
+    "size": "5 người",
+    "surface": "Cỏ nhân tạo",
+    "pricePerHour": 300000,
+    "status": "inactive",
+    "createdAt": {
+      "$date": "2026-03-10T09:16:29Z"
+    },
+    "updatedAt": {
+      "$date": "2026-03-10T09:16:29Z"
+    }
+  },
+  {
+    "_id": {
+      "$oid": "400000000000000000000129"
+    },
+    "venueId": {
+      "$oid": "3000000000000000000000a7"
+    },
+    "name": "Sân 7 người - C",
+    "type": "football",
+    "size": "7 người",
+    "surface": "Cỏ nhân tạo",
+    "pricePerHour": 570000,
+    "status": "active",
+    "createdAt": {
+      "$date": "2026-03-10T09:16:29Z"
+    },
+    "updatedAt": {
+      "$date": "2026-03-10T09:16:29Z"
+    }
+  },
+  {
+    "_id": {
+      "$oid": "40000000000000000000012a"
+    },
+    "venueId": {
+      "$oid": "3000000000000000000000a8"
+    },
+    "name": "Sân cầu lông số 1",
+    "type": "badminton",
+    "size": "",
+    "surface": "Sàn gỗ",
+    "pricePerHour": 90000,
+    "status": "active",
+    "createdAt": {
+      "$date": "2026-07-10T00:58:24Z"
+    },
+    "updatedAt": {
+      "$date": "2026-07-10T00:58:24Z"
+    }
+  },
+  {
+    "_id": {
+      "$oid": "40000000000000000000012b"
+    },
+    "venueId": {
+      "$oid": "3000000000000000000000a8"
+    },
+    "name": "Sân cầu lông số 2",
+    "type": "badminton",
+    "size": "",
+    "surface": "Sàn gỗ",
+    "pricePerHour": 120000,
+    "status": "active",
+    "createdAt": {
+      "$date": "2026-07-10T00:58:24Z"
+    },
+    "updatedAt": {
+      "$date": "2026-07-10T00:58:24Z"
+    }
+  },
+  {
+    "_id": {
+      "$oid": "40000000000000000000012c"
+    },
+    "venueId": {
+      "$oid": "3000000000000000000000a9"
+    },
+    "name": "Sân bóng rổ chính",
+    "type": "basketball",
+    "size": "Sân đầy",
+    "surface": "Sàn gỗ PU",
+    "pricePerHour": 420000,
+    "status": "active",
+    "createdAt": {
+      "$date": "2026-03-05T08:18:12Z"
+    },
+    "updatedAt": {
+      "$date": "2026-03-05T08:18:12Z"
+    }
+  },
+  {
+    "_id": {
+      "$oid": "40000000000000000000012d"
+    },
+    "venueId": {
+      "$oid": "3000000000000000000000a9"
+    },
+    "name": "Sân bóng rổ phụ",
+    "type": "basketball",
+    "size": "Nửa sân",
+    "surface": "Sàn gỗ PU",
+    "pricePerHour": 240000,
+    "status": "active",
+    "createdAt": {
+      "$date": "2026-03-05T08:18:12Z"
+    },
+    "updatedAt": {
+      "$date": "2026-03-05T08:18:12Z"
+    }
+  }
+]

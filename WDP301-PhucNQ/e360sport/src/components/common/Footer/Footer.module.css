@@ -1,0 +1,154 @@
+.footer {
+    background: var(--text-primary);
+    color: var(--dark-text);
+    margin-top: var(--space-20);
+    padding-top: var(--space-12);
+}
+
+.inner {
+    display: grid;
+    grid-template-columns: 1.5fr repeat(3, 1fr);
+    gap: var(--space-10);
+    padding-top: var(--space-12);
+    padding-bottom: var(--space-12);
+}
+
+.logo {
+    display: flex;
+    align-items: center;
+    width: fit-content;
+    text-decoration: none;
+    margin-bottom: var(--space-4);
+}
+
+.logoImg {
+    display: block;
+    height: 34px;
+    width: auto;
+}
+
+.tagline {
+    font-size: var(--text-sm);
+    color: var(--dark-text-muted);
+    line-height: var(--leading-relaxed);
+    margin-bottom: var(--space-5);
+    max-width: 260px;
+}
+
+.socials {
+    display: flex;
+    gap: var(--space-2);
+}
+
+.socialBtn {
+    width: 36px;
+    height: 36px;
+    border-radius: var(--radius-sm);
+    background: rgba(255, 255, 255, 0.08);
+    color: var(--dark-text-muted);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: var(--text-sm);
+    font-weight: var(--weight-bold);
+    text-decoration: none;
+    transition: all var(--duration-fast);
+}
+
+.socialBtn:hover {
+    background: var(--primary);
+    color: #fff;
+}
+
+.links {
+    display: contents;
+}
+
+.col {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-3);
+}
+
+.colTitle {
+    font-family: var(--font-display);
+    font-size: var(--text-sm);
+    font-weight: var(--weight-bold);
+    color: var(--text-inverse);
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    margin-bottom: var(--space-1);
+}
+
+.link {
+    font-size: var(--text-sm);
+    color: var(--dark-text-muted);
+    text-decoration: none;
+    transition: color var(--duration-fast);
+}
+
+.link:hover {
+    color: var(--text-inverse);
+}
+
+/* Mục chưa có trang thật để trỏ tới (xem ghi chú trong Footer.jsx) — giữ
+   nguyên vị trí bố cục nhưng không có cảm giác "bấm được" như link thật. */
+.comingSoon {
+    cursor: default;
+    opacity: 0.55;
+}
+.comingSoon:hover {
+    color: inherit;
+    background: inherit;
+}
+
+.bottom {
+    border-top: 1px solid var(--dark-border);
+}
+
+.bottom .container {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding-top: var(--space-5);
+    padding-bottom: var(--space-5);
+}
+
+.bottom p {
+    font-size: var(--text-sm);
+    color: var(--dark-text-muted);
+}
+
+.payments {
+    display: flex;
+    gap: var(--space-2);
+}
+
+.payBadge {
+    padding: 3px 8px;
+    border: 1px solid var(--dark-border);
+    border-radius: var(--radius-sm);
+    font-size: 10px;
+    font-weight: var(--weight-bold);
+    color: var(--dark-text-muted);
+    letter-spacing: 0.04em;
+}
+
+@media (max-width: 1024px) {
+    .inner {
+        grid-template-columns: 1fr;
+    }
+
+    .links {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        gap: var(--space-6);
+    }
+}
+
+@media (max-width: 640px) {
+    .bottom .container {
+        flex-direction: column;
+        gap: var(--space-4);
+    }
+}

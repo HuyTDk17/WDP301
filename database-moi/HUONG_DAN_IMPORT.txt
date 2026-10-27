@@ -1,0 +1,14 @@
+DỮ LIỆU MẪU E360Sport (khớp bản code mới nhất)
+
+Tài khoản: 250 người dùng = 40 chủ sân + 210 người chơi, KHÔNG có admin. Mật khẩu của tất cả: 12345678
+Tất cả email dạng @gmail.com. Danh sách: TAI_KHOAN.csv (mở bằng Excel).
+
+Nội dung: 75 địa điểm (69 đã duyệt, 5 chờ duyệt, 1 bị từ chối), 213 sân có ảnh, hơn 1300 lượt đặt, thanh toán, đánh giá,
+yêu thích, thông báo. Phí dịch vụ 10% do chủ sân chịu.
+
+Cách import (MongoDB Compass): xoá sạch database cũ, rồi import từng file *.json vào collection cùng tên:
+users, venues, courts, bookings, payments, slotlocks, reviews, favorites, notifications, platformsettings.
+KHÔNG import promotions.json cũ (tính năng khuyến mãi của admin đã bỏ).
+Sau khi import chạy: npm run migrate   (dựng index)
+
+Chưa có admin: tạo bằng biến ADMIN_* trong .env + script seed của dự án.
