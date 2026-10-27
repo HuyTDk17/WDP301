@@ -1,7 +1,7 @@
 const Court = require('../models/Court');
 const Venue = require('../models/Venue');
 const asyncHandler = require('../utils/asyncHandler');
-const { SPORT_IDS } = require('../utils/courtRules');
+const { checkSport } = require('../utils/sportCategories');
 
 async function assertOwnsVenue(venueId, ownerId) {
     const venue = await Venue.findById(venueId);
@@ -27,7 +27,6 @@ function pickCourtFields(body = {}) {
     for (const k of ['name', 'type', 'size', 'surface', 'pricePerHour']) {
         if (body[k] !== undefined) out[k] = body[k];
     }
-    if (out.type !== undefined && !SPORT_IDS.includes(out.type)) return { error: 'Môn thể thao không hợp lệ' };
     return { fields: out };
 }
 
@@ -35,6 +34,9 @@ exports.createCourt = asyncHandler(async (req, res) => {
     await assertOwnsVenue(req.params.venueId, req.user._id);
     const { fields, error } = pickCourtFields(req.body);
     if (error) return res.status(400).json({ message: error });
+    // Môn do Admin quản lý (danh mục động); môn đã tắt không nhận sân mới.
+    const sportError = fields.type !== undefined ? await checkSport(fields.type) : null;
+    if (sportError) return res.status(400).json({ message: sportError });
     const court = await Court.create({ ...fields, venueId: req.params.venueId });
     res.status(201).json({ court });
 });
@@ -43,6 +45,13 @@ exports.updateCourt = asyncHandler(async (req, res) => {
     await assertOwnsVenue(req.params.venueId, req.user._id);
     const { fields, error } = pickCourtFields(req.body);
     if (error) return res.status(400).json({ message: error });
+    if (fields.type !== undefined) {
+        const current = await Court.findOne({ _id: req.params.courtId, venueId: req.params.venueId }).select('type');
+        if (!current) return res.status(404).json({ message: 'Không tìm thấy sân này' });
+        // Sân đang dùng một môn đã tắt vẫn sửa được nếu không đổi môn.
+        const sportError = await checkSport(fields.type, current.type);
+        if (sportError) return res.status(400).json({ message: sportError });
+    }
     const court = await Court.findOneAndUpdate({ _id: req.params.courtId, venueId: req.params.venueId }, fields, { new: true, runValidators: true });
     if (!court) return res.status(404).json({ message: 'Không tìm thấy sân này' });
     res.json({ court });
