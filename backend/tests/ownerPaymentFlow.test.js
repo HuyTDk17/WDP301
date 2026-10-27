@@ -161,7 +161,7 @@ function seed({ ownerHasBank = true } = {}) {
     state.bookings.push(makeDoc({
         _id: 'book1', customerId: 'cust1', venueId: 'venueA', venueName: 'Sân A', courtName: 'Sân 1',
         status: 'awaiting_payment', amount: 200000, serviceFee: 10000, discountAmount: 0,
-        creditApplied: 0, pointsUsed: 0, pointsApplied: 0, courtId: 'c1', date: '2026-10-10', startTime: '18:00', endTime: '19:00',
+        creditApplied: 0, pointsUsed: 0, pointsApplied: 0, courtId: 'c1', date: new Date(Date.now() + 30 * 86400000 + 7 * 3600000).toISOString().slice(0, 10), startTime: '18:00', endTime: '19:00',
     }));
 }
 /** Giao dịch nhận bằng tài khoản chủ sân A (đơn đặt sân mới). */
@@ -430,6 +430,15 @@ test('OP-24 · khách huỷ đơn chưa báo chuyển → đơn huỷ và giao d
     assert.strictEqual(r.statusCode, 200, JSON.stringify(r.body));
     assert.strictEqual(state.bookings[0].status, 'cancelled');
     assert.strictEqual(p.status, 'failed');
+});
+
+test('OP-24b · khách KHÔNG huỷ được đơn đã qua giờ bắt đầu (chủ sân quên bấm Hoàn thành) → 409, đơn giữ nguyên', async () => {
+    seed();
+    state.bookings[0].status = 'confirmed';
+    state.bookings[0].date = '2020-01-01';
+    const r = await call(bookingController.cancelBooking, { params: { id: 'book1' }, body: { reason: 'Muộn' }, user: asUser('cust1') });
+    assert.strictEqual(r.statusCode, 409, JSON.stringify(r.body));
+    assert.strictEqual(state.bookings[0].status, 'confirmed');
 });
 
 test('OP-25 · tác vụ nền huỷ đơn quá hạn: đóng giao dịch pending, nhưng KHÔNG đụng đơn khách đã báo chuyển', async () => {

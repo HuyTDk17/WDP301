@@ -1,12 +1,11 @@
 import { useState, useEffect, useCallback } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
-import { Plus, ClipboardList, Trophy, Calendar, Clock, ChevronUp, ChevronDown, StickyNote, X, Star, XCircle, Repeat, ArrowUpRight, Gift, CreditCard, Hourglass, MessageSquareWarning, CalendarClock, FileText, UserPlus } from 'lucide-react'
+import { Plus, ClipboardList, Trophy, Calendar, Clock, ChevronUp, ChevronDown, StickyNote, X, Star, XCircle, Repeat, ArrowUpRight, CreditCard, Hourglass, MessageSquareWarning, CalendarClock, FileText, UserPlus } from 'lucide-react'
 import Badge from '@/components/ui/Badge/Badge'
 import Button from '@/components/ui/Button/Button'
 import EmptyState from '@/components/ui/EmptyState/EmptyState'
 import Spinner from '@/components/ui/Spinner/Spinner'
 import ConfirmModal from '@/components/dashboard/ConfirmModal/ConfirmModal'
-import AssignBookingModal from '@/components/booking/AssignBookingModal/AssignBookingModal'
 import CreatePostModal from '@/components/players/CreatePostModal/CreatePostModal'
 import { bookingService, paymentService } from '@/services/bookingService'
 import { settingsService } from '@/services/settingsService'
@@ -27,7 +26,7 @@ const DEFAULT_TRANSFER_POLICY = { enabled: true, minLeadHours: 2 }
 const startOf = (b) => new Date(`${b.date}T${b.startTime}:00+07:00`)
 
 /**
- * Trạng thái các nút Chuyển sân / Đổi lịch / Sang tên của một lượt đặt:
+ * Trạng thái các nút Chuyển sân / Đổi lịch của một lượt đặt:
  *   null            → không áp dụng (đơn chưa xác nhận, đã qua giờ, đơn không có chủ tài khoản) — không hiện nút
  *   { ok: true }    → dùng được
  *   { ok: false, reason } → hiện nút mờ kèm lý do, để khách biết vì sao chưa chuyển được thay vì không thấy nút đâu cả.
@@ -38,7 +37,7 @@ const transferState = (b, policy) => {
   const hoursLeft = (startOf(b).getTime() - Date.now()) / 3600000
   if (hoursLeft <= 0) return null
   if (!policy.enabled) return { ok: false, reason: 'Chức năng chuyển sân đang tạm ngưng' }
-  if (hoursLeft < policy.minLeadHours) return { ok: false, reason: `Chỉ chuyển/đổi lịch được khi còn ít nhất ${policy.minLeadHours} giờ trước giờ chơi` }
+  if (hoursLeft < policy.minLeadHours) return { ok: false, reason: `Sắp đến giờ chơi nên không thể đổi nữa — cần đổi lịch/chuyển sân trước giờ chơi ít nhất ${policy.minLeadHours} tiếng` }
   return { ok: true }
 }
 
@@ -69,7 +68,6 @@ export default function BookingHistory() {
   // Chính sách huỷ do máy chủ tính — hiển thị TRƯỚC khi khách bấm huỷ để họ
   // thấy rõ mất bao nhiêu, và thấy chuyển sân thường rẻ hơn.
   const [cancelPreview, setCancelPreview] = useState(null)
-  const [assignTarget, setAssignTarget] = useState(null)
   // Trạng thái giao dịch của các đơn đang 'Chờ thanh toán' (tải khi mở chi tiết):
   // { [bookingId]: payment | null }. Để phân biệt "chưa chuyển khoản" với "đã báo
   // chuyển, đang chờ chủ sân xác nhận".
@@ -130,7 +128,7 @@ export default function BookingHistory() {
         <div className={styles.header}>
           <div><h1 className={styles.title}>Lịch sử đặt sân</h1><p className={styles.sub}>{loading ? 'Đang tải...' : `Tổng cộng ${bookings.length} lượt đặt sân`}</p></div>
           <div className={styles.headerActions}>
-            <Link to="/claim"><Button icon={<Gift size={16} />} variant="ghost">Nhận suất</Button></Link>
+            <Link to="/transfers"><Button icon={<Repeat size={16} />} variant="ghost">Yêu cầu đổi/chuyển</Button></Link>
             <Link to="/venues"><Button icon={<Plus size={16} />} variant="outline">Đặt sân mới</Button></Link>
           </div>
         </div>
@@ -181,7 +179,6 @@ export default function BookingHistory() {
                           <Link to={`/bookings/${booking._id}/reschedule`}>
                             <Button size="sm" variant="outline" icon={<CalendarClock size={13} />}>Đổi lịch</Button>
                           </Link>
-                          <Button variant="outline" size="sm" icon={<Gift size={13} />} onClick={() => setAssignTarget(booking)}>Sang tên</Button>
                         </>
                       ) : (
                         <>
@@ -301,12 +298,6 @@ export default function BookingHistory() {
         icon={<XCircle size={28} />}
       />
 
-      <AssignBookingModal
-        booking={assignTarget}
-        isOpen={!!assignTarget}
-        onClose={() => setAssignTarget(null)}
-        onDone={loadBookings}
-      />
 
       <CreatePostModal
         key={playerBooking?._id || 'none'}

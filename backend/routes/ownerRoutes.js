@@ -2,7 +2,6 @@ const express = require('express');
 const router = express.Router();
 const { protect, authorize } = require('../middleware/auth');
 const upload = require('../middleware/upload');
-const uploadContentImage = require('../middleware/uploadContentImage');
 const { writeLimiter } = require('../middleware/rateLimiter');
 
 const venueController = require('../controllers/venueController');
@@ -12,7 +11,6 @@ const statsController = require('../controllers/statsController');
 const settlementController = require('../controllers/settlementController');
 const transferController = require('../controllers/transferController');
 const paymentController = require('../controllers/paymentController');
-const eventController = require('../controllers/eventController');
 const networkController = require('../controllers/networkController');
 const cancellationPolicyController = require('../controllers/cancellationPolicyController');
 
@@ -63,11 +61,6 @@ router.get('/network', networkController.getMyNetwork);
 router.post('/network/request', writeLimiter, networkController.requestToJoin);
 router.post('/network/respond', writeLimiter, networkController.respondToInvite);
 
-// Sự kiện (giải đấu / khuyến mãi) tại địa điểm của chủ sân: tạo, sửa, hủy
-router.get('/events', eventController.getOwnerEvents);
-router.post('/events', writeLimiter, uploadContentImage.single('image'), eventController.createEvent);
-router.put('/events/:id', writeLimiter, uploadContentImage.single('image'), eventController.updateEvent);
-router.post('/events/:id/cancel', writeLimiter, eventController.cancelEvent);
 
 // Đánh giá của khách trên các địa điểm của chủ sân: xem, trả lời, xóa phản hồi
 router.get('/reviews', venueController.getOwnerReviews);

@@ -115,6 +115,10 @@ export default function PolicyManagement() {
         loading={loading}
         pageSize={8}
         searchPlaceholder="Tìm trang chính sách..."
+        filters={[
+          { key: 'isPublished', placeholder: 'Mọi hiển thị', options: [{ value: 'true', label: 'Công khai' }, { value: 'false', label: 'Đã ẩn' }] },
+          { key: 'builtin', placeholder: 'Mọi nguồn nội dung', options: [{ value: 'true', label: 'Mặc định' }, { value: 'false', label: 'Đã tùy chỉnh' }], match: (r, v) => !!r.builtin === (v === 'true') },
+        ]}
         emptyText="Chưa có trang chính sách"
         emptyIcon={<ScrollText size={40} />}
         headerRight={<Button icon={<Plus size={15} />} onClick={() => openForm()}>Thêm trang</Button>}

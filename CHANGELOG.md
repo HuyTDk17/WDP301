@@ -3,6 +3,20 @@
 Tài liệu này ghi lại toàn bộ thay đổi so với phiên bản gốc, kèm lý do. Đọc kèm
 `E360Sport_Phan_tich_va_Dac_ta_He_thong.docx` để hiểu phần thiết kế.
 
+## Tìm kiếm và bộ lọc ở các trang quản lý (Admin + Chủ sân)
+
+- **Tìm kiếm không phân biệt dấu/hoa thường** (`utils/search.js`): "nguyen van dat" khớp "Nguyễn Văn Đạt"; nhiều từ thì khớp mọi từ. `DataTable` nay hỗ trợ `filters` (ô chọn, khoảng ngày, nút "Xóa lọc") và cột có `searchValue` để tìm trên dữ liệu lồng nhau. **Sửa lỗi:** ô tìm trong Quản lý lượt đặt sân của chủ sân trước đây không tìm được theo tên khách (dữ liệu khách là object nên bị bỏ qua).
+- Hook `useListFilters` + `ListFilterBar` dùng cho các danh sách dạng thẻ.
+- **Chủ sân:** Lượt đặt sân (địa điểm, môn, khoảng ngày chơi; tìm theo tên/SĐT khách, sân), Quản lý sân (địa điểm, môn, trạng thái), Khách hàng (mức độ quen, ngày đặt gần nhất), Xác nhận chuyển khoản, Hoàn tiền, Yêu cầu chuyển sân (trạng thái, loại, ngày chơi), Lịch sử hoá đơn hoa hồng.
+- **Admin:** Người dùng (+ trạng thái TK), Địa điểm (+ hoạt động/tạm ngưng/chưa có sân), Đánh giá (+ số sao), Hoa hồng theo đơn (+ trạng thái đơn), Chủ sân (hồ sơ, trạng thái TK; tìm theo email/SĐT/doanh nghiệp), Banner / Danh mục môn / Trang chính sách (trạng thái), Đối soát hoa hồng (loại hoá đơn, quá hạn, số dư).
+- **Backend:** thêm tham số tuỳ chọn `status` cho `GET /admin/users`, `GET /admin/venues`, `GET /admin/commissions` và `rating` cho `GET /admin/reviews` (không có tham số thì hành vi cũ không đổi).
+
+---
+
+## Đã gỡ chức năng Sang tên / Nhận suất
+
+Bỏ hẳn "Sang tên" (loại chuyển T5) và "Nhận suất": nút Sang tên và nút Nhận suất ở Lịch sử đặt sân, trang `/claim`, các API `/bookings/:id/transfer/assign`, `/transfers/claim/:code`, `/transfers/:id/cancel-assignment`, `services/assignmentService.js`, ô "Phí sang tên" ở Cài đặt Admin. Đổi lịch và chuyển sân (T1–T4) không đổi. Các trường dữ liệu cũ (`type: 'T5'`, `transferCode`) vẫn nằm trong model để không làm hỏng dữ liệu đã có.
+
 ---
 
 ## Lọc sân theo bản đồ
@@ -75,15 +89,9 @@ Các mục bên dưới được ghép từ bản bổ sung; **lọc sân theo b
 
 ---
 
-## Sự kiện của chủ sân (giải đấu / khuyến mãi)
+## Đã gỡ chức năng Sự kiện
 
-- **Chủ sân:** trang `/owner/events` — tạo, sửa, **hủy** sự kiện tại địa điểm của mình (tên, loại, mô tả, dòng nổi bật, thời gian, phí tham gia chỉ để thông tin, ảnh). Hủy cần nêu lý do.
-  Chỉ tạo ở địa điểm CỦA MÌNH; bắt đầu phải ở tương lai (≤ 1 năm), kéo dài ≤ 90 ngày, tối đa 20 sự kiện chưa kết thúc / chủ sân. Sự kiện đã hủy hoặc đã kết thúc không sửa/hủy lại được; sự kiện đang diễn ra vẫn sửa được nội dung.
-- **Khách:** trang công khai `/events` (lọc theo loại) và `/events/:id`; mục "Sự kiện sắp tới tại đây" ở trang địa điểm; link "Sự kiện" ở thanh menu. Link đã chia sẻ của sự kiện đã hủy/đã kết thúc vẫn mở được và báo đúng tình trạng.
-- **Hiển thị công khai** bám theo địa điểm (đã duyệt, đang bật, chủ sân không bị khóa phí dịch vụ) — địa điểm bị ẩn thì sự kiện cũng ẩn. Không lộ lý do hủy ra công khai.
-- Trạng thái "sắp diễn ra / đang diễn ra / đã kết thúc" được **suy ra từ thời gian** (`eventController.phaseOf`), không cần job cập nhật. Hệ thống KHÔNG nhận đăng ký tham gia hay thu phí sự kiện.
-- Backend: `models/Event.js`, `controllers/eventController.js`, `routes/eventRoutes.js` (+ nhóm `/api/owner/events` trong `ownerRoutes.js`). Test: `tests/events.test.js` (EV-01…11), đã thêm vào `npm test`.
-- Tách `form.module.css` dùng chung sang `components/dashboard/` (trước đây nằm trong `pages/admin/`).
+Gỡ hoàn toàn chức năng Sự kiện ở mọi vai trò: khách (trang `/events`, `/events/:id`, mục "Sự kiện sắp tới" ở trang địa điểm, link "Sự kiện" ở menu), chủ sân (trang `/owner/events`) và backend (`models/Event.js`, `controllers/eventController.js`, `routes/eventRoutes.js`, nhóm `/api/events` và `/api/owner/events`, `tests/events.test.js`). Collection `events` cũ (nếu có) trong MongoDB không bị xoá tự động — có thể xoá tay bằng `db.events.drop()`.
 
 ---
 
@@ -876,3 +884,6 @@ bộ project: `start.bat`, `backend/.env.example` (đã đổi domain minh hoạ
 riêng các đường dẫn thư mục thật (`e360sport\`) vẫn giữ nguyên như mục J đã
 giải thích.
 
+
+## Dọn code thừa
+- Xóa các file không được import/route ở đâu: backend Premium (controller/route/service/model/utils/test), payoutController, vnpay, momo, loyaltyPoints, refundAllocation (+test); frontend Premium, PremiumBadge, PremiumManagement, PromotionManagement, promotionService, premiumService, MiniChart, AuthContext trùng, và các trang admin chưa có route (BookingManagement, RefundManagement, TransferManagement, VenueApproval, PendingBankPayments admin).

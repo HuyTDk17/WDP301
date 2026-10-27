@@ -10,7 +10,6 @@ import EmptyState from '@/components/ui/EmptyState/EmptyState'
 import TimeSlotPicker from '@/components/venue/TimeSlotPicker/TimeSlotPicker'
 import CourtPicker from '@/components/booking/CourtPicker/CourtPicker'
 import ReviewForm from '@/components/venue/ReviewForm/ReviewForm'
-import VenueEvents from '@/components/venue/VenueEvents/VenueEvents'
 import CancellationPolicy from '@/components/venue/CancellationPolicy/CancellationPolicy'
 import ConfirmModal from '@/components/dashboard/ConfirmModal/ConfirmModal'
 import { venueService } from '@/services/venueService'
@@ -273,8 +272,6 @@ export default function VenueDetail() {
           )}
 
           <CancellationPolicy policy={venue.cancellationPolicy} />
-
-          <VenueEvents venueId={id} />
 
           <section className={styles.section} id="reviews">
             <div className={styles.reviewsHeader}>

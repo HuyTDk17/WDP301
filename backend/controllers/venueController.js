@@ -424,7 +424,7 @@ exports.getVenueStatsAdmin = asyncHandler(async (req, res) => {
 });
 
 exports.getAllVenuesAdmin = asyncHandler(async (req, res) => {
-    const { search = '', page = 1, limit = 10 } = req.query;
+    const { search = '', status = '', page = 1, limit = 10 } = req.query;
     const pageNum = Math.max(1, parseInt(page, 10) || 1);
     const limitNum = Math.max(1, parseInt(limit, 10) || 10);
 
@@ -456,6 +456,11 @@ exports.getAllVenuesAdmin = asyncHandler(async (req, res) => {
         },
         { $project: { courts: 0, owner: 0 } },
     ];
+
+    // Lọc theo trạng thái: active (đang hoạt động) | suspended (tạm ngưng) | noCourt (chưa có sân)
+    if (status === 'active') pipeline.push({ $match: { isActive: { $ne: false } } });
+    else if (status === 'suspended') pipeline.push({ $match: { isActive: false } });
+    else if (status === 'noCourt') pipeline.push({ $match: { courtCount: 0 } });
 
     if (search.trim()) {
         const re = new RegExp(escapeRegex(search.trim()), 'i');
@@ -565,7 +570,7 @@ exports.warnVenueOwner = asyncHandler(async (req, res) => {
 // Trước đây không có cách nào để admin xóa 1 review xúc phạm/spam — customer
 // có thể để lại bất kỳ nội dung gì mà không ai kiểm soát được.
 exports.getAllReviewsAdmin = asyncHandler(async (req, res) => {
-    const { search = '', page = 1, limit = 10 } = req.query;
+    const { search = '', rating = '', page = 1, limit = 10 } = req.query;
     const pageNum = Math.max(1, parseInt(page, 10) || 1);
     const limitNum = Math.max(1, parseInt(limit, 10) || 10);
 
@@ -587,6 +592,9 @@ exports.getAllReviewsAdmin = asyncHandler(async (req, res) => {
         },
         { $project: { venue: 0, reviewer: 0 } },
     ];
+
+    const ratingNum = parseInt(rating, 10);
+    if (ratingNum >= 1 && ratingNum <= 5) pipeline.push({ $match: { rating: ratingNum } });
 
     if (search.trim()) {
         const re = new RegExp(escapeRegex(search.trim()), 'i');

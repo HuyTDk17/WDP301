@@ -21,7 +21,7 @@ import BookingHistory from '@/pages/customer/BookingHistory/BookingHistory'
 import TransferBooking from '@/pages/customer/TransferBooking/TransferBooking'
 import Invoice from '@/pages/customer/Invoice/Invoice'
 import TransferDetail from '@/pages/customer/TransferDetail/TransferDetail'
-import ClaimBooking from '@/pages/customer/ClaimBooking/ClaimBooking'
+import MyTransfers from '@/pages/customer/MyTransfers/MyTransfers'
 import FavoriteVenues from '@/pages/customer/FavoriteVenues/FavoriteVenues'
 import Profile from '@/pages/customer/Profile/Profile'
 import Notifications from '@/pages/customer/Notifications/Notifications'
@@ -55,11 +55,8 @@ import PolicyManagement from '@/pages/admin/PolicyManagement/PolicyManagement'
 import SportCategoryManagement from '@/pages/admin/SportCategoryManagement/SportCategoryManagement'
 import NetworkManagement from '@/pages/admin/NetworkManagement/NetworkManagement'
 import NewsList from '@/pages/news/NewsList'
-import EventList from '@/pages/events/EventList'
 import PlayerList from '@/pages/players/PlayerList'
 import MyPlayers from '@/pages/players/MyPlayers'
-import EventDetail from '@/pages/events/EventDetail'
-import OwnerEvents from '@/pages/owner/Events/Events'
 import NewsDetail from '@/pages/news/NewsDetail'
 import CommissionReport from '@/pages/admin/CommissionReport/CommissionReport'
 import OwnerPendingBankPayments from '@/pages/owner/PendingBankPayments/PendingBankPayments'
@@ -118,10 +115,8 @@ export default function AppRoutes() {
         <Route path="/bookings/:bookingId/reschedule" element={<ProtectedRoute roles={['customer']}><TransferBooking mode="reschedule" /></ProtectedRoute>} />
         <Route path="/bookings/:bookingId/invoice" element={<ProtectedRoute roles={['customer']}><Invoice /></ProtectedRoute>} />
         {/* Cũng là địa chỉ cổng thanh toán chuyển hướng về sau khi khách trả khoản chênh lệch */}
+        <Route path="/transfers" element={<ProtectedRoute roles={['customer']}><MyTransfers /></ProtectedRoute>} />
         <Route path="/transfers/:id" element={<ProtectedRoute roles={['customer']}><TransferDetail /></ProtectedRoute>} />
-        {/* Nhận suất bằng mã sang tên. Dạng có sẵn mã để chia sẻ link trực tiếp. */}
-        <Route path="/claim" element={<ProtectedRoute roles={['customer']}><ClaimBooking /></ProtectedRoute>} />
-        <Route path="/claim/:code" element={<ProtectedRoute roles={['customer']}><ClaimBooking /></ProtectedRoute>} />
         <Route path="/players" element={<ProtectedRoute roles={['customer']}><PlayerList /></ProtectedRoute>} />
         <Route path="/players/mine" element={<ProtectedRoute roles={['customer']}><MyPlayers /></ProtectedRoute>} />
         <Route path="/complaints" element={<ProtectedRoute roles={['customer']}><Complaints /></ProtectedRoute>} />
@@ -134,8 +129,6 @@ export default function AppRoutes() {
         <Route path="/policies/:key" element={<LegalPage />} />
         <Route path="/news" element={<NewsList />} />
         <Route path="/news/:slug" element={<NewsDetail />} />
-        <Route path="/events" element={<EventList />} />
-        <Route path="/events/:id" element={<EventDetail />} />
         <Route path="/403" element={<Forbidden />} />
       </Route>
 
@@ -154,7 +147,6 @@ export default function AppRoutes() {
         <Route path="transfers" element={<TransferRequests />} />
         <Route path="customers" element={<Customers />} />
         <Route path="reviews" element={<OwnerReviews />} />
-        <Route path="events" element={<OwnerEvents />} />
         <Route path="revenue" element={<Revenue />} />
         <Route path="notifications" element={<Notifications />} />
         <Route path="settings" element={<OwnerSettings />} />

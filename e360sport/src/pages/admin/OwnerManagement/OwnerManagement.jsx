@@ -53,7 +53,7 @@ export default function OwnerManagement() {
   const hasDocs = (selected?.ownerApplicationDocuments?.length || 0) > 0
 
   const columns = [
-    { header: 'Chủ sân', accessor: 'name', render: (val, row) => <div className={styles.ownerCell}><div className={styles.avatar}>{val?.[0] || '?'}</div><div><p className={styles.name}>{val}</p><p className={styles.business}>{row.businessName || 'Chưa có tên doanh nghiệp'}</p></div></div> },
+    { header: 'Chủ sân', accessor: 'name', searchValue: (r) => `${r.name || ''} ${r.email || ''} ${r.phone || ''} ${r.businessName || ''}`, render: (val, row) => <div className={styles.ownerCell}><div className={styles.avatar}>{val?.[0] || '?'}</div><div><p className={styles.name}>{val}</p><p className={styles.business}>{row.businessName || 'Chưa có tên doanh nghiệp'}</p></div></div> },
     { header: 'Email', accessor: 'email' },
     { header: 'Hồ sơ', accessor: 'ownerApplicationStatus', render: v => <StatusBadge status={v || 'none'} /> },
     { header: 'Trạng thái TK', accessor: 'status', render: v => <StatusBadge status={v} /> },
@@ -63,7 +63,11 @@ export default function OwnerManagement() {
     <div className={styles.page}>
       <PageHeader title="Quản lý chủ sân" subtitle={`${owners.length} chủ sân đã đăng ký`} />
       {loading ? <div className={styles.loadingState}><Spinner size="lg" /></div> : (
-        <DataTable columns={columns} data={owners} searchPlaceholder="Tìm theo tên..." emptyText="Chưa có hồ sơ chủ sân nào" actions={(row) => (
+        <DataTable columns={columns} data={owners} searchPlaceholder="Tìm theo tên, email, SĐT, doanh nghiệp..."
+          filters={[
+            { key: 'ownerApplicationStatus', placeholder: 'Mọi hồ sơ', options: [{ value: 'pending', label: 'Chờ duyệt' }, { value: 'approved', label: 'Đã duyệt' }, { value: 'rejected', label: 'Bị từ chối' }] },
+            { key: 'status', placeholder: 'Mọi trạng thái TK', options: [{ value: 'verified', label: 'Đã xác minh' }, { value: 'pending', label: 'Chờ duyệt' }, { value: 'rejected', label: 'Bị từ chối' }, { value: 'banned', label: 'Bị khóa' }, { value: 'active', label: 'Hoạt động' }] },
+          ]} emptyText="Chưa có hồ sơ chủ sân nào" actions={(row) => (
           <div className={styles.actions}>
             {row.role === 'owner' && <Link to={`/admin/owners/${row._id}`}><Button size="xs" variant="ghost" title="Xem hồ sơ hoạt động" icon={<BarChart3 size={13} />}>Hồ sơ</Button></Link>}
             <Button size="xs" variant="outline" onClick={() => openDetail(row)}>Chi tiết</Button>

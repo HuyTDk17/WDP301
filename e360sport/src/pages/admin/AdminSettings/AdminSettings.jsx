@@ -32,7 +32,7 @@ export default function AdminSettings() {
     transferEnabled: true, transferNetworkRequired: false, transferMinLeadTimeHours: 2, maxTransfersPerBooking: 1,
     maxTransfersPerMonth: 0, transferFeeOriginSharePct: 0, ownerCancellationPolicyAllowed: true,
     quoteTtlMinutes: 10, ownerApprovalTimeoutMinutes: 30,
-    transferFeeMin: 5000, transferFeeMax: 100000, transferFixedFeeT5: 10000,
+    transferFeeMin: 5000, transferFeeMax: 100000,
     maxRefundRatio: 0.5, refundToCreditEnabled: true,
     bankName: '', bankBin: '', bankAccountNumber: '', bankAccountName: '',
     bankTransferWindowMinutes: 30,
@@ -69,7 +69,6 @@ export default function AdminSettings() {
           ownerApprovalTimeoutMinutes: st.ownerApprovalTimeoutMinutes ?? 30,
           transferFeeMin: st.transferFeeMin ?? 5000,
           transferFeeMax: st.transferFeeMax ?? 100000,
-          transferFixedFeeT5: st.transferFixedFeeT5 ?? 10000,
           maxRefundRatio: st.maxRefundRatio ?? 0.5,
           refundToCreditEnabled: st.refundToCreditEnabled !== false,
           bankName: st.bankName || '',
@@ -284,7 +283,7 @@ export default function AdminSettings() {
             onChange={e => setForm(f => ({ ...f, maxTransfersPerMonth: e.target.value }))}
             icon={<Repeat size={15} />}
             suffix="lượt"
-            hint="Tính theo tháng dương lịch (giờ Việt Nam), gồm đổi lịch và chuyển sân, không gồm sang tên. 0 = không giới hạn."
+            hint="Tính theo tháng dương lịch (giờ Việt Nam), gồm đổi lịch và chuyển sân. 0 = không giới hạn."
           />
           <Input
             label="Chia phí chuyển sân cho chủ sân gốc"
@@ -326,14 +325,6 @@ export default function AdminSettings() {
             onChange={e => setForm(f => ({ ...f, transferFeeMax: e.target.value }))}
             suffix="đ"
             hint="Trần để đơn giá trị lớn không phải chịu mức phí vô lý."
-          />
-          <Input
-            label="Phí sang tên (T5)"
-            type="number" min={0} step={1000}
-            value={form.transferFixedFeeT5}
-            onChange={e => setForm(f => ({ ...f, transferFixedFeeT5: e.target.value }))}
-            suffix="đ"
-            hint="Khoản cố định, không phụ thuộc giá trị đơn."
           />
           <Input
             label="Trần hoàn tiền mặt"

@@ -100,6 +100,7 @@ export default function SportCategoryManagement() {
         loading={loading}
         pageSize={12}
         searchPlaceholder="Tìm môn..."
+        filters={[{ key: 'isActive', placeholder: 'Mọi trạng thái', options: [{ value: 'true', label: 'Đang bật' }, { value: 'false', label: 'Đang tắt' }] }]}
         emptyText="Chưa có môn nào"
         emptyIcon={<Tags size={40} />}
         headerRight={<Button icon={<Plus size={15} />} onClick={() => openForm()}>Thêm môn</Button>}

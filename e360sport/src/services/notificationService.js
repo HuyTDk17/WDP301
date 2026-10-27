@@ -6,11 +6,20 @@ import api from './api'
 // ownerRoutes.js, adminRoutes.js
 // ============================================================
 
+// Tên sự kiện trình duyệt báo "thông báo vừa đổi (đã đọc/xóa)". Chuông ở Navbar/OwnerLayout/AdminLayout nằm ngoài
+// trang Thông báo nên không biết gì về thao tác ở đây — nó lắng nghe sự kiện này để tải lại số chưa đọc ngay,
+// thay vì chờ chu kỳ poll 25 giây (trước đây số trên chuông đứng yên dù thông báo đã đọc).
+export const NOTIFICATIONS_CHANGED_EVENT = 'notifications:changed'
+const notifyChanged = (result) => {
+  if (typeof window !== 'undefined') window.dispatchEvent(new Event(NOTIFICATIONS_CHANGED_EVENT))
+  return result
+}
+
 export const notificationService = {
   getNotifications: () => api.get('/notifications'),
-  markAsRead: (id) => api.patch(`/notifications/${id}/read`),
-  markAllAsRead: () => api.patch('/notifications/read-all'),
-  deleteNotification: (id) => api.delete(`/notifications/${id}`),
+  markAsRead: (id) => api.patch(`/notifications/${id}/read`).then(notifyChanged),
+  markAllAsRead: () => api.patch('/notifications/read-all').then(notifyChanged),
+  deleteNotification: (id) => api.delete(`/notifications/${id}`).then(notifyChanged),
   getUnreadCount: () => api.get('/notifications/unread-count'),
 }
 

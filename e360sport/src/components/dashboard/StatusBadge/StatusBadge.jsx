@@ -18,9 +18,7 @@ const STATUS_MAP = {
   expired:     { label: 'Đã hết hạn',   cls: 'cancelled'  },
   // Mạng lưới chuyển sân ('none' dùng chung nhãn "Chưa gửi" ở trên; trang mạng lưới tự đổi nhãn bằng prop `labels`)
   revoked:     { label: 'Đã gỡ',         cls: 'cancelled' },
-  // Sự kiện (trạng thái suy ra theo thời gian)
-  upcoming:    { label: 'Sắp diễn ra',  cls: 'pending'    },
-  ongoing:     { label: 'Đang diễn ra', cls: 'confirmed'  },
+  // Bài tìm người chơi đã qua giờ
   ended:       { label: 'Đã kết thúc',  cls: 'inactive'   },
   // Khiếu nại
   open:          { label: 'Chờ xử lý',     cls: 'pending'   },

@@ -58,7 +58,11 @@ export default function Customers() {
       {customers.length === 0 ? (
         <EmptyState icon={<Users size={48} />} title="Chưa có khách hàng nào" description="Danh sách khách hàng sẽ xuất hiện ở đây khi có người đặt sân của bạn." />
       ) : (
-        <DataTable columns={columns} data={customers} searchPlaceholder="Tìm theo tên, số điện thoại..." />
+        <DataTable columns={columns} data={customers} searchPlaceholder="Tìm theo tên, số điện thoại..."
+          filters={[
+            { key: 'totalBookings', placeholder: 'Mọi số lượt đặt', options: [{ value: 'repeat', label: 'Khách quen (từ 2 lượt)' }, { value: 'loyal', label: 'Từ 5 lượt trở lên' }, { value: 'new', label: 'Khách mới (1 lượt)' }], match: (r, v) => (v === 'new' ? r.totalBookings === 1 : v === 'repeat' ? r.totalBookings >= 2 : r.totalBookings >= 5) },
+            { key: 'lastBooking', type: 'dateRange', label: 'Đặt gần nhất' },
+          ]} />
       )}
     </div>
   )

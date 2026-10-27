@@ -7,11 +7,12 @@ const asyncHandler = require('../utils/asyncHandler');
 const escapeRegex = require('../utils/escapeRegex');
 
 exports.getUsers = asyncHandler(async (req, res) => {
-    const { role, search = '', page = 1, limit = 10 } = req.query;
+    const { role, status, search = '', page = 1, limit = 10 } = req.query;
     // Trang quản lý người dùng chỉ để quản lý khách hàng/chủ sân — không liệt kê
     // tài khoản admin ở đây, tránh admin tự khóa nhầm tài khoản admin khác.
     const filter = { role: { $ne: 'admin' } };
     if (role && role !== 'admin') filter.role = role;
+    if (['active', 'pending', 'verified', 'banned', 'rejected'].includes(status)) filter.status = status;
     if (search.trim()) {
         const re = new RegExp(escapeRegex(search.trim()), 'i');
         filter.$or = [{ name: re }, { email: re }];

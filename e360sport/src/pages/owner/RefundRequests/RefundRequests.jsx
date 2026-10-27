@@ -9,6 +9,8 @@ import { settlementService } from '@/services/settlementService'
 import { REFUND_PURPOSE_LABEL } from '@/services/refundService'
 import { useToast } from '@/contexts/ToastContext'
 import { formatCurrency } from '@/utils'
+import ListFilterBar from '@/components/dashboard/ListFilterBar/ListFilterBar'
+import useListFilters from '@/hooks/useListFilters'
 import styles from './RefundRequests.module.css'
 
 /**
@@ -54,6 +56,13 @@ export default function RefundRequests() {
     return [b.customerId?.name || b.guestName, b.customerId?.phone].filter(Boolean).join(' · ')
   }
 
+  const f = useListFilters(payments, {
+    searchText: (p) => `${customerOf(p)} ${p.bookingId?.venueName || ''} ${p.bookingId?.courtName || ''} ${p.orderRef || ''} ${p.refundReason || ''}`,
+    filters: { purpose: (p, v) => p.purpose === v },
+    dateField: (p) => p.createdAt,
+  })
+  const purposes = [...new Set(payments.map((p) => p.purpose).filter(Boolean))]
+
   return (
     <div className={styles.page}>
       <PageHeader
@@ -72,8 +81,12 @@ export default function RefundRequests() {
           description="Không có khoản hoàn tiền nào đang chờ bạn xử lý."
         />
       ) : (
+        <>
+        <ListFilterBar f={f} placeholder="Tìm theo tên/SĐT khách, sân, mã, lý do..." dateLabel="Tạo lúc" total={payments.length}
+          filters={[{ key: 'purpose', placeholder: 'Mọi loại hoàn', options: purposes.map((v) => ({ value: v, label: REFUND_PURPOSE_LABEL[v] || v })) }]} />
+        {f.filtered.length === 0 ? <EmptyState icon={<CircleCheck size={48} />} title="Không có khoản phù hợp" description="Thử bỏ bớt từ khóa hoặc bộ lọc." /> : (
         <div className={styles.list}>
-          {payments.map((p) => (
+          {f.filtered.map((p) => (
             <div key={p._id} className={styles.item}>
               <div className={styles.info}>
                 <div className={styles.topRow}>
@@ -94,6 +107,8 @@ export default function RefundRequests() {
             </div>
           ))}
         </div>
+        )}
+        </>
       )}
     </div>
   )

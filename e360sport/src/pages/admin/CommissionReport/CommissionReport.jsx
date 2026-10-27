@@ -27,13 +27,14 @@ export default function CommissionReport() {
   const [summary, setSummary] = useState({ bookings: 0, gmv: 0, commission: 0 })
   const [, setSearch] = useState('')
   const [month, setMonth] = useState('')
-  const query = useRef({ page: 1, search: '', month: '' })
+  const [statusFilter, setStatusFilter] = useState('')
+  const query = useRef({ page: 1, search: '', month: '', status: '' })
 
   const load = useCallback((patch = {}) => {
     query.current = { ...query.current, ...patch }
-    const { page: p, search: s, month: m } = query.current
+    const { page: p, search: s, month: m, status: st } = query.current
     setLoading(true)
-    bookingService.getCommissionReport({ page: p, limit: PAGE_SIZE, search: s, month: m })
+    bookingService.getCommissionReport({ page: p, limit: PAGE_SIZE, search: s, month: m, status: st || undefined })
       .then((res) => {
         setRows(res.bookings || [])
         setTotalPages(res.totalPages || 1)
@@ -79,6 +80,7 @@ export default function CommissionReport() {
         data={rows}
         loading={loading}
         searchPlaceholder="Tìm theo địa điểm hoặc chủ sân..."
+        filters={[{ key: 'status', placeholder: 'Mọi trạng thái đơn', value: statusFilter, onChange: (v) => { setStatusFilter(v); setPage(1); load({ status: v, page: 1 }) }, options: [{ value: 'confirmed', label: 'Đã xác nhận' }, { value: 'completed', label: 'Hoàn tất' }, { value: 'no_show', label: 'Khách không đến' }] }]}
         emptyText="Chưa có lượt đặt nào phát sinh hoa hồng"
         server={{
           page, totalPages, total: summary.bookings, pageSize: PAGE_SIZE,

@@ -9,6 +9,8 @@ import Modal from '@/components/ui/Modal/Modal'
 import { paymentService } from '@/services/bookingService'
 import { useToast } from '@/contexts/ToastContext'
 import { formatCurrency } from '@/utils'
+import ListFilterBar from '@/components/dashboard/ListFilterBar/ListFilterBar'
+import useListFilters from '@/hooks/useListFilters'
 import styles from './PendingBankPayments.module.css'
 
 /**
@@ -72,7 +74,7 @@ export default function PendingBankPayments() {
 
   const describe = (p) => {
     const t = p.transferId
-    // Khoản bù/phí khi khách chuyển sân đến địa điểm của bạn (hoặc sang tên lượt đặt của bạn)
+    // Khoản bù/phí khi khách chuyển sân đến địa điểm của bạn
     if (isTopup(p) && t) return `Bù tiền chuyển sân → ${t.toVenueName || ''} ${t.toCourtName ? `– ${t.toCourtName}` : ''} · ${t.toDate} ${t.toStartTime}`
     const b = p.bookingId
     if (!b) return ''
@@ -89,6 +91,15 @@ export default function PendingBankPayments() {
     const phone = b.customerId?.phone || b.guestPhone
     return [name, phone].filter(Boolean).join(' · ')
   }
+
+  const f = useListFilters(payments, {
+    searchText: (p) => `${describe(p)} ${customerOf(p)} ${p.orderRef || ''} ${p.amount || ''}`,
+    filters: {
+      status: (p, v) => p.status === v,
+      purpose: (p, v) => (v === 'topup' ? isTopup(p) : !isTopup(p)),
+    },
+    dateField: (p) => p.createdAt,
+  })
 
   return (
     <div className={styles.page}>
@@ -108,8 +119,15 @@ export default function PendingBankPayments() {
           description="Mọi giao dịch chuyển khoản đều đã được xử lý."
         />
       ) : (
+        <>
+        <ListFilterBar f={f} placeholder="Tìm theo tên/SĐT khách, sân, nội dung chuyển khoản..." dateLabel="Tạo lúc" total={payments.length}
+          filters={[
+            { key: 'status', placeholder: 'Mọi trạng thái', options: [{ value: 'awaiting_confirmation', label: 'Khách báo đã chuyển' }, { value: 'pending', label: 'Chưa báo' }] },
+            { key: 'purpose', placeholder: 'Mọi loại khoản', options: [{ value: 'booking', label: 'Tiền đặt sân' }, { value: 'topup', label: 'Bù tiền chuyển sân' }] },
+          ]} />
+        {f.filtered.length === 0 ? <EmptyState icon={<CircleCheck size={48} />} title="Không có giao dịch phù hợp" description="Thử bỏ bớt từ khóa hoặc bộ lọc." /> : (
         <div className={styles.list}>
-          {payments.map((p) => (
+          {f.filtered.map((p) => (
             <div key={p._id} className={styles.item}>
               <div className={styles.info}>
                 <div className={styles.topRow}>
@@ -148,6 +166,8 @@ export default function PendingBankPayments() {
             </div>
           ))}
         </div>
+        )}
+        </>
       )}
 
       <Modal isOpen={!!rejecting} onClose={() => setRejecting(null)} title="Từ chối giao dịch">

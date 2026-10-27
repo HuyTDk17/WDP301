@@ -22,14 +22,15 @@ export default function VenueManagement() {
   const [totalPages, setTotalPages] = useState(1)
   const [total, setTotal] = useState(0)
   const [search, setSearch] = useState('')
+  const [statusFilter, setStatusFilter] = useState('')
   const [stats, setStats] = useState({ total: 0, active: 0, suspended: 0, noCourt: 0 })
   const [warnTarget, setWarnTarget] = useState(null)
   const [suspendTarget, setSuspendTarget] = useState(null)
   const [deleteTarget, setDeleteTarget] = useState(null)
 
-  const loadVenues = useCallback((p = page, s = search) => {
+  const loadVenues = useCallback((p = page, s = search, st = statusFilter) => {
     setLoading(true)
-    venueService.getAllVenuesAdmin({ page: p, limit: PAGE_SIZE, search: s })
+    venueService.getAllVenuesAdmin({ page: p, limit: PAGE_SIZE, search: s, status: st || undefined })
       .then((res) => {
         setVenues(res.venues || [])
         setTotalPages(res.totalPages || 1)
@@ -43,12 +44,13 @@ export default function VenueManagement() {
     venueService.getVenueStatsAdmin().then(setStats).catch(() => {})
   }, [])
 
-  useEffect(() => { loadVenues(1, ''); loadStats() }, [])
+  useEffect(() => { loadStats() }, [])
+  useEffect(() => { setPage(1); loadVenues(1, search, statusFilter) }, [statusFilter])
 
-  const handlePageChange = (p) => { setPage(p); loadVenues(p, search) }
-  const handleSearchChange = (s) => { setSearch(s); setPage(1); loadVenues(1, s) }
+  const handlePageChange = (p) => { setPage(p); loadVenues(p, search, statusFilter) }
+  const handleSearchChange = (s) => { setSearch(s); setPage(1); loadVenues(1, s, statusFilter) }
 
-  const refreshAfterAction = () => { loadVenues(page, search); loadStats() }
+  const refreshAfterAction = () => { loadVenues(page, search, statusFilter); loadStats() }
 
   const handleWarn = async (reason) => {
     try {
@@ -136,7 +138,8 @@ export default function VenueManagement() {
         columns={columns}
         data={venues}
         loading={loading}
-        searchPlaceholder="Tìm theo tên địa điểm, chủ sân..."
+        searchPlaceholder="Tìm theo tên địa điểm, chủ sân, email..."
+        filters={[{ key: 'status', placeholder: 'Mọi trạng thái', value: statusFilter, onChange: setStatusFilter, options: [{ value: 'active', label: 'Đang hoạt động' }, { value: 'suspended', label: 'Đang tạm ngưng' }, { value: 'noCourt', label: 'Chưa có sân' }] }]}
         emptyText="Chưa có địa điểm nào trên nền tảng"
         server={{ page, totalPages, total, pageSize: PAGE_SIZE, onPageChange: handlePageChange, onSearchChange: handleSearchChange }}
         actions={(row) => (

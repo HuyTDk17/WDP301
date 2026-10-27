@@ -9,6 +9,8 @@ import Modal from '@/components/ui/Modal/Modal'
 import { settlementService, SETTLEMENT_STATUS } from '@/services/settlementService'
 import { useToast } from '@/contexts/ToastContext'
 import { formatCurrency } from '@/utils'
+import ListFilterBar from '@/components/dashboard/ListFilterBar/ListFilterBar'
+import useListFilters from '@/hooks/useListFilters'
 import styles from './Settlements.module.css'
 
 const TABS = [
@@ -62,6 +64,25 @@ export default function Settlements() {
 
   const ownerName = (s) => s.ownerId?.businessName || s.ownerId?.name || 'Chủ sân'
 
+  const fi = useListFilters(items, {
+    searchText: (s) => `${ownerName(s)} ${s.ownerId?.email || ''} ${s.code || ''} ${s.period || ''}`,
+    filters: {
+      direction: (s, v) => s.direction === v,
+      overdue: (s, v) => (v === 'yes' ? !!s.overdue : !s.overdue),
+    },
+    dateField: (s) => s.dueDate,
+  })
+  const fb = useListFilters(balances, {
+    searchText: (b) => b.name || '',
+    filters: {
+      balance: (b, v) => (v === 'owe' ? b.balance > 0 : v === 'receive' ? b.balance < 0 : b.balance === 0),
+      open: (b, v) => (v === 'yes' ? !!b.openSettlement : !b.openSettlement),
+    },
+  })
+  // Đổi tab thì bỏ bộ lọc cũ
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  useEffect(() => { fi.clear(); fb.clear() }, [tab])
+
   return (
     <div className={styles.page}>
       <PageHeader title="Đối soát hoa hồng" subtitle="Hoa hồng nền tảng thu từ chủ sân theo hoá đơn — khách chuyển tiền thẳng cho chủ sân" />
@@ -78,8 +99,15 @@ export default function Settlements() {
         balances.length === 0 ? (
           <EmptyState icon={<CircleCheck size={48} />} title="Chưa có chủ sân nào" description="Chưa có dữ liệu số dư." />
         ) : (
+          <>
+          <ListFilterBar f={fb} placeholder="Tìm theo tên chủ sân..." total={balances.length}
+            filters={[
+              { key: 'balance', placeholder: 'Mọi số dư', options: [{ value: 'owe', label: 'Chủ sân cần nộp' }, { value: 'receive', label: 'Nền tảng cần chuyển lại' }, { value: 'zero', label: 'Đã cân bằng' }] },
+              { key: 'open', placeholder: 'Mọi hoá đơn', options: [{ value: 'yes', label: 'Đang có hoá đơn mở' }, { value: 'no', label: 'Chưa có hoá đơn mở' }] },
+            ]} />
+          {fb.filtered.length === 0 ? <EmptyState icon={<CircleCheck size={48} />} title="Không có chủ sân phù hợp" description="Thử bỏ bớt từ khóa hoặc bộ lọc." /> : (
           <div className={styles.list}>
-            {balances.map((b) => (
+            {fb.filtered.map((b) => (
               <div key={b.ownerId} className={styles.item}>
                 <div className={styles.info}>
                   <div className={styles.topRow}>
@@ -107,12 +135,21 @@ export default function Settlements() {
               </div>
             ))}
           </div>
+          )}
+          </>
         )
       ) : items.length === 0 ? (
         <EmptyState icon={<Receipt size={48} />} title="Không có hoá đơn nào" description="Chưa có hoá đơn ở trạng thái này." />
       ) : (
+        <>
+        <ListFilterBar f={fi} placeholder="Tìm theo chủ sân, mã hoá đơn, kỳ..." dateLabel="Hạn" total={items.length}
+          filters={[
+            { key: 'direction', placeholder: 'Mọi loại hoá đơn', options: [{ value: 'owner_pays', label: 'Chủ sân nộp nền tảng' }, { value: 'platform_pays', label: 'Nền tảng chuyển chủ sân' }] },
+            { key: 'overdue', placeholder: 'Mọi hạn', options: [{ value: 'yes', label: 'Quá hạn' }, { value: 'no', label: 'Chưa quá hạn' }] },
+          ]} />
+        {fi.filtered.length === 0 ? <EmptyState icon={<Receipt size={48} />} title="Không có hoá đơn phù hợp" description="Thử bỏ bớt từ khóa hoặc bộ lọc." /> : (
         <div className={styles.list}>
-          {items.map((s) => {
+          {fi.filtered.map((s) => {
             const st = SETTLEMENT_STATUS[s.status]
             const ownerPays = s.direction === 'owner_pays'
             return (
@@ -159,6 +196,8 @@ export default function Settlements() {
             )
           })}
         </div>
+        )}
+        </>
       )}
 
       <Modal isOpen={!!rejecting} onClose={() => setRejecting(null)} title="Từ chối khoản chủ sân báo đã nộp">

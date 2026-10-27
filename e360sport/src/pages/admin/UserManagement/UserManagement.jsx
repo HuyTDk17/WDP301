@@ -20,6 +20,7 @@ export default function UserManagement() {
   const [loading, setLoading] = useState(true)
   const [roleFilter, setRoleFilter] = useState('')
   const [search, setSearch] = useState('')
+  const [statusFilter, setStatusFilter] = useState('')
   const [page, setPage] = useState(1)
   const [totalPages, setTotalPages] = useState(1)
   const [total, setTotal] = useState(0)
@@ -27,9 +28,9 @@ export default function UserManagement() {
   const [banTarget, setBanTarget] = useState(null)
   const [roleTarget, setRoleTarget] = useState(null)
 
-  const loadUsers = useCallback((p = page, r = roleFilter, s = search) => {
+  const loadUsers = useCallback((p = page, r = roleFilter, s = search, st = statusFilter) => {
     setLoading(true)
-    userService.getUsers({ page: p, limit: PAGE_SIZE, role: r || undefined, search: s })
+    userService.getUsers({ page: p, limit: PAGE_SIZE, role: r || undefined, status: st || undefined, search: s })
       .then((res) => {
         setUsers(res.users || [])
         setTotalPages(res.totalPages || 1)
@@ -43,10 +44,10 @@ export default function UserManagement() {
     statsService.getUserStats().then(setStats).catch(() => {})
   }, [])
 
-  useEffect(() => { loadUsers(1, roleFilter, ''); loadStats() }, [roleFilter])
+  useEffect(() => { setPage(1); loadUsers(1, roleFilter, search, statusFilter); loadStats() }, [roleFilter, statusFilter])
 
-  const handlePageChange = (p) => { setPage(p); loadUsers(p, roleFilter, search) }
-  const handleSearchChange = (s) => { setSearch(s); setPage(1); loadUsers(1, roleFilter, s) }
+  const handlePageChange = (p) => { setPage(p); loadUsers(p, roleFilter, search, statusFilter) }
+  const handleSearchChange = (s) => { setSearch(s); setPage(1); loadUsers(1, roleFilter, s, statusFilter) }
 
   const isBanned = (u) => u?.status === 'banned'
 
@@ -60,7 +61,7 @@ export default function UserManagement() {
       await userService.updateUserStatus(banTarget._id, newStatus, reason)
       toast.success(banning ? 'Đã khóa tài khoản và gửi thông báo' : 'Đã mở khóa tài khoản')
       setBanTarget(null)
-      loadUsers(page, roleFilter, search)
+      loadUsers(page, roleFilter, search, statusFilter)
       loadStats()
     } catch (err) {
       toast.error(err?.message || 'Không thể cập nhật trạng thái')
@@ -76,7 +77,7 @@ export default function UserManagement() {
       await userService.changeRole(roleTarget._id, nextRole(roleTarget), reason)
       toast.success(`Đã đổi vai trò của ${roleTarget.name} thành ${ROLE_LABEL[nextRole(roleTarget)]}`)
       setRoleTarget(null)
-      loadUsers(page, roleFilter, search)
+      loadUsers(page, roleFilter, search, statusFilter)
       loadStats()
     } catch (err) {
       toast.error(err?.message || 'Không thể đổi vai trò')
@@ -121,7 +122,10 @@ export default function UserManagement() {
         <StatCard icon={<Ban size={18} />} label="Bị khóa" value={stats.banned} color="error" />
       </div>
 
-      <SearchFilter filters={[{ value: roleFilter, onChange: setRoleFilter, placeholder: 'Tất cả vai trò', options: [{ value: 'customer', label: 'Khách hàng' }, { value: 'owner', label: 'Chủ sân' }] }]} />
+      <SearchFilter filters={[
+        { value: roleFilter, onChange: setRoleFilter, placeholder: 'Tất cả vai trò', options: [{ value: 'customer', label: 'Khách hàng' }, { value: 'owner', label: 'Chủ sân' }] },
+        { value: statusFilter, onChange: setStatusFilter, placeholder: 'Mọi trạng thái TK', options: [{ value: 'active', label: 'Hoạt động' }, { value: 'verified', label: 'Đã xác minh' }, { value: 'pending', label: 'Chờ duyệt' }, { value: 'rejected', label: 'Bị từ chối' }, { value: 'banned', label: 'Bị khóa' }] },
+      ]} />
 
       <DataTable
         columns={columns}

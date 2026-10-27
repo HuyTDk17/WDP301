@@ -141,22 +141,6 @@ test('UT-11 · Tra bậc chọn đúng ngưỡng lớn nhất còn thoả mãn',
     assert.strictEqual(pickTier(tiers, 2).rate, 0.4);
 });
 
-// ---------- Sang tên (T5) ----------
-
-test('UT-12 · Mã sang tên không chứa ký tự dễ đọc nhầm và không trùng lặp', () => {
-    const { generateCode } = require('../services/assignmentService');
-    const seen = new Set();
-    for (let i = 0; i < 5000; i += 1) {
-        const code = generateCode();
-        assert.strictEqual(code.length, 8);
-        assert.ok(/^[A-HJ-NP-Z2-9]+$/.test(code), `Mã "${code}" chứa ký tự dễ nhầm (0, O, 1, I)`);
-        seen.add(code);
-    }
-    // Không phải kiểm định ngẫu nhiên chuẩn mực, nhưng va chạm trong 5.000 lần
-    // là dấu hiệu nguồn ngẫu nhiên có vấn đề.
-    assert.ok(seen.size > 4990, `Quá nhiều mã trùng: chỉ có ${seen.size}/5000 mã khác nhau`);
-});
-
 // ---------- Chạy ----------
 let passed = 0;
 let failed = 0;

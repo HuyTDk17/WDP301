@@ -53,9 +53,9 @@ export default function ManageBookings() {
   const handleCancel = () => { updateStatus(cancelTarget._id, 'cancelled'); setCancelTarget(null) }
 
   const columns = [
-    { header: 'Khách hàng', accessor: 'customerId', render: (val) => <div className={styles.customerCell}><div className={styles.avatar}>{val?.name?.[0] || '?'}</div><div><p className={styles.customerName}>{val?.name || 'Khách hàng'}</p><p className={styles.customerPhone}>{val?.phone}</p></div></div> },
-    { header: 'Địa điểm / Sân', accessor: 'venueName', render: (v, row) => `${v} · ${row.courtName}` },
-    { header: 'Ngày & Giờ', accessor: 'date', render: (v, row) => <div><p>{formatDate(v)}</p><p className={styles.timeText}>{row.startTime}–{row.endTime}</p></div> },
+    { header: 'Khách hàng', accessor: 'customerId', searchValue: (r) => `${r.customerId?.name || ''} ${r.customerId?.phone || ''}`, render: (val) => <div className={styles.customerCell}><div className={styles.avatar}>{val?.name?.[0] || '?'}</div><div><p className={styles.customerName}>{val?.name || 'Khách hàng'}</p><p className={styles.customerPhone}>{val?.phone}</p></div></div> },
+    { header: 'Địa điểm / Sân', accessor: 'venueName', searchValue: (r) => `${r.venueName || ''} ${r.courtName || ''}`, render: (v, row) => `${v} · ${row.courtName}` },
+    { header: 'Ngày & Giờ', accessor: 'date', searchValue: (r) => `${r.date || ''} ${r.startTime || ''}`, render: (v, row) => <div><p>{formatDate(v)}</p><p className={styles.timeText}>{row.startTime}–{row.endTime}</p></div> },
     { header: 'Số tiền', accessor: 'amount', render: v => formatCurrency(v) },
     { header: 'Trạng thái', accessor: 'status', render: v => <StatusBadge status={v} /> },
   ]
@@ -69,7 +69,12 @@ export default function ManageBookings() {
         <DataTable
           columns={columns}
           data={bookings}
-          searchPlaceholder="Tìm theo tên khách hàng..."
+          searchPlaceholder="Tìm theo tên, SĐT khách, địa điểm, sân..."
+          filters={[
+            { key: 'venueName', placeholder: 'Mọi địa điểm', options: [...new Set(bookings.map((b) => b.venueName).filter(Boolean))].map((n) => ({ value: n, label: n })) },
+            { key: 'sport', placeholder: 'Mọi môn', options: [...new Set(bookings.map((b) => b.sport).filter(Boolean))].map((s) => ({ value: s, label: getSport(s)?.name || s })) },
+            { key: 'date', type: 'dateRange', label: 'Ngày chơi' },
+          ]}
           emptyText="Không có lượt đặt sân nào"
           onRowClick={setDetail}
           actions={(row) => (

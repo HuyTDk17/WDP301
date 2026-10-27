@@ -11,6 +11,8 @@ import NetworkMembershipCard from '@/components/owner/NetworkMembershipCard/Netw
 import { transferService, TRANSFER_STATUS, TRANSFER_TYPE_LABEL } from '@/services/transferService'
 import { useToast } from '@/contexts/ToastContext'
 import { formatCurrency, formatDate, formatTime } from '@/utils'
+import ListFilterBar from '@/components/dashboard/ListFilterBar/ListFilterBar'
+import useListFilters from '@/hooks/useListFilters'
 import styles from './TransferRequests.module.css'
 
 const TABS = [
@@ -76,6 +78,16 @@ export default function TransferRequests() {
   const isRescheduleTab = tab === 'reschedule'
   const list = isRescheduleTab ? (data.reschedules || []) : tab === 'incoming' ? data.incoming : data.outgoing
   const pendingByTab = { reschedule: data.pendingRescheduleCount, incoming: data.pendingCount }
+  const f = useListFilters(list, {
+    searchText: (t) => `${t.customerId?.name || ''} ${t.customerId?.phone || ''} ${t.fromVenueName || ''} ${t.fromCourtName || ''} ${t.toVenueName || ''} ${t.toCourtName || ''}`,
+    filters: { status: (t, v) => t.status === v, type: (t, v) => t.type === v },
+    dateField: (t) => t.fromDate,
+  })
+  // Đổi tab thì bỏ bộ lọc cũ (trạng thái/loại ở tab này có thể không tồn tại ở tab kia)
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  useEffect(() => { f.clear() }, [tab])
+  const statusOptions = [...new Set(list.map((t) => t.status))].map((v) => ({ value: v, label: TRANSFER_STATUS[v]?.label || v }))
+  const typeOptions = [...new Set(list.map((t) => t.type))].map((v) => ({ value: v, label: TRANSFER_TYPE_LABEL[v] || v }))
 
   return (
     <div className={styles.page}>
@@ -116,8 +128,15 @@ export default function TransferRequests() {
               : 'Chưa có lượt đặt nào tại địa điểm của bạn bị chuyển đi nơi khác.'}
         />
       ) : (
+        <>
+        <ListFilterBar f={f} placeholder="Tìm theo tên/SĐT khách, địa điểm, sân..." dateLabel="Ngày chơi" total={list.length}
+          filters={[
+            { key: 'status', placeholder: 'Mọi trạng thái', options: statusOptions },
+            ...(isRescheduleTab ? [] : [{ key: 'type', placeholder: 'Mọi loại chuyển', options: typeOptions }]),
+          ]} />
+        {f.filtered.length === 0 ? <EmptyState icon={<Inbox size={48} />} title="Không có yêu cầu phù hợp" description="Thử bỏ bớt từ khóa hoặc bộ lọc." /> : (
         <div className={styles.list}>
-          {list.map((t) => {
+          {f.filtered.map((t) => {
             const status = TRANSFER_STATUS[t.status] || TRANSFER_STATUS.quoted
             const needAction = (tab === 'incoming' || isRescheduleTab) && t.status === 'awaiting_owner_approval'
 
@@ -180,6 +199,8 @@ export default function TransferRequests() {
             )
           })}
         </div>
+        )}
+        </>
       )}
 
       <ReasonModal

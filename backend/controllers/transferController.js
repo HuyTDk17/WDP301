@@ -7,7 +7,6 @@ const asyncHandler = require('../utils/asyncHandler');
 const { getSettings } = require('../utils/platformSettings');
 const { buildBreakdown } = require('../utils/transferPricing');
 const transferService = require('../services/transferService');
-const assignmentService = require('../services/assignmentService');
 const bankTransfer = require('../utils/bankTransfer');
 
 // ============================================================
@@ -59,6 +58,17 @@ exports.getEligibility = asyncHandler(async (req, res) => {
             maxRefundRatio: settings.maxRefundRatio,
         },
     });
+});
+
+// @route GET /api/bookings/:id/transfer/suggestions
+// Gợi ý sân thay thế còn trống (cùng môn, cùng ngày, giờ gần giờ gốc, cùng độ dài)
+exports.getSuggestions = asyncHandler(async (req, res) => {
+    const booking = await Booking.findById(req.params.id);
+    if (!booking) return res.status(404).json({ message: 'Không tìm thấy lượt đặt sân này' });
+    if (String(booking.customerId || '') !== String(req.user._id)) {
+        return res.status(403).json({ message: 'Bạn không có quyền với lượt đặt này' });
+    }
+    res.json(await transferService.suggestReplacements({ booking }));
 });
 
 // @route POST /api/bookings/:id/transfer/quote
@@ -150,82 +160,6 @@ exports.getMine = asyncHandler(async (req, res) => {
     if (req.query.status) filter.status = req.query.status;
     const transfers = await TransferRequest.find(filter).sort({ createdAt: -1 }).limit(50);
     res.json({ transfers, total: transfers.length });
-});
-
-// ============================================================
-// SANG TÊN CHO NGƯỜI KHÁC (T5)
-// ============================================================
-
-// @route POST /api/bookings/:id/transfer/assign
-// Người đang giữ suất tạo mã để gửi cho bạn bè.
-exports.createAssignment = asyncHandler(async (req, res) => {
-    const booking = await Booking.findById(req.params.id);
-    if (!booking) return res.status(404).json({ message: 'Không tìm thấy lượt đặt sân này' });
-    if (String(booking.customerId || '') !== String(req.user._id)) {
-        return res.status(403).json({ message: 'Bạn không có quyền với lượt đặt này' });
-    }
-
-    const { transfer, reused } = await assignmentService.createAssignment({ booking, user: req.user });
-    res.status(reused ? 200 : 201).json({
-        transfer,
-        code: transfer.transferCode,
-        expiresAt: transfer.quoteExpiresAt,
-        fee: transfer.quote.transferFee,
-        reused,
-        message: reused
-            ? 'Lượt đặt này đã có mã sang tên còn hiệu lực'
-            : 'Đã tạo mã sang tên, hãy gửi mã này cho người nhận suất',
-    });
-});
-
-// @route GET /api/transfers/claim/:code
-// Người nhận tra mã để xem suất trước khi quyết định.
-exports.lookupAssignment = asyncHandler(async (req, res) => {
-    const transfer = await assignmentService.lookupByCode(req.params.code, req.user);
-    res.json({
-        transfer: {
-            _id: transfer._id,
-            venueName: transfer.fromVenueName,
-            courtName: transfer.fromCourtName,
-            date: transfer.fromDate,
-            startTime: transfer.fromStartTime,
-            endTime: transfer.fromEndTime,
-            fromCustomerName: transfer.customerId?.name || 'Người dùng',
-            expiresAt: transfer.quoteExpiresAt,
-        },
-        // Giá trị suất để người nhận biết mình đang nhận gì
-        value: transfer.quote.oldPaid,
-        fee: transfer.quote.transferFee,
-    });
-});
-
-// @route POST /api/transfers/claim/:code
-exports.claimAssignment = asyncHandler(async (req, res) => {
-    const transfer = await assignmentService.lookupByCode(req.params.code, req.user);
-
-    transfer.toCustomerId = req.user._id;
-    await transfer.save();
-
-    // Có phí thì người nhận phải trả trước; hết hạn mà chưa trả thì mã tự huỷ
-    // và suất vẫn thuộc về người chuyển ban đầu.
-    if (transfer.quote.transferFee > 0) {
-        transfer.status = 'awaiting_payment';
-        await transfer.save();
-        const info = await createTopupInstructions(transfer);
-        return res.json({ status: 'awaiting_payment', amountDue: transfer.quote.transferFee, ...info, transfer });
-    }
-
-    const result = await assignmentService.executeAssignment(transfer);
-    res.json({ status: 'completed', ...result });
-});
-
-// @route POST /api/transfers/:id/cancel-assignment
-exports.cancelAssignment = asyncHandler(async (req, res) => {
-    const transfer = await loadOwnTransfer(req, res);
-    if (!transfer) return;
-    if (transfer.type !== 'T5') return res.status(400).json({ message: 'Yêu cầu này không phải sang tên' });
-    await assignmentService.cancelAssignment(transfer);
-    res.json({ transfer });
 });
 
 // ============================================================

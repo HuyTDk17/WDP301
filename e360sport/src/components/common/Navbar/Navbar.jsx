@@ -26,7 +26,6 @@ export default function Navbar() {
 
   const NAV_LINKS = [
     { to: '/venues', label: 'Sân thể thao' },
-    { to: '/events', label: 'Sự kiện' },
     { to: '/news', label: 'Tin tức' },
     { to: '/privacy-policy', label: 'Chính sách' },
     { to: '/terms-of-service', label: 'Điều khoản' },

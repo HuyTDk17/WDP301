@@ -21,19 +21,13 @@ import api from './api'
 export const transferService = {
   // ── Khách hàng ──
   getEligibility: (bookingId) => api.get(`/bookings/${bookingId}/transfer/eligibility`),
+  // Gợi ý sân thay thế còn trống (cùng môn, cùng ngày, giờ gần giờ gốc, cùng độ dài)
+  getSuggestions: (bookingId) => api.get(`/bookings/${bookingId}/transfer/suggestions`),
   createQuote: (bookingId, target) => api.post(`/bookings/${bookingId}/transfer/quote`, target),
   confirm: (transferId) => api.post(`/transfers/${transferId}/confirm`),
   cancel: (transferId) => api.post(`/transfers/${transferId}/cancel`),
   getById: (transferId) => api.get(`/transfers/${transferId}`),
   getMine: (params = {}) => api.get('/transfers/my', { params }),
-
-  // ── Sang tên cho người khác (T5) ──
-  // Giữ nguyên sân/ngày/giờ, chỉ đổi người đứng tên. Người chuyển tạo mã,
-  // người nhận nhập mã. Tiền sân hai bên tự thoả thuận ngoài hệ thống.
-  createAssignment: (bookingId) => api.post(`/bookings/${bookingId}/transfer/assign`),
-  lookupAssignment: (code) => api.get(`/transfers/claim/${code}`),
-  claimAssignment: (code) => api.post(`/transfers/claim/${code}`),
-  cancelAssignment: (transferId) => api.post(`/transfers/${transferId}/cancel-assignment`),
 
   // ── Chủ sân ──
   getOwnerTransfers: (params = {}) => api.get('/owner/transfers', { params }),
@@ -66,5 +60,4 @@ export const TRANSFER_TYPE_LABEL = {
   T2: 'Đổi sân trong cùng địa điểm',
   T3: 'Đổi địa điểm (cùng chủ sân)',
   T4: 'Chuyển sang địa điểm khác',
-  T5: 'Sang tên cho người khác',
 }

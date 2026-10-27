@@ -91,7 +91,7 @@ export default function CourtManagement() {
   }
 
   const columns = [
-    { header: 'Sân', accessor: 'name', render: (val, row) => <div className={styles.courtCell}><div className={styles.courtIcon}><Trophy size={15} /></div><div><p className={styles.courtName}>{val}</p><p className={styles.venueRef}>{row.venueName}</p></div></div> },
+    { header: 'Sân', accessor: 'name', searchValue: (r) => `${r.name || ''} ${r.venueName || ''}`, render: (val, row) => <div className={styles.courtCell}><div className={styles.courtIcon}><Trophy size={15} /></div><div><p className={styles.courtName}>{val}</p><p className={styles.venueRef}>{row.venueName}</p></div></div> },
     { header: 'Loại', accessor: 'type', render: v => <span className={styles.typeTag}>{getSport(v)?.name || v}</span> },
     { header: 'Giá/giờ', accessor: 'pricePerHour', render: v => formatCurrency(v) },
     { header: 'Trạng thái', accessor: 'status', render: v => <StatusBadge status={v} /> },
@@ -115,7 +115,12 @@ export default function CourtManagement() {
         <DataTable
           columns={columns}
           data={courts}
-          searchPlaceholder="Tìm sân..."
+          searchPlaceholder="Tìm theo tên sân, địa điểm..."
+          filters={[
+            { key: 'venueId', placeholder: 'Mọi địa điểm', options: venues.map((v) => ({ value: v._id, label: v.name })) },
+            { key: 'type', placeholder: 'Mọi môn', options: [...new Set(courts.map((c) => c.type).filter(Boolean))].map((t) => ({ value: t, label: getSport(t)?.name || t })) },
+            { key: 'status', placeholder: 'Mọi trạng thái', options: [{ value: 'active', label: 'Đang hoạt động' }, { value: 'inactive', label: 'Tạm dừng' }, { value: 'maintenance', label: 'Bảo trì' }] },
+          ]}
           actions={(row) => (
             <>
               <Button size="xs" variant="ghost" onClick={() => openEdit(row)}><Pencil size={13} /></Button>

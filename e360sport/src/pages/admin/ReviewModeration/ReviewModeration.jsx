@@ -18,11 +18,12 @@ export default function ReviewModeration() {
   const [totalPages, setTotalPages] = useState(1)
   const [total, setTotal] = useState(0)
   const [search, setSearch] = useState('')
+  const [ratingFilter, setRatingFilter] = useState('')
   const [deleteTarget, setDeleteTarget] = useState(null)
 
-  const loadReviews = useCallback((p = page, s = search) => {
+  const loadReviews = useCallback((p = page, s = search, r = ratingFilter) => {
     setLoading(true)
-    venueService.getAllReviewsAdmin({ page: p, limit: PAGE_SIZE, search: s })
+    venueService.getAllReviewsAdmin({ page: p, limit: PAGE_SIZE, search: s, rating: r || undefined })
       .then((res) => {
         setReviews(res.reviews || [])
         setTotalPages(res.totalPages || 1)
@@ -32,17 +33,17 @@ export default function ReviewModeration() {
       .finally(() => setLoading(false))
   }, [])
 
-  useEffect(() => { loadReviews(1, '') }, [])
+  useEffect(() => { setPage(1); loadReviews(1, search, ratingFilter) }, [ratingFilter])
 
-  const handlePageChange = (p) => { setPage(p); loadReviews(p, search) }
-  const handleSearchChange = (s) => { setSearch(s); setPage(1); loadReviews(1, s) }
+  const handlePageChange = (p) => { setPage(p); loadReviews(p, search, ratingFilter) }
+  const handleSearchChange = (s) => { setSearch(s); setPage(1); loadReviews(1, s, ratingFilter) }
 
   const handleDelete = async (reason) => {
     try {
       await venueService.adminDeleteReview(deleteTarget._id, reason)
       toast.success('Đã xóa đánh giá và thông báo cho người viết')
       setDeleteTarget(null)
-      loadReviews(page, search)
+      loadReviews(page, search, ratingFilter)
     } catch (err) {
       toast.error(err?.message || 'Không thể xóa đánh giá')
     }
@@ -91,6 +92,7 @@ export default function ReviewModeration() {
         data={reviews}
         loading={loading}
         searchPlaceholder="Tìm theo địa điểm, người đánh giá..."
+        filters={[{ key: 'rating', placeholder: 'Mọi số sao', value: ratingFilter, onChange: setRatingFilter, options: [5, 4, 3, 2, 1].map((n) => ({ value: String(n), label: `${n} sao` })) }]}
         emptyText="Chưa có đánh giá nào trên nền tảng"
         server={{ page, totalPages, total, pageSize: PAGE_SIZE, onPageChange: handlePageChange, onSearchChange: handleSearchChange }}
         actions={(row) => <Button size="xs" variant="danger" title="Xóa đánh giá" onClick={() => setDeleteTarget(row)}><Trash2 size={13} /></Button>}

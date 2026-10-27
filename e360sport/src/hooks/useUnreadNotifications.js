@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback, useRef } from 'react'
-import { notificationService } from '@/services/notificationService'
+import { notificationService, NOTIFICATIONS_CHANGED_EVENT } from '@/services/notificationService'
 
 /**
  * Giữ số thông báo chưa đọc luôn cập nhật mà không tốn nhiều tài nguyên:
@@ -43,10 +43,13 @@ export function useUnreadNotifications(enabled, intervalMs = 25000) {
 
     const onVisibilityChange = () => { if (document.visibilityState === 'visible') fetchCount() }
     document.addEventListener('visibilitychange', onVisibilityChange)
+    // Đánh dấu đã đọc / xóa thông báo ở trang Thông báo → cập nhật số trên chuông ngay
+    window.addEventListener(NOTIFICATIONS_CHANGED_EVENT, fetchCount)
 
     return () => {
       clearInterval(timer)
       document.removeEventListener('visibilitychange', onVisibilityChange)
+      window.removeEventListener(NOTIFICATIONS_CHANGED_EVENT, fetchCount)
     }
   }, [enabled, intervalMs, fetchCount])
 

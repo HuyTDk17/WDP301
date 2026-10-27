@@ -525,12 +525,13 @@ exports.createManualBooking = asyncHandler(async (req, res) => {
  * Đơn đã chuyển đi ('transferred') và đơn chưa thanh toán/đã huỷ không sinh hoa hồng.
  */
 exports.getCommissionReport = asyncHandler(async (req, res) => {
-    const { search = '', month = '', page = 1, limit = 15 } = req.query;
+    const { search = '', month = '', status = '', page = 1, limit = 15 } = req.query;
     const pageNum = Math.max(1, parseInt(page, 10) || 1);
     const limitNum = Math.min(100, Math.max(1, parseInt(limit, 10) || 15));
 
     const match = { status: { $in: ['confirmed', 'completed', 'no_show'] }, paymentMethod: { $ne: 'manual' } };
     if (/^\d{4}-\d{2}$/.test(month)) match.date = new RegExp(`^${month}`);
+    if (['confirmed', 'completed', 'no_show'].includes(status)) match.status = status;
 
     const pipeline = [
         { $match: match },

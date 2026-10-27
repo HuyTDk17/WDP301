@@ -133,6 +133,7 @@ export default function BannerManagement() {
         loading={loading}
         pageSize={8}
         searchPlaceholder="Tìm banner..."
+        filters={[{ key: 'isActive', placeholder: 'Mọi trạng thái', options: [{ value: 'true', label: 'Đang bật' }, { value: 'false', label: 'Đang tắt' }] }]}
         emptyText="Chưa có banner nào"
         emptyIcon={<ImageIcon size={40} />}
         headerRight={<Button icon={<Plus size={15} />} onClick={() => openForm()}>Thêm banner</Button>}

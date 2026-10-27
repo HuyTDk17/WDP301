@@ -7,7 +7,44 @@ import Spinner from '@/components/ui/Spinner/Spinner'
 import { settlementService, SETTLEMENT_STATUS } from '@/services/settlementService'
 import { useToast } from '@/contexts/ToastContext'
 import { formatCurrency } from '@/utils'
+import ListFilterBar from '@/components/dashboard/ListFilterBar/ListFilterBar'
+import useListFilters from '@/hooks/useListFilters'
 import styles from './Commission.module.css'
+
+function HistoryCard({ history }) {
+  const f = useListFilters(history, {
+    searchText: (h) => `${h.code || ''} ${h.period || ''}`,
+    filters: { status: (h, v) => h.status === v, direction: (h, v) => h.direction === v },
+    dateField: (h) => h.confirmedAt || h.createdAt,
+  })
+  const statusOptions = [...new Set(history.map((h) => h.status))].map((v) => ({ value: v, label: SETTLEMENT_STATUS[v]?.label || v }))
+  return (
+    <div className={styles.card}>
+      <h3 className={styles.cardTitle}>Lịch sử hoá đơn</h3>
+      <ListFilterBar f={f} placeholder="Tìm theo mã hoá đơn, kỳ (VD 2026-09)..." dateLabel="Ngày" total={history.length}
+        filters={[
+          { key: 'status', placeholder: 'Mọi trạng thái', options: statusOptions },
+          { key: 'direction', placeholder: 'Mọi loại', options: [{ value: 'owner_pays', label: 'Bạn nộp' }, { value: 'platform_pays', label: 'Điều chỉnh đối soát' }] },
+        ]} />
+      {f.filtered.length === 0 ? <p className={styles.sub}>Không có hoá đơn phù hợp.</p> : (
+        <div>
+          {f.filtered.map((h) => (
+            <div key={h._id} className={styles.histRow}>
+              <div className={styles.histMain}>
+                <span className={styles.histCode}>{h.code} · {h.direction === 'owner_pays' ? 'Bạn nộp' : 'Điều chỉnh đối soát'}{h.autoConfirmed ? ' · tự động xác nhận' : ''}</span>
+                <span className={styles.histMeta}>Kỳ {h.period}{h.confirmedAt ? ` · xác nhận ${new Date(h.confirmedAt).toLocaleDateString('vi-VN')}` : ''}</span>
+              </div>
+              <div style={{ display: 'flex', gap: 'var(--space-3)', alignItems: 'center' }}>
+                <strong>{formatCurrency(h.amount)}</strong>
+                <Badge size="sm" style={{ background: SETTLEMENT_STATUS[h.status].bg, color: SETTLEMENT_STATUS[h.status].color }}>{SETTLEMENT_STATUS[h.status].label}</Badge>
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
+  )
+}
 
 function CopyRow({ label, value, copyValue }) {
   const [done, setDone] = useState(false)
@@ -216,25 +253,7 @@ export default function Commission() {
         </div>
       )}
 
-      {history.length > 0 && (
-        <div className={styles.card}>
-          <h3 className={styles.cardTitle}>Lịch sử hoá đơn</h3>
-          <div>
-            {history.map((h) => (
-              <div key={h._id} className={styles.histRow}>
-                <div className={styles.histMain}>
-                  <span className={styles.histCode}>{h.code} · {h.direction === 'owner_pays' ? 'Bạn nộp' : 'Điều chỉnh đối soát'}{h.autoConfirmed ? ' · tự động xác nhận' : ''}</span>
-                  <span className={styles.histMeta}>Kỳ {h.period}{h.confirmedAt ? ` · xác nhận ${new Date(h.confirmedAt).toLocaleDateString('vi-VN')}` : ''}</span>
-                </div>
-                <div style={{ display: 'flex', gap: 'var(--space-3)', alignItems: 'center' }}>
-                  <strong>{formatCurrency(h.amount)}</strong>
-                  <Badge size="sm" style={{ background: SETTLEMENT_STATUS[h.status].bg, color: SETTLEMENT_STATUS[h.status].color }}>{SETTLEMENT_STATUS[h.status].label}</Badge>
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
-      )}
+      {history.length > 0 && <HistoryCard history={history} />}
     </div>
   )
 }
