@@ -1,0 +1,42 @@
+# ==== Environment / sensitive information ====
+.env
+.env.*
+!.env.example
+backend/.env
+backend/.env.*
+!backend/.env.example
+sportvenue/.env
+sportvenue/.env.*
+!sportvenue/.env.example
+
+# ==== Node modules ====
+node_modules/
+backend/node_modules/
+sportvenue/node_modules/
+
+# ==== Build output ====
+sportvenue/dist/
+dist/
+build/
+
+# ==== File upload / user data ====
+backend/uploads/*
+!backend/uploads/.gitkeep
+backend/private-uploads/*
+!backend/private-uploads/.gitkeep
+
+# ==== Log ====
+*.log
+npm-debug.log*
+yarn-error.log*
+yarn-debug.log*
+
+# ==== OS / Editor ====
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
+
+# ==== Other ====
+*.local
+.cache/
