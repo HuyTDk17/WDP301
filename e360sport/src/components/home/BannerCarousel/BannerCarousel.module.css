@@ -1,0 +1,22 @@
+.wrap { padding: var(--space-6) 0 0; }
+.carousel { position: relative; overflow: hidden; border-radius: var(--radius-md); background: var(--bg-surface); border: 1px solid var(--border); }
+.track { display: flex; transition: transform .5s ease; }
+.slide { position: relative; flex: 0 0 100%; display: block; aspect-ratio: 21 / 7; min-height: 160px; color: #fff; text-decoration: none; }
+.img { width: 100%; height: 100%; object-fit: cover; display: block; }
+.caption { position: absolute; inset: auto 0 0 0; padding: var(--space-6) var(--space-8) var(--space-6); background: linear-gradient(to top, rgba(10, 14, 26, 0.78), rgba(10, 14, 26, 0)); }
+.caption h3 { margin: 0 0 4px; font-size: var(--text-xl); font-weight: var(--weight-bold); }
+.caption p { margin: 0; font-size: var(--text-sm); opacity: .9; }
+.arrow { position: absolute; top: 50%; transform: translateY(-50%); width: 36px; height: 36px; display: flex; align-items: center; justify-content: center; border: none; border-radius: 50%; background: rgba(255, 255, 255, 0.9); color: #0A0E1A; cursor: pointer; box-shadow: var(--shadow-sm); }
+.arrow:hover { background: #fff; }
+.prev { left: var(--space-3); }
+.next { right: var(--space-3); }
+.dots { position: absolute; bottom: var(--space-3); right: var(--space-5); display: flex; gap: 6px; }
+.dot { width: 8px; height: 8px; padding: 0; border: none; border-radius: 50%; background: rgba(255, 255, 255, 0.55); cursor: pointer; }
+.dotActive { width: 22px; border-radius: 4px; background: #fff; }
+@media (max-width: 640px) {
+  .slide { aspect-ratio: 16 / 9; }
+  .caption { padding: var(--space-4); }
+  .caption h3 { font-size: var(--text-base); }
+  .arrow { display: none; }
+}
+@media (prefers-reduced-motion: reduce) { .track { transition: none; } }

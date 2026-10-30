@@ -1,0 +1,25 @@
+.viewBody { display: flex; flex-direction: column; gap: var(--space-5); }
+.viewHeader { display: flex; align-items: center; gap: var(--space-3); }
+.viewAvatar { width: 48px; height: 48px; background: linear-gradient(135deg, var(--primary), var(--secondary)); color: white; border-radius: var(--radius); display: flex; align-items: center; justify-content: center; font-weight: var(--weight-extrabold); font-family: var(--font-display); }
+.viewName { font-weight: var(--weight-bold); }
+.viewPhone { font-size: var(--text-sm); color: var(--text-muted); }
+.viewGrid { display: grid; grid-template-columns: 1fr 1fr; gap: var(--space-3); padding: var(--space-4); background: var(--bg-base); border-radius: var(--radius-md); }
+.viewItem { display: flex; flex-direction: column; gap: 2px; font-size: var(--text-xs); color: var(--text-muted); }
+.viewItem span { display: inline-flex; align-items: center; gap: 4px; }
+.viewItem strong { font-size: var(--text-sm); color: var(--text-primary); }
+.amount { color: var(--primary) !important; font-family: var(--font-display); }
+.createBody { display: flex; flex-direction: column; gap: var(--space-5); }
+.slotSummary { display: flex; flex-direction: column; gap: var(--space-2); padding: var(--space-4); background: var(--primary-subtle); border-radius: var(--radius-md); }
+.slotSummaryRow { display: flex; align-items: center; gap: var(--space-2); font-size: var(--text-sm); }
+.formGrid { display: grid; grid-template-columns: 1fr 1fr; gap: var(--space-4); }
+.fieldGroup { display: flex; flex-direction: column; gap: var(--space-2); }
+.label { font-size: var(--text-sm); font-weight: var(--weight-medium); color: var(--text-secondary); }
+.select { padding: var(--space-2) var(--space-3); border: 1.5px solid var(--border); border-radius: var(--radius); }
+.counter { display: flex; align-items: center; gap: var(--space-3); padding: var(--space-2) var(--space-3); border: 1.5px solid var(--border); border-radius: var(--radius); width: fit-content; }
+.counterBtn { width: 26px; height: 26px; border-radius: 50%; border: 1.5px solid var(--border); background: var(--bg-base); font-weight: bold; cursor: pointer; }
+.counterValue { font-weight: var(--weight-bold); min-width: 24px; text-align: center; }
+.note { display: flex; align-items: center; gap: 5px; font-size: var(--text-xs); color: var(--text-muted); }
+@media (max-width: 480px) { .viewGrid, .formGrid { grid-template-columns: 1fr; } }
+
+.fixedValue { min-height: 44px; display: flex; align-items: center; gap: var(--space-2); padding: 0 var(--space-3); border: 1px solid var(--border); border-radius: var(--radius); background: var(--bg-base); font-weight: var(--weight-semibold); }
+.fixedHint { font-weight: var(--weight-normal); font-size: var(--text-xs); color: var(--text-muted); }

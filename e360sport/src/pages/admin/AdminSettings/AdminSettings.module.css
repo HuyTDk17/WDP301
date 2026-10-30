@@ -1,0 +1,68 @@
+.page { display: flex; flex-direction: column; gap: var(--space-5); }
+.loadingState { display: flex; align-items: center; justify-content: center; min-height: 50vh; }
+.contentCard { background: var(--bg-surface); border: 1px solid var(--border); border-radius: var(--radius-lg); padding: var(--space-8); display: flex; flex-direction: column; gap: var(--space-6); }
+.sectionTitle { font-family: var(--font-display); font-size: var(--text-xl); font-weight: var(--weight-bold); }
+.formGrid { display: grid; grid-template-columns: 1fr 1fr; gap: var(--space-5); }
+.actions { display: flex; justify-content: flex-end; padding-top: var(--space-2); border-top: 1px solid var(--border); }
+@media (max-width: 640px) { .formGrid { grid-template-columns: 1fr; } }
+.notice { display: flex; align-items: flex-start; gap: 8px; font-size: var(--text-sm); color: var(--text-secondary); background: var(--info-subtle, var(--primary-subtle)); padding: var(--space-3) var(--space-4); border-radius: var(--radius); }
+.noticeIcon { flex-shrink: 0; margin-top: 1px; color: var(--info, var(--primary)); }
+
+/* ===== CHUYỂN SÂN & BIỂU PHÍ BẬC THANG ===== */
+.switchRow {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  padding: var(--space-3) var(--space-4);
+  background: var(--bg-base);
+  border-radius: var(--radius);
+  font-size: var(--text-sm);
+  color: var(--text-secondary);
+  margin-bottom: var(--space-4);
+  cursor: pointer;
+}
+.switchRow input { width: 18px; height: 18px; accent-color: var(--primary); }
+
+.tierBlock { margin: var(--space-5) 0; }
+.tierTitle {
+  font-size: var(--text-sm);
+  font-weight: var(--weight-semibold);
+  color: var(--text-secondary);
+  margin-bottom: var(--space-3);
+}
+.tierTable {
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  overflow: hidden;
+}
+.tierHead, .tierRow {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(110px, 1fr));
+  gap: var(--space-2);
+  padding: var(--space-2) var(--space-3);
+  align-items: center;
+}
+.tierHead {
+  background: var(--bg-base);
+  font-size: var(--text-xs);
+  font-weight: var(--weight-semibold);
+  color: var(--text-muted);
+}
+.tierRow { border-top: 1px solid var(--border); }
+.tierPct { display: flex; align-items: center; gap: var(--space-2); font-size: var(--text-sm); color: var(--text-muted); }
+.tierInput {
+  width: 100%;
+  min-width: 0;
+  padding: var(--space-2);
+  border: 1.5px solid var(--border);
+  border-radius: var(--radius-sm);
+  font-size: var(--text-sm);
+  color: var(--text-primary);
+  background: var(--bg-surface);
+}
+.tierInput:focus { outline: none; border-color: var(--primary); }
+
+.sectionHint { font-size: var(--text-sm); color: var(--text-muted); margin-top: -8px; margin-bottom: var(--space-4); }
+
+.checkRow { display: flex; align-items: flex-start; gap: var(--space-3); font-size: var(--text-sm); color: var(--text-secondary); cursor: pointer; line-height: var(--leading-relaxed); }
+.checkRow input { margin-top: 3px; accent-color: var(--primary); }
