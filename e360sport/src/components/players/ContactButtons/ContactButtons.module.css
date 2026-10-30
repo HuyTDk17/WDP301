@@ -1,0 +1,12 @@
+.box { display: flex; align-items: center; justify-content: space-between; gap: var(--space-3); flex-wrap: wrap; padding: var(--space-3) var(--space-4); background: var(--success-subtle); border-radius: var(--radius); }
+.phone { display: flex; align-items: center; gap: 8px; font-size: var(--text-sm); color: var(--text-primary); }
+.copy { display: inline-flex; align-items: center; justify-content: center; width: 24px; height: 24px; border: none; border-radius: var(--radius-sm); background: transparent; color: var(--text-muted); cursor: pointer; }
+.copy:hover { background: var(--bg-surface); color: var(--primary); }
+.actions { display: flex; gap: var(--space-2); }
+.call, .zalo { display: inline-flex; align-items: center; gap: 6px; padding: 7px 14px; border-radius: var(--radius-full); font-size: var(--text-sm); font-weight: var(--weight-semibold); text-decoration: none; }
+.call { background: var(--bg-surface); border: 1px solid var(--border-strong); color: var(--text-primary); }
+.call:hover { border-color: var(--primary); color: var(--primary); }
+/* Xanh thương hiệu Zalo */
+.zalo { background: #0068FF; border: 1px solid #0068FF; color: #fff; }
+.zalo:hover { background: #0057D9; border-color: #0057D9; }
+.missing { margin: 0; font-size: var(--text-xs); color: var(--text-muted); }
