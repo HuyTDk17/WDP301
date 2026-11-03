@@ -1,0 +1,23 @@
+.page { display: flex; flex-direction: column; gap: var(--space-5); }
+.hintBox { display: flex; align-items: flex-start; gap: var(--space-3); padding: var(--space-3) var(--space-4); background: var(--admin-accent-subtle, var(--primary-subtle)); border: 1px solid var(--admin-accent-light, var(--primary-light)); border-radius: var(--radius-lg); }
+.hintBox p { margin: 0; font-size: var(--text-sm); color: var(--text-secondary); line-height: 1.5; }
+.hintIcon { display: flex; align-items: center; flex-shrink: 0; color: var(--admin-accent, var(--primary)); margin-top: 1px; }
+.statsRow { display: grid; grid-template-columns: repeat(4, 1fr); gap: var(--space-4); }
+@media (max-width: 900px) { .statsRow { grid-template-columns: repeat(2, 1fr); } }
+@media (max-width: 480px) { .statsRow { grid-template-columns: 1fr; } }
+
+.venueCell { display: flex; align-items: center; gap: var(--space-3); }
+.thumb { width: 44px; height: 44px; border-radius: var(--radius); object-fit: cover; flex-shrink: 0; background: var(--bg-base); }
+.venueInfo { min-width: 0; }
+.venueName { font-weight: var(--weight-semibold); font-size: var(--text-sm); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 220px; }
+.venueAddr { display: flex; align-items: center; gap: 3px; font-size: var(--text-xs); color: var(--text-muted); }
+
+.ownerName { font-size: var(--text-sm); font-weight: var(--weight-medium); }
+.ownerEmail { font-size: var(--text-xs); color: var(--text-muted); }
+
+.sportsCell { display: inline-flex; align-items: center; gap: 5px; font-size: var(--text-sm); color: var(--text-secondary); }
+
+.noCourtWarning { display: inline-flex; align-items: center; gap: 4px; font-size: var(--text-xs); font-weight: var(--weight-semibold); color: var(--warning); }
+
+.loadingState { display: flex; align-items: center; justify-content: center; min-height: 40vh; }
+

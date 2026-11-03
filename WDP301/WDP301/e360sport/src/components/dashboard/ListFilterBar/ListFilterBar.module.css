@@ -1,0 +1,7 @@
+.wrap { display: flex; flex-direction: column; gap: var(--space-2); margin-bottom: var(--space-4); }
+.date { display: inline-flex; align-items: center; gap: var(--space-2); font-size: var(--text-xs); color: var(--text-muted); }
+.date input { padding: 0.5rem var(--space-2); border: 1.5px solid var(--border); border-radius: var(--radius); font-family: var(--font-body); font-size: var(--text-sm); color: var(--text-primary); background: var(--bg-surface); }
+.date input:focus { outline: none; border-color: var(--primary); }
+.clear { display: inline-flex; align-items: center; gap: 4px; border: none; background: none; color: var(--error); font-size: var(--text-xs); font-weight: var(--weight-medium); cursor: pointer; font-family: var(--font-body); }
+.clear:hover { text-decoration: underline; }
+.count { font-size: var(--text-xs); color: var(--text-muted); }

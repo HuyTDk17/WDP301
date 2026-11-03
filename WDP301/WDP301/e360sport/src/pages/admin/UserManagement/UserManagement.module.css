@@ -1,0 +1,20 @@
+.page { display: flex; flex-direction: column; gap: var(--space-5); }
+.hintBox { display: flex; align-items: flex-start; gap: var(--space-3); padding: var(--space-3) var(--space-4); background: var(--admin-accent-subtle, var(--primary-subtle)); border: 1px solid var(--admin-accent-light, var(--primary-light)); border-radius: var(--radius-lg); }
+.hintBox p { margin: 0; font-size: var(--text-sm); color: var(--text-secondary); line-height: 1.5; }
+.hintIcon { display: flex; align-items: center; flex-shrink: 0; color: var(--admin-accent, var(--primary)); margin-top: 1px; }
+.statsRow { display: grid; grid-template-columns: repeat(4, 1fr); gap: var(--space-4); }
+@media (max-width: 900px) { .statsRow { grid-template-columns: repeat(2, 1fr); } }
+@media (max-width: 480px) { .statsRow { grid-template-columns: 1fr; } }
+.resultCount { font-size: var(--text-sm); color: var(--text-muted); }
+.userCell { display: flex; align-items: center; gap: var(--space-3); }
+.avatar { width: 32px; height: 32px; background: var(--secondary-subtle); color: var(--secondary-dark); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: var(--weight-bold); }
+.name { font-weight: var(--weight-semibold); font-size: var(--text-sm); }
+.email { font-size: var(--text-xs); color: var(--text-muted); }
+.role { padding: 2px 8px; border-radius: var(--radius-full); font-size: 11px; font-weight: var(--weight-bold); text-transform: capitalize; }
+.customer { background: var(--primary-subtle); color: var(--primary-dark); }
+.owner { background: var(--secondary-subtle); color: var(--secondary-dark); }
+.noApp { color: var(--text-muted); }
+.appLink { display: inline-flex; flex-direction: column; gap: 2px; text-decoration: none; }
+.appLinkHint { display: inline-flex; align-items: center; gap: 2px; font-size: 11px; color: var(--admin-accent, var(--primary)); font-weight: var(--weight-semibold); }
+.appLink:hover .appLinkHint { text-decoration: underline; }
+.loadingState { display: flex; align-items: center; justify-content: center; min-height: 40vh; }

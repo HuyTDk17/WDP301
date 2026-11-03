@@ -1,0 +1,61 @@
+.page { padding: var(--space-8) 0 var(--space-16); min-height: 70vh; background: var(--bg-base); }
+
+.back {
+  display: inline-flex; align-items: center; gap: var(--space-2);
+  font-size: var(--text-sm); color: var(--text-secondary); margin-bottom: var(--space-5);
+}
+.back:hover { color: var(--primary); }
+
+.header { margin-bottom: var(--space-6); }
+.title { font-size: var(--text-3xl); font-weight: var(--weight-bold); color: var(--text-primary); }
+.sub { font-size: var(--text-sm); color: var(--text-muted); margin-top: var(--space-1); }
+
+.card {
+  max-width: 560px;
+  background: var(--bg-surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  padding: var(--space-6);
+  box-shadow: var(--shadow-sm);
+}
+
+.searchRow { display: flex; gap: var(--space-3); align-items: flex-start; }
+.codeInput { font-family: 'SF Mono', Menlo, monospace; letter-spacing: 0.1em; text-transform: uppercase; }
+.loading { display: flex; justify-content: center; padding: var(--space-6) 0; }
+
+.preview {
+  margin-top: var(--space-5);
+  padding-top: var(--space-5);
+  border-top: 1px solid var(--border);
+  display: flex; flex-direction: column; gap: var(--space-4);
+}
+.fromLine { font-size: var(--text-sm); color: var(--text-secondary); }
+.fromLine strong { color: var(--text-primary); }
+
+.slotBox { padding: var(--space-4); background: var(--bg-base); border-radius: var(--radius); }
+.venue { font-size: var(--text-lg); font-weight: var(--weight-semibold); color: var(--text-primary); }
+.court, .metaRow span {
+  display: inline-flex; align-items: center; gap: var(--space-1);
+  font-size: var(--text-sm); color: var(--text-secondary);
+}
+.metaRow { display: flex; gap: var(--space-4); flex-wrap: wrap; margin-top: var(--space-2); }
+
+.valueRow {
+  display: flex; justify-content: space-between; align-items: center;
+  font-size: var(--text-sm); color: var(--text-secondary);
+  padding: var(--space-2) 0;
+}
+.valueRow strong { color: var(--text-primary); }
+.fee { color: var(--primary) !important; }
+
+.noteBox {
+  display: flex; gap: var(--space-3);
+  padding: var(--space-3) var(--space-4);
+  background: var(--accent-subtle); border-radius: var(--radius);
+  font-size: var(--text-xs); line-height: var(--leading-relaxed);
+  color: var(--accent-dark);
+}
+.noteBox p { color: var(--text-secondary); }
+.noteBox svg { flex-shrink: 0; margin-top: 2px; }
+
+.expiry { font-size: var(--text-xs); color: var(--text-muted); text-align: center; }

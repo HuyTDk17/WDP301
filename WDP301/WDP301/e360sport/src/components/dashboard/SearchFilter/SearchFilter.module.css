@@ -1,0 +1,9 @@
+.bar { display: flex; align-items: center; gap: var(--space-3); flex-wrap: wrap; }
+.searchWrap { position: relative; display: flex; align-items: center; flex: 1; min-width: 200px; max-width: 400px; }
+.icon { position: absolute; left: 12px; display: flex; align-items: center; pointer-events: none; z-index: 1; color: var(--text-muted); }
+.input { width: 100%; padding: 0.625rem var(--space-4) 0.625rem 38px; border: 1.5px solid var(--border); border-radius: var(--radius); font-family: var(--font-body); font-size: var(--text-sm); color: var(--text-primary); background: var(--bg-surface); outline: none; transition: border-color var(--duration-fast), box-shadow var(--duration-fast); }
+.input:focus { border-color: var(--primary); box-shadow: 0 0 0 3px rgba(10,132,255,0.1); }
+.clear { position: absolute; right: 10px; display: flex; align-items: center; background: none; border: none; cursor: pointer; color: var(--text-muted); padding: 2px 4px; border-radius: 3px; transition: color var(--duration-fast); }
+.clear:hover { color: var(--error); }
+.select { padding: 0.625rem var(--space-4); border: 1.5px solid var(--border); border-radius: var(--radius); font-family: var(--font-body); font-size: var(--text-sm); color: var(--text-primary); background: var(--bg-surface); outline: none; cursor: pointer; transition: border-color var(--duration-fast); appearance: none; padding-right: var(--space-8); background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%238A94A6' stroke-width='1.5' stroke-linecap='round' fill='none'/%3E%3C/svg%3E"); background-repeat: no-repeat; background-position: right 10px center; }
+.select:focus { border-color: var(--primary); }

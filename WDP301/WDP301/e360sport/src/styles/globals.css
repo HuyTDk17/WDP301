@@ -1,0 +1,250 @@
+/* =============================================
+   ESPORT360 — GLOBAL STYLES
+   Design System: Athletic Premium
+   Font: Inter (dễ đọc, hỗ trợ tốt tiếng Việt có dấu)
+   ============================================= */
+
+:root {
+  /* === COLOR PALETTE === */
+  --primary: #0A84FF;
+  --primary-dark: #0066CC;
+  --primary-light: #4DA6FF;
+  --primary-subtle: #E8F4FF;
+
+  --secondary: #FF6B2B;
+  --secondary-dark: #E05520;
+  --secondary-light: #FF8F5E;
+  --secondary-subtle: #FFF0EB;
+
+  --accent: #00C896;
+  --accent-dark: #009E78;
+  --accent-subtle: #E0FBF4;
+
+  --success: #22C55E;
+  --success-subtle: #DCFCE7;
+  --warning: #F59E0B;
+  --warning-subtle: #FEF3C7;
+  --error: #EF4444;
+  --error-subtle: #FEE2E2;
+  --info: #3B82F6;
+  --info-subtle: #DBEAFE;
+
+  /* === NEUTRALS === */
+  --bg-base: #F8F9FC;
+  --bg-surface: #FFFFFF;
+  --bg-elevated: #FFFFFF;
+  --bg-overlay: rgba(10, 14, 26, 0.6);
+
+  --border: #E5E9F2;
+  --border-strong: #C9D0E3;
+
+  --text-primary: #0A0E1A;
+  --text-secondary: #4A5568;
+  --text-muted: #8A94A6;
+  --text-inverse: #FFFFFF;
+  --text-accent: #0A84FF;
+
+  /* === DARK PANEL (owner/admin sidebars) === */
+  --dark-bg: #0D1117;
+  --dark-surface: #161B22;
+  --dark-border: #30363D;
+  --dark-text: #E6EDF3;
+  --dark-text-muted: #8B949E;
+
+  /* === TYPOGRAPHY === */
+  --font-display: 'Inter', -apple-system, sans-serif;
+  --font-body: 'Inter', -apple-system, sans-serif;
+
+  --text-xs: 0.75rem;
+  --text-sm: 0.875rem;
+  --text-base: 1rem;
+  --text-lg: 1.125rem;
+  --text-xl: 1.25rem;
+  --text-2xl: 1.5rem;
+  --text-3xl: 1.875rem;
+  --text-4xl: 2.25rem;
+  --text-5xl: 3rem;
+
+  --weight-light: 300;
+  --weight-regular: 400;
+  --weight-medium: 500;
+  --weight-semibold: 600;
+  --weight-bold: 700;
+  --weight-extrabold: 800;
+
+  --leading-tight: 1.2;
+  --leading-snug: 1.35;
+  --leading-normal: 1.5;
+  --leading-relaxed: 1.7;
+
+  /* === SPACING === */
+  --space-1: 0.25rem;
+  --space-2: 0.5rem;
+  --space-3: 0.75rem;
+  --space-4: 1rem;
+  --space-5: 1.25rem;
+  --space-6: 1.5rem;
+  --space-8: 2rem;
+  --space-10: 2.5rem;
+  --space-12: 3rem;
+  --space-16: 4rem;
+  --space-20: 5rem;
+  --space-24: 6rem;
+
+  /* === BORDERS === */
+  --radius-sm: 6px;
+  --radius: 10px;
+  --radius-md: 14px;
+  --radius-lg: 20px;
+  --radius-xl: 28px;
+  --radius-full: 9999px;
+
+  /* === SHADOWS === */
+  --shadow-sm: 0 1px 3px rgba(10, 14, 26, 0.06), 0 1px 2px rgba(10, 14, 26, 0.04);
+  --shadow: 0 4px 12px rgba(10, 14, 26, 0.08), 0 2px 6px rgba(10, 14, 26, 0.04);
+  --shadow-md: 0 8px 24px rgba(10, 14, 26, 0.1), 0 4px 10px rgba(10, 14, 26, 0.06);
+  --shadow-lg: 0 16px 40px rgba(10, 14, 26, 0.12), 0 8px 16px rgba(10, 14, 26, 0.06);
+  --shadow-xl: 0 24px 64px rgba(10, 14, 26, 0.16);
+  --shadow-primary: 0 6px 24px rgba(10, 132, 255, 0.25);
+  --shadow-secondary: 0 6px 24px rgba(255, 107, 43, 0.25);
+
+  /* === TRANSITIONS === */
+  --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
+  --ease-in-out: cubic-bezier(0.4, 0, 0.2, 1);
+  --duration-fast: 150ms;
+  --duration-base: 250ms;
+  --duration-slow: 400ms;
+
+  /* === LAYOUT === */
+  --container-sm: 640px;
+  --container-md: 768px;
+  --container-lg: 1024px;
+  --container-xl: 1280px;
+  --container-2xl: 1440px;
+
+  --navbar-height: 72px;
+  --sidebar-width: 260px;
+}
+
+/* === RESET === */
+*, *::before, *::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html {
+  font-size: 16px;
+  scroll-behavior: smooth;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  /* Sidebar mobile của Admin/Owner ẩn bằng transform: translateX(-100%) (xem
+     AdminLayout/OwnerLayout .module.css) — về mặt CSS, phần tử fixed bị đẩy
+     ra ngoài bằng transform vẫn tính vào scrollWidth của trang dù không nhìn
+     thấy được, khiến trang có thể cuộn ngang lộ ra khoảng trắng khi vuốt trên
+     điện thoại. Chặn ở đây, không ảnh hưởng cuộn ngang RIÊNG của từng khối
+     con (vd: DataTable.module.css .tableScroll { overflow-x: auto }), vì đó
+     là một ngữ cảnh cuộn khác, độc lập với html/body. */
+  overflow-x: hidden;
+}
+
+body {
+  font-family: var(--font-body);
+  font-size: var(--text-base);
+  font-weight: var(--weight-regular);
+  line-height: var(--leading-normal);
+  color: var(--text-primary);
+  background-color: var(--bg-base);
+  min-height: 100vh;
+  overflow-x: hidden;
+}
+
+img, video {
+  max-width: 100%;
+  display: block;
+}
+
+a {
+  color: inherit;
+  text-decoration: none;
+}
+
+button {
+  cursor: pointer;
+  font-family: var(--font-body);
+  border: none;
+  background: none;
+}
+
+input, select, textarea {
+  font-family: var(--font-body);
+  font-size: var(--text-base);
+}
+
+ul, ol {
+  list-style: none;
+}
+
+h1, h2, h3, h4, h5, h6 {
+  font-family: var(--font-display);
+  font-weight: var(--weight-bold);
+  line-height: var(--leading-tight);
+  color: var(--text-primary);
+}
+
+/* === UTILITIES === */
+.container {
+  width: 100%;
+  max-width: var(--container-xl);
+  margin: 0 auto;
+  padding: 0 var(--space-6);
+}
+
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border-width: 0;
+}
+
+/* === SCROLLBAR === */
+::-webkit-scrollbar { width: 6px; height: 6px; }
+::-webkit-scrollbar-track { background: var(--bg-base); }
+::-webkit-scrollbar-thumb { background: var(--border-strong); border-radius: 3px; }
+::-webkit-scrollbar-thumb:hover { background: var(--text-muted); }
+
+/* === FOCUS === */
+:focus-visible {
+  outline: 2px solid var(--primary);
+  outline-offset: 2px;
+}
+
+/* === ANIMATION KEYFRAMES === */
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(8px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+@keyframes slideInLeft {
+  from { opacity: 0; transform: translateX(-16px); }
+  to { opacity: 1; transform: translateX(0); }
+}
+@keyframes slideUp {
+  from { opacity: 0; transform: translateY(20px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+@keyframes pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.5; }
+}
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+@keyframes shimmer {
+  0% { background-position: -200% 0; }
+  100% { background-position: 200% 0; }
+}

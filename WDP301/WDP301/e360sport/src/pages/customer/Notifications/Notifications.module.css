@@ -1,0 +1,19 @@
+.page { padding: var(--space-8) 0 var(--space-16); }
+.header { display: flex; align-items: center; justify-content: space-between; margin-bottom: var(--space-6); }
+.title { font-family: var(--font-display); font-size: var(--text-3xl); font-weight: var(--weight-extrabold); }
+.markAllBtn { font-size: var(--text-sm); color: var(--primary); background: none; border: none; cursor: pointer; font-weight: var(--weight-medium); }
+.list { display: flex; flex-direction: column; gap: var(--space-2); }
+.notifItem { display: flex; align-items: center; gap: var(--space-4); width: 100%; padding: var(--space-4); background: var(--bg-surface); border: 1px solid var(--border); border-radius: var(--radius-lg); text-align: left; font-family: var(--font-body); cursor: default; transition: background var(--duration-fast), border-color var(--duration-fast), transform var(--duration-fast); }
+.unread { background: var(--primary-subtle); }
+.clickable { cursor: pointer; }
+.clickable:hover { border-color: var(--primary); background: var(--bg-base); transform: translateY(-1px); }
+.clickable.unread:hover { background: var(--primary-subtle); }
+.notifArrow { font-size: var(--text-xl); color: var(--text-muted); flex-shrink: 0; }
+.clickable:hover .notifArrow { color: var(--primary); }
+.notifIconWrap { width: 44px; height: 44px; background: var(--bg-base); border-radius: var(--radius); display: flex; align-items: center; justify-content: center; font-size: 1.3rem; flex-shrink: 0; }
+.notifBody { flex: 1; }
+.notifHeader { display: flex; align-items: center; gap: var(--space-2); margin-bottom: var(--space-1); }
+.notifTitle { font-weight: var(--weight-semibold); }
+.notifMessage { font-size: var(--text-sm); color: var(--text-secondary); margin-bottom: var(--space-2); }
+.notifTime { font-size: var(--text-xs); color: var(--text-muted); }
+.loadingState { display: flex; align-items: center; justify-content: center; min-height: 40vh; }

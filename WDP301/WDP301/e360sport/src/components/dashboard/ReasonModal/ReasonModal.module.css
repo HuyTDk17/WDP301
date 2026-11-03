@@ -1,0 +1,9 @@
+.body { display: flex; flex-direction: column; gap: var(--space-3); }
+.icon { display: flex; align-items: center; justify-content: center; width: 56px; height: 56px; margin: 0 auto; border-radius: 50%; background: var(--bg-base); color: var(--text-secondary); }
+.desc { font-size: var(--text-sm); color: var(--text-secondary); text-align: center; line-height: 1.5; margin: 0; }
+.label { font-size: var(--text-sm); font-weight: var(--weight-semibold); color: var(--text-primary); margin-top: var(--space-2); }
+.required { color: var(--error); }
+.optional { color: var(--text-muted); font-weight: var(--weight-regular); font-size: var(--text-xs); }
+.input { width: 100%; padding: var(--space-3); border: 1.5px solid var(--border); border-radius: var(--radius); font-family: var(--font-body); font-size: var(--text-sm); color: var(--text-primary); resize: vertical; }
+.input:focus { outline: none; border-color: var(--primary); box-shadow: 0 0 0 3px var(--primary-subtle); }
+.hint { font-size: var(--text-xs); color: var(--text-muted); margin: 0; }
