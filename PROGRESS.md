@@ -11,6 +11,7 @@
 - Xác định chức năng cần triển khai.
 - Hoàn thành quyển
 
+## Ngày 30/11/2026
 ## Ngày 31/10/2026
 ## Ngày 1/11/2026
 ## Ngày 2/11/2026
