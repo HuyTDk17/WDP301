@@ -9,8 +9,10 @@
 ### Kế hoạch tiếp theo
 - Tìm hiểu cấu trúc backend và frontend.
 - Xác định chức năng cần triển khai.
+- Hoàn thành quyển
 
 
+## Ngày 2/11/2026
 ## Ngày 3/11/2026
 ## Ngày 4/11/2026
 ## Ngày 5/11/2026
