@@ -10,7 +10,7 @@
 - Tìm hiểu cấu trúc backend và frontend.
 - Xác định chức năng cần triển khai.
 
-
+## Ngày 4/11/2026
 ## Ngày 5/11/2026
 ## Ngày 6/11/2026
 ## Ngày 7/11/2026
