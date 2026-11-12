@@ -195,7 +195,7 @@ exports.getBookingById = asyncHandler(async (req, res) => {
 
 /**
  * Xem trước chính sách huỷ TRƯỚC khi khách bấm huỷ — để khách biết mất bao
- * nhiêu, và để thấy rằng chuyển sân thường rẻ hơn huỷ.
+ * nhiêu, và để thấy rằng đổi lịch thường rẻ hơn huỷ.
  * @route GET /api/bookings/:id/cancel-preview
  */
 exports.previewCancellation = asyncHandler(async (req, res) => {

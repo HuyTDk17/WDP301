@@ -11,7 +11,6 @@ const statsController = require('../controllers/statsController');
 const settlementController = require('../controllers/settlementController');
 const transferController = require('../controllers/transferController');
 const paymentController = require('../controllers/paymentController');
-const networkController = require('../controllers/networkController');
 const cancellationPolicyController = require('../controllers/cancellationPolicyController');
 
 router.use(protect, authorize('owner'));
@@ -57,9 +56,6 @@ router.get('/cancellation-policy', cancellationPolicyController.getPolicy);
 router.put('/cancellation-policy', writeLimiter, cancellationPolicyController.updatePolicy);
 
 // Mạng lưới chuyển sân: xem trạng thái thành viên và xin tham gia
-router.get('/network', networkController.getMyNetwork);
-router.post('/network/request', writeLimiter, networkController.requestToJoin);
-router.post('/network/respond', writeLimiter, networkController.respondToInvite);
 
 
 // Đánh giá của khách trên các địa điểm của chủ sân: xem, trả lời, xóa phản hồi

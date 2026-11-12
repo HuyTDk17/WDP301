@@ -44,7 +44,7 @@ export default function PendingBankPayments() {
     setActing(p._id)
     try {
       await paymentService.ownerConfirmBankTransfer(p._id)
-      toast.success(isTopup(p) ? 'Đã xác nhận — yêu cầu chuyển sân được thực hiện' : 'Đã xác nhận — lượt đặt sân đã được chốt')
+      toast.success(isTopup(p) ? 'Đã xác nhận — yêu cầu đổi lịch được thực hiện' : 'Đã xác nhận — lượt đặt sân đã được chốt')
       load()
     } catch (err) {
       toast.error(err?.message || 'Không thể xác nhận')
@@ -74,8 +74,8 @@ export default function PendingBankPayments() {
 
   const describe = (p) => {
     const t = p.transferId
-    // Khoản bù/phí khi khách chuyển sân đến địa điểm của bạn
-    if (isTopup(p) && t) return `Bù tiền chuyển sân → ${t.toVenueName || ''} ${t.toCourtName ? `– ${t.toCourtName}` : ''} · ${t.toDate} ${t.toStartTime}`
+    // Khoản bù/phí khi khách đổi lịch tại địa điểm của bạn
+    if (isTopup(p) && t) return `Bù tiền đổi lịch → ${t.toVenueName || ''} ${t.toCourtName ? `– ${t.toCourtName}` : ''} · ${t.toDate} ${t.toStartTime}`
     const b = p.bookingId
     if (!b) return ''
     return `${b.venueName} – ${b.courtName} · ${b.date} ${b.startTime}`
@@ -107,7 +107,7 @@ export default function PendingBankPayments() {
         title="Xác nhận chuyển khoản"
         subtitle={payments.length
           ? `${payments.length} giao dịch chờ xác nhận · tổng ${formatCurrency(total)}`
-          : 'Khách chuyển khoản đặt sân hoặc bù tiền/phí chuyển sân vào tài khoản của bạn sẽ hiện ở đây để đối chiếu và xác nhận'}
+          : 'Khách chuyển khoản đặt sân hoặc bù tiền/phí đổi lịch vào tài khoản của bạn sẽ hiện ở đây để đối chiếu và xác nhận'}
       />
 
       {loading ? (

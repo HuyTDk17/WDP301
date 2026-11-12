@@ -45,18 +45,6 @@ const userSchema = new mongoose.Schema(
             tiers: { type: [{ _id: false, minLeadHours: Number, refundRate: Number }], default: [] },
             updatedAt: { type: Date, default: null },
         },
-        // Mạng lưới chuyển sân liên chủ sân (chỉ có nghĩa với chủ sân). Chỉ có tác dụng khi Admin bật
-        // PlatformSetting.transferNetworkRequired. status: none → pending → approved | rejected ; approved → revoked.
-        transferNetwork: {
-            status: { type: String, enum: ['none', 'pending', 'approved', 'rejected', 'revoked'], default: 'none' },
-            requestedAt: { type: Date, default: null },
-            // Lần gần nhất Admin mời chủ sân (đang 'none') tham gia. Chỉ có nghĩa khi status vẫn là 'none';
-            // chủ sân trả lời (đồng ý/từ chối) hoặc tự xin tham gia thì về null.
-            invitedAt: { type: Date, default: null },
-            reviewedAt: { type: Date, default: null },
-            reviewedBy: { type: mongoose.Schema.Types.ObjectId, ref: 'User', default: null },
-            note: { type: String, default: '' },
-        },
         // Lần Admin đổi vai trò thủ công gần nhất (xem controllers/userController.changeUserRole)
         roleChangedAt: { type: Date, default: null },
         roleChangedBy: { type: mongoose.Schema.Types.ObjectId, ref: 'User', default: null },
@@ -91,7 +79,7 @@ const userSchema = new mongoose.Schema(
         bankInfoConfirmedBy: { type: mongoose.Schema.Types.ObjectId, ref: 'User', default: null },
         status: { type: String, enum: ['active', 'pending', 'verified', 'banned', 'rejected'], default: 'active' },
         banReason: { type: String, default: '' },
-        // Số dư khuyến mãi (VNĐ) — phát sinh khi chuyển sân sang sân rẻ hơn mà
+        // Số dư khuyến mãi (VNĐ) — phát sinh khi đổi lịch sang sân rẻ hơn mà
         // phần chênh vượt trần hoàn tiền mặt. Chỉ dùng trừ vào đơn sau, KHÔNG
         // rút được thành tiền. Vòng đời đầy đủ ở utils/credit.js.
         creditBalance: { type: Number, default: 0, min: 0 },

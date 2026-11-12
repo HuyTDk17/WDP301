@@ -11,7 +11,6 @@ const settingsController = require('../controllers/settingsController');
 const settlementController = require('../controllers/settlementController');
 const complaintController = require('../controllers/complaintController');
 const contentController = require('../controllers/contentController');
-const networkController = require('../controllers/networkController');
 const sportCategoryController = require('../controllers/sportCategoryController');
 const uploadContentImage = require('../middleware/uploadContentImage');
 
@@ -72,10 +71,6 @@ router.put('/sport-categories/:id', writeLimiter, sportCategoryController.update
 router.delete('/sport-categories/:id', writeLimiter, sportCategoryController.deleteCategory);
 
 // Mạng lưới chuyển sân: duyệt / từ chối / gỡ chủ sân
-router.get('/network', networkController.listOwners);
-router.post('/network/approve-pending', writeLimiter, networkController.approveAllPending);
-router.post('/network/:ownerId/invite', writeLimiter, networkController.inviteOwner);
-router.patch('/network/:ownerId', writeLimiter, networkController.reviewOwner);
 
 // Khiếu nại của khách hàng: xem danh sách, nhận xử lý, liên hệ khách/chủ sân, giải quyết + gửi phản hồi
 router.get('/complaints', complaintController.getComplaintsAdmin);

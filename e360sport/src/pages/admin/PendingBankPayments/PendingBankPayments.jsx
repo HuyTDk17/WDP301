@@ -76,17 +76,17 @@ export default function PendingBankPayments() {
 
   const describe = (p) => {
     if (p.bookingId) return `${p.bookingId.venueName} – ${p.bookingId.courtName} · ${p.bookingId.date} ${p.bookingId.startTime}`
-    if (p.transferId) return `Chuyển sân: ${p.transferId.fromVenueName} → ${p.transferId.toVenueName}`
+    if (p.transferId) return `Đổi lịch: ${p.transferId.fromVenueName}`
     return ''
   }
 
   return (
     <div className={styles.page}>
       <PageHeader
-        title="Thu phí chuyển sân"
+        title="Thu phí đổi lịch"
         subtitle={payments.length
           ? `${payments.length} giao dịch chờ xác nhận · tổng ${formatCurrency(total)}`
-          : 'Khoản bù khi khách chuyển sân (vào tài khoản nền tảng) sẽ hiện ở đây để đối chiếu và xác nhận'}
+          : 'Khoản bù khi khách đổi lịch (vào tài khoản nền tảng) sẽ hiện ở đây để đối chiếu và xác nhận'}
       />
 
       {loading ? (

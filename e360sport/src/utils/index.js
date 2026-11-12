@@ -90,7 +90,7 @@ export const BOOKING_STATUS = {
   awaiting_payment: { label: 'Chờ thanh toán', color: '#F59E0B', bg: '#FEF3C7' },
   // Đơn đã được chuyển sang sân/địa điểm khác. Không bị xóa để giữ lịch sử và
   // để chủ sân cũ vẫn đối chiếu được khoản bồi thường.
-  transferred: { label: 'Đã chuyển sân', color: '#8B5CF6', bg: '#F3E8FF' },
+  transferred: { label: 'Đã đổi lịch', color: '#8B5CF6', bg: '#F3E8FF' },
 }
 
 // === ẢNH ===

@@ -32,7 +32,6 @@ router.patch('/:id/cancel', writeLimiter, bookingController.cancelBooking);
 // Hai bước đầu gắn với ĐƠN GỐC; các bước sau gắn với YÊU CẦU CHUYỂN và nằm ở
 // routes/transferRoutes.js.
 router.get('/:id/transfer/eligibility', transferController.getEligibility);
-router.get('/:id/transfer/suggestions', transferController.getSuggestions);
 router.post('/:id/transfer/quote', writeLimiter, transferController.createQuote);
 
 module.exports = router;

@@ -29,8 +29,8 @@ export default function AdminSettings() {
     platformName: '', supportEmail: '', commissionRate: 5, commissionCustomerSharePct: 0,
     commissionDueDays: 7, commissionGraceDays: 3, commissionBlockEnabled: true, commissionAutoIssueEnabled: true,
     gatewayFeeRate: 0.015,
-    transferEnabled: true, transferNetworkRequired: false, transferMinLeadTimeHours: 2, maxTransfersPerBooking: 1,
-    maxTransfersPerMonth: 0, transferFeeOriginSharePct: 0, ownerCancellationPolicyAllowed: true,
+    transferEnabled: true, transferMinLeadTimeHours: 2, maxTransfersPerBooking: 1,
+    maxTransfersPerMonth: 0, ownerCancellationPolicyAllowed: true,
     quoteTtlMinutes: 10, ownerApprovalTimeoutMinutes: 30,
     transferFeeMin: 5000, transferFeeMax: 100000,
     maxRefundRatio: 0.5, refundToCreditEnabled: true,
@@ -39,7 +39,6 @@ export default function AdminSettings() {
   })
   // Biểu phí bậc thang chỉnh riêng vì là mảng, không hợp với ô nhập đơn giản.
   const [feeTiers, setFeeTiers] = useState([])
-  const [compTiers, setCompTiers] = useState([])
   const [cancelTiers, setCancelTiers] = useState([])
   const [floorTiers, setFloorTiers] = useState([])
 
@@ -59,11 +58,9 @@ export default function AdminSettings() {
           commissionAutoIssueEnabled: st.commissionAutoIssueEnabled ?? true,
           gatewayFeeRate: st.gatewayFeeRate ?? 0.015,
           transferEnabled: st.transferEnabled !== false,
-          transferNetworkRequired: st.transferNetworkRequired === true,
           transferMinLeadTimeHours: st.transferMinLeadTimeHours ?? 2,
           maxTransfersPerBooking: st.maxTransfersPerBooking ?? 1,
           maxTransfersPerMonth: st.maxTransfersPerMonth ?? 0,
-          transferFeeOriginSharePct: st.transferFeeOriginSharePct ?? 0,
           ownerCancellationPolicyAllowed: st.ownerCancellationPolicyAllowed !== false,
           quoteTtlMinutes: st.quoteTtlMinutes ?? 10,
           ownerApprovalTimeoutMinutes: st.ownerApprovalTimeoutMinutes ?? 30,
@@ -78,7 +75,6 @@ export default function AdminSettings() {
           bankTransferWindowMinutes: st.bankTransferWindowMinutes ?? 30,
         }))
         setFeeTiers(st.transferFeeTiers || [])
-        setCompTiers(st.compensationTiers || [])
         setCancelTiers(st.cancellationTiers || [])
         setFloorTiers(st.cancellationFloorTiers || [])
       })
@@ -93,7 +89,6 @@ export default function AdminSettings() {
       await settingsService.updatePlatformSettings({
         ...form,
         transferFeeTiers: feeTiers,
-        compensationTiers: compTiers,
         cancellationTiers: cancelTiers,
         cancellationFloorTiers: floorTiers,
       })
@@ -185,7 +180,7 @@ export default function AdminSettings() {
         <h3 className={styles.sectionTitle}>Tài khoản nền tảng (nhận phí dịch vụ)</h3>
         <p className={styles.sectionHint}>
           Chỉ dùng để chủ sân <strong>nộp phí dịch vụ</strong> theo hoá đơn hằng tháng. Tài khoản này <strong>không hiển thị</strong> khi
-          người chơi thanh toán: đặt sân, tiền bù và phí chuyển sân đều chuyển thẳng vào tài khoản của chủ sân, chủ sân tự xác nhận và tự hoàn tiền.
+          người chơi thanh toán: đặt sân, tiền bù và phí đổi lịch đều chuyển thẳng vào tài khoản của chủ sân, chủ sân tự xác nhận và tự hoàn tiền.
           Quản trị viên chỉ vận hành hệ thống và thu phí dịch vụ. Muốn hệ thống <strong>tự xác nhận</strong> khi tiền về, cấu hình webhook của SePay/Casso trỏ về <code>/api/webhooks/bank</code> và đặt <code>BANK_WEBHOOK_SECRET</code> (xem deploy/DEPLOY.md); chưa cấu hình thì bạn vẫn xác nhận tay ở trang Đối soát.
         </p>
         <div className={styles.formGrid}>
@@ -240,22 +235,14 @@ export default function AdminSettings() {
           />
         </div>
 
-        <h3 className={styles.sectionTitle}>Chuyển sân</h3>
+        <h3 className={styles.sectionTitle}>Đổi lịch</h3>
         <label className={styles.switchRow}>
           <input
             type="checkbox"
             checked={form.transferEnabled}
             onChange={e => setForm(f => ({ ...f, transferEnabled: e.target.checked }))}
           />
-          <span>Cho phép khách hàng chuyển sân thay vì huỷ</span>
-        </label>
-        <label className={styles.switchRow}>
-          <input
-            type="checkbox"
-            checked={form.transferNetworkRequired}
-            onChange={e => setForm(f => ({ ...f, transferNetworkRequired: e.target.checked }))}
-          />
-          <span>Chỉ cho chuyển sang chủ sân khác khi cả hai chủ sân đã được duyệt vào mạng lưới (duyệt tại mục “Mạng lưới chuyển sân”)</span>
+          <span>Cho phép khách hàng đổi lịch thay vì huỷ</span>
         </label>
 
         <div className={styles.formGrid}>
@@ -266,33 +253,24 @@ export default function AdminSettings() {
             onChange={e => setForm(f => ({ ...f, transferMinLeadTimeHours: e.target.value }))}
             icon={<Clock size={15} />}
             suffix="giờ"
-            hint="Dưới ngưỡng này chủ sân không kịp bán lại khung giờ, nên chỉ cho huỷ chứ không cho chuyển."
+            hint="Dưới ngưỡng này chủ sân không kịp bán lại khung giờ, nên chỉ cho huỷ chứ không cho đổi lịch."
           />
           <Input
-            label="Số lần chuyển tối đa mỗi lượt đặt"
+            label="Số lần đổi lịch tối đa mỗi lượt đặt"
             type="number" min={0} max={10} step={1}
             value={form.maxTransfersPerBooking}
             onChange={e => setForm(f => ({ ...f, maxTransfersPerBooking: e.target.value }))}
             icon={<Repeat size={15} />}
-            hint="Chống dùng chuyển sân như công cụ giữ chỗ trôi nổi."
+            hint="Chống dùng đổi lịch như công cụ giữ chỗ trôi nổi."
           />
           <Input
-            label="Hạn mức đổi lịch/chuyển sân mỗi tháng (mỗi khách)"
+            label="Hạn mức đổi lịch mỗi tháng (mỗi khách)"
             type="number" min={0} max={100} step={1}
             value={form.maxTransfersPerMonth}
             onChange={e => setForm(f => ({ ...f, maxTransfersPerMonth: e.target.value }))}
             icon={<Repeat size={15} />}
             suffix="lượt"
-            hint="Tính theo tháng dương lịch (giờ Việt Nam), gồm đổi lịch và chuyển sân. 0 = không giới hạn."
-          />
-          <Input
-            label="Chia phí chuyển sân cho chủ sân gốc"
-            type="number" min={0} max={100} step={1}
-            value={form.transferFeeOriginSharePct}
-            onChange={e => setForm(f => ({ ...f, transferFeeOriginSharePct: e.target.value }))}
-            icon={<Percent size={15} />}
-            suffix="%"
-            hint="Chỉ khi chuyển sang chủ sân khác: chủ sân gốc nhận thêm tỉ lệ này của phí chuyển (ngoài khoản bồi thường); phần còn lại thuộc chủ sân đích. 0 = toàn bộ phí về chủ sân đích như hiện nay."
+            hint="Tính theo tháng dương lịch (giờ Việt Nam), 0 = không giới hạn."
           />
           <Input
             label="Hiệu lực báo giá"
@@ -311,7 +289,7 @@ export default function AdminSettings() {
             hint="Quá hạn thì yêu cầu tự huỷ và hoàn 100% cho khách."
           />
           <Input
-            label="Phí chuyển sân tối thiểu"
+            label="Phí đổi lịch tối thiểu"
             type="number" min={0} step={1000}
             value={form.transferFeeMin}
             onChange={e => setForm(f => ({ ...f, transferFeeMin: e.target.value }))}
@@ -319,7 +297,7 @@ export default function AdminSettings() {
             hint="Sàn để khoản thu đủ bù chi phí giao dịch. Không áp dụng khi tỉ lệ phí bằng 0."
           />
           <Input
-            label="Phí chuyển sân tối đa"
+            label="Phí đổi lịch tối đa"
             type="number" min={0} step={1000}
             value={form.transferFeeMax}
             onChange={e => setForm(f => ({ ...f, transferFeeMax: e.target.value }))}
@@ -337,21 +315,12 @@ export default function AdminSettings() {
         </div>
 
         <TierEditor
-          title="Biểu phí chuyển sân (tỉ lệ trên giá sân của lượt đặt gốc)"
+          title="Biểu phí đổi lịch (tỉ lệ trên giá sân của lượt đặt gốc)"
           tiers={feeTiers}
           onChange={setFeeTiers}
           columns={[
-            { key: 'sameVenueRate', label: 'Cùng địa điểm' },
-            { key: 'sameOwnerRate', label: 'Cùng chủ sân' },
-            { key: 'crossOwnerRate', label: 'Khác chủ sân' },
+            { key: 'sameVenueRate', label: 'Tỉ lệ phí đổi lịch' },
           ]}
-        />
-
-        <TierEditor
-          title="Biểu bồi thường chủ sân cũ (chỉ áp dụng khi chuyển sang chủ sân khác)"
-          tiers={compTiers}
-          onChange={setCompTiers}
-          columns={[{ key: 'rate', label: 'Tỉ lệ bồi thường' }]}
         />
 
         <TierEditor
@@ -379,8 +348,8 @@ export default function AdminSettings() {
 
         <p className={styles.notice}>
           <Info size={15} className={styles.noticeIcon} />
-          Biểu hoàn tiền khi huỷ nên được đặt KÉM hấp dẫn hơn biểu phí chuyển sân. Khi đó khách bận đột xuất
-          sẽ thấy chuyển sân luôn rẻ hơn huỷ, và giao dịch được giữ lại cho cả ba bên thay vì biến mất.
+          Biểu hoàn tiền khi huỷ nên được đặt KÉM hấp dẫn hơn biểu phí đổi lịch. Khi đó khách bận đột xuất
+          sẽ thấy đổi lịch luôn rẻ hơn huỷ, và giao dịch được giữ lại cho cả ba bên thay vì biến mất.
         </p>
 
         <p className={styles.notice}>

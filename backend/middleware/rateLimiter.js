@@ -8,7 +8,7 @@ const { ipKeyGenerator } = require('express-rate-limit');
 /**
  * GIỚI HẠN TẦN SUẤT.
  *
- * Bản cũ chỉ bảo vệ /api/auth. Các route còn lại — đặt sân, báo giá chuyển sân,
+ * Bản cũ chỉ bảo vệ /api/auth. Các route còn lại — đặt sân, báo giá đổi lịch,
  * tạo URL thanh toán — hoàn toàn không giới hạn, nên một script đơn giản có thể
  * tạo hàng nghìn lượt giữ chỗ và khoá sạch lịch của mọi sân, hoặc bơm hàng loạt
  * giao dịch rác sang cổng thanh toán.
@@ -56,7 +56,7 @@ const apiLimiter = rateLimit({
 });
 
 // Các thao tác tạo ra tài nguyên hoặc chạm vào tiền: giữ chỗ, tạo đơn, báo giá
-// chuyển sân, tạo URL thanh toán. Siết chặt hơn trần chung.
+// đổi lịch, tạo URL thanh toán. Siết chặt hơn trần chung.
 const writeLimiter = rateLimit({
     windowMs: 60 * 1000,
     limit: 20,

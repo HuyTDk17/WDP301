@@ -249,7 +249,7 @@ Bộ test kiểm tra 4 nhóm:
 | `booking-expiry.integration.test.js` | Đơn quá hạn tự huỷ đúng lúc; **không** tự huỷ nhầm đơn khách đã báo "đã chuyển khoản" đang chờ admin xác nhận |
 | `credit-concurrency.integration.test.js` | Số dư khuyến mãi không bị tiêu hai lần khi nhiều request cùng lúc |
 | `loyaltyPoints.test.js` *(ở `tests/`, không cần CSDL)* | Quy đổi điểm ↔ VNĐ, tách hoàn 3 chiều (tiền mặt/số dư/điểm) |
-| `transfer-flow.integration.test.js` | Luồng chuyển sân T4 đầy đủ (báo giá → chuyển khoản → admin xác nhận → giao dịch nguyên tử) và T2 (hoàn tiền, chạy ngay) — bao gồm đúng chỗ vừa được vá: hạn giữ chỗ khung giờ đích phải khớp với hạn chuyển khoản |
+| `transfer-flow.integration.test.js` | Luồng đổi lịch đầy đủ: từ chối đổi sang địa điểm khác, T2 sang sân đắt hơn (báo giá → chuyển khoản → admin xác nhận → giao dịch nguyên tử) và T2 sang sân rẻ hơn (hoàn tiền, chạy ngay) — bao gồm đúng chỗ vừa được vá: hạn giữ chỗ khung giờ đích phải khớp với hạn chuyển khoản |
 
 > ⚠️ Bộ test này được viết cẩn thận, bám sát các hàm thật trong code (không
 > viết lại logic song song để so sánh), và đã qua kiểm tra cú pháp — nhưng môi
@@ -272,7 +272,7 @@ hàng thật:
 Kiểm thử múi giờ đáng làm riêng: tạo một đơn cho **19:00 tối nay**, gọi
 `GET /api/bookings/:id/transfer/eligibility` và xem `leadTimeHours` có đúng
 bằng số giờ còn lại thật không. Lệch 7 tiếng nghĩa là `APP_TZ_OFFSET_MINUTES`
-sai, và hậu quả là thu sai tiền chuyển sân của khách.
+sai, và hậu quả là thu sai tiền đổi lịch của khách.
 
 ---
 
@@ -342,4 +342,4 @@ Xếp theo mức độ nên làm sớm:
 6. **Pháp lý.** Nền tảng giữ tiền của bên thứ ba rồi chi hộ cho chủ sân. Trước
    khi mở cho chủ sân ngoài, nên hỏi ý kiến về điều kiện hoạt động trung gian
    thanh toán, và chuẩn bị hợp đồng mẫu với chủ sân nêu rõ kỳ đối soát, tỉ lệ
-   hoa hồng, chính sách huỷ và bồi thường chuyển sân.
+   hoa hồng, chính sách huỷ và phí đổi lịch.

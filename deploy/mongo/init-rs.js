@@ -7,7 +7,7 @@
  * ============ VÌ SAO CẦN REPLICA SET ============
  *
  * MongoDB chỉ hỗ trợ giao dịch (transaction) trên replica set, kể cả khi chỉ có
- * đúng một nút. Nghiệp vụ chuyển sân đụng tới tiền của ba bên — khách, chủ sân
+ * đúng một nút. Nghiệp vụ đổi lịch đụng tới tiền của ba bên — khách, chủ sân
  * cũ, chủ sân mới — và phải làm sáu việc trong cùng một lần: tạo đơn mới, giành
  * khung giờ đích, chuyển đơn gốc sang 'transferred', giải phóng khung giờ gốc,
  * ghi bốn bút toán sổ cái, chốt trạng thái yêu cầu.

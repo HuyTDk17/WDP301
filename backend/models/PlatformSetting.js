@@ -32,20 +32,14 @@ const platformSettingSchema = new mongoose.Schema(
         // trước đây bị bỏ qua khi tính lợi nhuận.
         gatewayFeeRate: { type: Number, default: 0.015, min: 0, max: 1 },
 
-        // ===== CHUYỂN SÂN =====
+        // ===== ĐỔI LỊCH =====
         transferEnabled: { type: Boolean, default: true },
-        // Bật = chuyển sang CHỦ SÂN KHÁC (loại T4) chỉ cho phép khi cả hai chủ sân đã được Admin duyệt vào mạng lưới.
-        // Tắt (mặc định) = mọi chủ sân tự động tham gia như trước đây, không đổi hành vi hiện có.
-        transferNetworkRequired: { type: Boolean, default: false },
         // Dưới ngưỡng này chủ sân cũ không còn cơ hội bán lại khung giờ, nên
         // không cho chuyển nữa — khách phải dùng chính sách huỷ.
         transferMinLeadTimeHours: { type: Number, default: 2, min: 0 },
         maxTransfersPerBooking: { type: Number, default: 1, min: 0 },
-        // Hạn mức theo THÁNG cho mỗi khách (đổi lịch + chuyển sân, không tính sang tên). 0 = không giới hạn (mặc định).
+        // Hạn mức theo THÁNG cho mỗi khách (đổi lịch). 0 = không giới hạn (mặc định).
         maxTransfersPerMonth: { type: Number, default: 0, min: 0 },
-        // Chuyển sang CHỦ SÂN KHÁC (T4): % phí chuyển sân được chia cho chủ sân GỐC (người bị mất lượt đặt), phần còn lại
-        // thuộc chủ sân đích như hiện nay. 0 = giữ nguyên (toàn bộ phí về chủ sân đích). Cộng thêm khoản bồi thường theo bậc.
-        transferFeeOriginSharePct: { type: Number, default: 0, min: 0, max: 100 },
         quoteTtlMinutes: { type: Number, default: 10, min: 1 },
         ownerApprovalTimeoutMinutes: { type: Number, default: 30, min: 1 },
 
@@ -56,34 +50,19 @@ const platformSettingSchema = new mongoose.Schema(
                 _id: false,
                 minLeadHours: Number,
                 sameVenueRate: Number,   // T1, T2
-                sameOwnerRate: Number,   // T3
-                crossOwnerRate: Number,  // T4
             }],
             default: () => ([
-                { minLeadHours: 24, sameVenueRate: 0, sameOwnerRate: 0.02, crossOwnerRate: 0.05 },
-                { minLeadHours: 12, sameVenueRate: 0, sameOwnerRate: 0.03, crossOwnerRate: 0.08 },
-                { minLeadHours: 6, sameVenueRate: 0.03, sameOwnerRate: 0.05, crossOwnerRate: 0.10 },
-                { minLeadHours: 0, sameVenueRate: 0.05, sameOwnerRate: 0.08, crossOwnerRate: 0.15 },
+                { minLeadHours: 24, sameVenueRate: 0 },
+                { minLeadHours: 12, sameVenueRate: 0 },
+                { minLeadHours: 6, sameVenueRate: 0.03 },
+                { minLeadHours: 0, sameVenueRate: 0.05 },
             ]),
         },
         transferFeeMin: { type: Number, default: 5000, min: 0 },
         transferFeeMax: { type: Number, default: 100000, min: 0 },
-        transferFixedFeeT5: { type: Number, default: 10000, min: 0 },
 
-        // Bồi thường chủ sân gốc — CHỈ áp cho T4, vì chỉ khi đó mới có một chủ
-        // sân thực sự bị mất doanh thu.
-        compensationTiers: {
-            type: [{ _id: false, minLeadHours: Number, rate: Number }],
-            default: () => ([
-                { minLeadHours: 24, rate: 0 },
-                { minLeadHours: 12, rate: 0.10 },
-                { minLeadHours: 6, rate: 0.20 },
-                { minLeadHours: 0, rate: 0.40 },
-            ]),
-        },
-
-        // Trần hoàn TIỀN MẶT khi chuyển sang sân rẻ hơn. Phần vượt trần được
-        // ghi vào số dư khuyến mãi — chặn hành vi đặt sân đắt rồi chuyển sang
+        // Trần hoàn TIỀN MẶT khi đổi sang sân rẻ hơn. Phần vượt trần được
+        // ghi vào số dư khuyến mãi — chặn hành vi đặt sân đắt rồi đổi sang
         // sân rẻ để rút tiền qua cổng thanh toán.
         maxRefundRatio: { type: Number, default: 0.5, min: 0, max: 1 },
         refundToCreditEnabled: { type: Boolean, default: true },
@@ -99,8 +78,8 @@ const platformSettingSchema = new mongoose.Schema(
                 { minLeadHours: 0, refundRate: 0 },
             ]),
         },
-        // Cố tình đặt KÉM hấp dẫn hơn chuyển sân, để khi khách bận đột xuất thì
-        // chuyển sân luôn là lựa chọn rẻ hơn huỷ.
+        // Cố tình đặt KÉM hấp dẫn hơn đổi lịch, để khi khách bận đột xuất thì
+        // đổi lịch luôn là lựa chọn rẻ hơn huỷ.
         cancellationTiers: {
             type: [{ _id: false, minLeadHours: Number, refundRate: Number }],
             default: () => ([

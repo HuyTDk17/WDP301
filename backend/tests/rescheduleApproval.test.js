@@ -1,8 +1,8 @@
 /**
  * KIỂM THỬ #33 — CHỦ SÂN XEM VÀ XỬ LÝ YÊU CẦU ĐỔI LỊCH.
  * Khoá chặt: cài đặt duyệt đổi lịch tri-state (null = theo cài đặt cũ nên không đổi hành vi của chủ sân hiện có);
- * đổi lịch tách khỏi "chuyển đến/chuyển đi"; thông báo dùng lời lẽ "đổi lịch" và chỉ báo chủ sân một lần;
- * cập nhật chính sách theo từng trường (trước đây thiếu trường sẽ bị đặt về false); các loại chuyển khác giữ nguyên nội dung.
+ * chỉ còn đổi lịch (chuyển sân đã bị gỡ); thông báo dùng lời lẽ "đổi lịch" và chỉ báo chủ sân một lần;
+ * cập nhật chính sách theo từng trường (trước đây thiếu trường sẽ bị đặt về false).
  * Dùng model THẬT nhưng ghi đè truy vấn — không cần MongoDB.
  */
 const assert = require('assert');
@@ -34,20 +34,16 @@ const base = (over = {}) => ({
 });
 
 console.log('\n=== ĐỔI LỊCH — CHỦ SÂN XỬ LÝ (#33) ===\n');
-test('RA-01 · duyệt đổi lịch tri-state: null/không có = theo cài đặt "chuyển đến" (giữ hành vi cũ); true/false ghi đè CHỈ cho T1/T2', async () => {
+test('RA-01 · duyệt đổi lịch tri-state: null/không có = theo cài đặt chung `transferRequiresApproval` (giữ hành vi cũ); true/false ghi đè', async () => {
     const v = (reschedule, transfer) => ({ rescheduleRequiresApproval: reschedule, transferRequiresApproval: transfer });
-    for (const type of ['T1', 'T2']) {
-        assert.strictEqual(requiresOwnerApproval(v(null, true), type), true, 'chủ sân đã bật duyệt thủ công → đổi lịch vẫn phải duyệt như trước');
-        assert.strictEqual(requiresOwnerApproval(v(undefined, false), type), false);
-        assert.strictEqual(requiresOwnerApproval({ transferRequiresApproval: true }, type), true, 'chủ sân cũ chưa có trường mới');
-        assert.strictEqual(requiresOwnerApproval(v(false, true), type), false, 'tự chấp nhận đổi lịch dù duyệt thủ công chuyển đến');
-        assert.strictEqual(requiresOwnerApproval(v(true, false), type), true, 'duyệt đổi lịch dù tự chấp nhận chuyển đến');
+    {
+        assert.strictEqual(requiresOwnerApproval(v(null, true)), true, 'chủ sân đã bật duyệt thủ công → đổi lịch vẫn phải duyệt như trước');
+        assert.strictEqual(requiresOwnerApproval(v(undefined, false)), false);
+        assert.strictEqual(requiresOwnerApproval({ transferRequiresApproval: true }), true, 'chủ sân cũ chưa có trường mới');
+        assert.strictEqual(requiresOwnerApproval(v(false, true)), false, 'tự chấp nhận đổi lịch dù duyệt thủ công chuyển đến');
+        assert.strictEqual(requiresOwnerApproval(v(true, false)), true, 'duyệt đổi lịch dù tự chấp nhận chuyển đến');
     }
-    for (const type of ['T3', 'T4', 'T5']) {
-        assert.strictEqual(requiresOwnerApproval(v(true, false), type), false, `${type} không bị cài đặt đổi lịch ảnh hưởng`);
-        assert.strictEqual(requiresOwnerApproval(v(false, true), type), true, type);
-    }
-    assert.strictEqual(requiresOwnerApproval(null, 'T1'), false);
+    assert.strictEqual(requiresOwnerApproval(null), false);
 });
 test('RA-02 · thông báo hoàn tất ĐỔI LỊCH: đúng 2 thông báo (khách + chủ sân MỘT lần), lời lẽ "đổi lịch", phí chỉ hiện khi > 0', async () => {
     const t = base({ quote: quote({ settlement: 20000, transferFee: 10000 }) });
@@ -64,50 +60,34 @@ test('RA-02 · thông báo hoàn tất ĐỔI LỊCH: đúng 2 thông báo (khá
     assert.ok(!/phí đổi lịch/.test(msg.completedNotifications(base())[1].message), 'phí 0 thì không nhắc');
     assert.strictEqual(msg.completedNotifications(base({ toOwnerId: null }))[1].userId, ME, 'thiếu toOwnerId thì dùng chủ sân gốc');
 });
-test('RA-03 · chuyển sân (T3/T4) GIỮ NGUYÊN nội dung và số lượng thông báo như cũ', async () => {
-    for (const type of ['T3', 'T4']) {
-        const list = msg.completedNotifications(base({ type, toOwnerId: OTHER, quote: quote({ compensation: 30000 }) }));
-        assert.deepStrictEqual(list.map((n) => n.title), ['Đã chuyển sân thành công', 'Một lượt đặt đã được chuyển đi', 'Bạn có lượt đặt mới được chuyển đến'], type);
-        assert.match(list[1].message, /khoản bồi thường 30\.000đ/);
-        assert.deepStrictEqual(list.map((n) => n.userId), [CUS, ME, OTHER]);
-    }
-    assert.match(msg.completedNotifications(base({ type: 'T4', toOwnerId: OTHER }))[1].message, /Khung giờ đã mở lại/);
-});
-test('RA-04 · thông báo xin duyệt: đổi lịch nêu cả lịch cũ và mới + link thẳng tới tab Đổi lịch; chuyển sân giữ nguyên', async () => {
+test('RA-04 · thông báo xin duyệt: đổi lịch nêu cả lịch cũ và mới + link thẳng tới tab Đổi lịch', async () => {
     const r = msg.approvalRequest(base(), 30);
     assert.strictEqual(r.title, 'Khách xin đổi lịch');
     assert.match(r.message, /18:00–19:00/); assert.match(r.message, /19:00–20:00/); assert.match(r.message, /30 phút/); assert.match(r.message, /giữ nguyên lịch cũ/);
     assert.strictEqual(r.link, '/owner/transfers?tab=reschedule');
-    const old = msg.approvalRequest(base({ type: 'T4' }), 30);
-    assert.deepStrictEqual([old.title, old.link], ['Có yêu cầu chuyển sân đến địa điểm của bạn', '/owner/transfers']);
 });
 test('RA-05 · thông báo thất bại: đổi lịch nói rõ lịch gốc còn nguyên; có khoản đã thu thì báo hoàn', async () => {
     const f = msg.failureNotification(base(), 'Chủ sân từ chối', 15000);
     assert.strictEqual(f.title, 'Yêu cầu đổi lịch không thành công');
     assert.match(f.message, /Lịch đặt ban đầu.*VẪN CÒN HIỆU LỰC.*15\.000đ.*hoàn lại/);
     assert.ok(!/hoàn lại/.test(msg.failureNotification(base(), 'Hết hạn', 0).message));
-    assert.strictEqual(msg.failureNotification(base({ type: 'T4' }), 'x', 0).title, 'Yêu cầu chuyển sân không thành công');
 });
 // ── API chủ sân ──
 const chain = (rows) => { const self = { then: (a, b) => Promise.resolve(rows).then(a, b), populate: () => self, sort: () => self, limit: () => self }; return self; };
-test('RA-06 · danh sách của chủ sân: đổi lịch TÁCH khỏi chuyển đến/chuyển đi (không còn hiện hai lần), đếm riêng yêu cầu chờ duyệt', async () => {
+test('RA-06 · danh sách của chủ sân: chỉ yêu cầu đổi lịch gửi đến địa điểm của họ, đếm riêng yêu cầu chờ duyệt', async () => {
     const rows = [
         { _id: 'r1', type: 'T1', toOwnerId: ME, fromOwnerId: ME, status: 'awaiting_owner_approval' },
         { _id: 'r2', type: 'T2', toOwnerId: ME, fromOwnerId: ME, status: 'completed' },
         { _id: 'r3', type: 'T1', toOwnerId: ME, fromOwnerId: ME, status: 'awaiting_owner_approval' },
-        { _id: 'm1', type: 'T4', toOwnerId: ME, fromOwnerId: OTHER, status: 'awaiting_owner_approval' },
-        { _id: 'm2', type: 'T4', toOwnerId: OTHER, fromOwnerId: ME, status: 'completed' },
-        { _id: 'm3', type: 'T3', toOwnerId: ME, fromOwnerId: ME, status: 'completed' },
         { _id: 'x1', type: 'T1', toOwnerId: OTHER, fromOwnerId: OTHER, status: 'awaiting_owner_approval' },   // của chủ sân khác — không được thấy
-    ].filter((r) => [r.toOwnerId, r.fromOwnerId].includes(ME));                                                  // mô phỏng bộ lọc $or của truy vấn
+    ].filter((r) => String(r.toOwnerId) === ME);                                                              // mô phỏng bộ lọc { toOwnerId: me }
     TransferRequest.find = () => chain(rows);
     const r = await call(ctrl.getOwnerTransfers, { user: { _id: ME } });
     const ids = (a) => a.map((t) => t._id).sort();
     assert.deepStrictEqual(ids(r.body.reschedules), ['r1', 'r2', 'r3']);
-    assert.deepStrictEqual(ids(r.body.incoming), ['m1', 'm3']);
-    assert.deepStrictEqual(ids(r.body.outgoing), ['m2', 'm3']);
-    assert.ok(![...r.body.incoming, ...r.body.outgoing].some((t) => ['T1', 'T2'].includes(t.type)), 'đổi lịch không lẫn vào hai tab cũ');
-    assert.deepStrictEqual([r.body.pendingCount, r.body.pendingRescheduleCount], [1, 2]);
+    assert.strictEqual(r.body.incoming, undefined, 'không còn nhóm chuyển đến/chuyển đi');
+    assert.strictEqual(r.body.outgoing, undefined);
+    assert.strictEqual(r.body.pendingRescheduleCount, 2);
 });
 test('RA-07 · cập nhật chính sách duyệt theo TỪNG TRƯỜNG: gửi một trường không làm đổi trường kia; null = theo cài đặt cũ; giá trị lạ → 400; chỉ chủ địa điểm', async () => {
     const venue = { _id: oid(5), ownerId: ME, transferRequiresApproval: true, rescheduleRequiresApproval: null, save: async () => venue };
@@ -123,16 +103,15 @@ test('RA-07 · cập nhật chính sách duyệt theo TỪNG TRƯỜNG: gửi m�
     assert.strictEqual((await patch({ transferRequiresApproval: true }, { _id: OTHER })).code, 403);
     assert.strictEqual((await call(ctrl.setVenueTransferPolicy, { user: { _id: ME }, params: { id: oid(404) }, body: {} })).code, 404);
 });
-test('RA-08 · chủ sân từ chối không nêu lý do: lý do mặc định đúng loại (đổi lịch / chuyển đến); từ chối đúng chủ sân đích', async () => {
+test('RA-08 · chủ sân từ chối không nêu lý do: lý do mặc định; từ chối đúng chủ sân đích', async () => {
     const reasons = [];
     const realAbort = transferService.abort;
     transferService.abort = async (t, status, reason) => { reasons.push(reason); return t; };
     try {
         const find = (type, toOwnerId = ME) => { TransferRequest.findById = async () => ({ _id: 'r', type, toOwnerId, status: 'awaiting_owner_approval' }); };
         find('T1'); await call(ctrl.reject, { user: { _id: ME }, params: { id: 'r' }, body: {} });
-        find('T4'); await call(ctrl.reject, { user: { _id: ME }, params: { id: 'r' }, body: {} });
         find('T1'); await call(ctrl.reject, { user: { _id: ME }, params: { id: 'r' }, body: { reason: '  Sân bảo trì  ' } });
-        assert.deepStrictEqual(reasons, ['Chủ sân từ chối yêu cầu đổi lịch', 'Chủ sân từ chối yêu cầu chuyển đến', 'Sân bảo trì']);
+        assert.deepStrictEqual(reasons, ['Chủ sân từ chối yêu cầu đổi lịch', 'Sân bảo trì']);
         find('T1', OTHER);
         assert.strictEqual((await call(ctrl.reject, { user: { _id: ME }, params: { id: 'r' }, body: {} })).code, 403);
     } finally { transferService.abort = realAbort; }

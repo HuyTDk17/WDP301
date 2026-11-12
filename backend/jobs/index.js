@@ -14,7 +14,7 @@ const { leadTimeHours, toLocalDateString } = require('../utils/timeSlots');
  * TÁC VỤ NỀN.
  *
  * TTL index của MongoDB đủ để dọn bản ghi giữ chỗ, nhưng KHÔNG đủ để đóng đơn
- * chờ thanh toán quá hạn hay hết hạn báo giá chuyển sân — những việc đó cần
+ * chờ thanh toán quá hạn hay hết hạn báo giá đổi lịch — những việc đó cần
  * chạy logic nghiệp vụ (hoàn tiền, trả lại số dư, gửi thông báo) chứ không chỉ
  * xoá document.
  *
@@ -107,7 +107,7 @@ async function autoCompleteBookings() {
 }
 
 /**
- * Đóng các yêu cầu chuyển sân hết hạn báo giá hoặc hết hạn chờ chủ sân duyệt —
+ * Đóng các yêu cầu đổi lịch hết hạn báo giá hoặc hết hạn chờ chủ sân duyệt —
  * NGOẠI TRỪ yêu cầu có khoản bù đang chờ xác nhận chuyển khoản, cùng lý do như
  * expireStaleBookings ở trên.
  */
@@ -167,7 +167,7 @@ async function runOnce() {
         expireStaleTransfers().catch((e) => { console.error('expireStaleTransfers', e.message); return 0; }),
     ]);
     if (bookings || transfers) {
-        console.log(`🧹 Dọn dẹp: ${bookings} đơn quá hạn thanh toán, ${transfers} yêu cầu chuyển sân hết hạn`);
+        console.log(`🧹 Dọn dẹp: ${bookings} đơn quá hạn thanh toán, ${transfers} yêu cầu đổi lịch hết hạn`);
     }
 }
 
@@ -184,7 +184,7 @@ function start(intervalMs = 60 * 1000) {
     const timer = setInterval(runOnce, intervalMs);
     const hourly = setInterval(runHourly, 60 * 60 * 1000);
     timer.unref?.(); hourly.unref?.();
-    console.log('⏱️  Đã bật tác vụ nền (đóng đơn quá hạn, hết hạn yêu cầu chuyển sân)');
+    console.log('⏱️  Đã bật tác vụ nền (đóng đơn quá hạn, hết hạn yêu cầu đổi lịch)');
     return () => { clearInterval(timer); clearInterval(hourly); };
 }
 

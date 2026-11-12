@@ -1,19 +1,19 @@
 import api from './api'
 
 // ============================================================
-// transferService — nghiệp vụ CHUYỂN SÂN.
+// transferService — nghiệp vụ ĐỔI LỊCH (đổi giờ hoặc đổi sân trong cùng địa điểm).
 //
 // Luồng (xem backend/services/transferService.js):
 //   1. getEligibility(bookingId)  → đơn có chuyển được không, còn bao nhiêu
 //      giờ, biểu phí sẽ áp dụng. Gọi TRƯỚC khi cho khách đi tìm sân, để họ
 //      biết chi phí trước khi mất công chọn.
-//   2. createQuote(bookingId, target) → hệ thống giữ chỗ khung giờ đích 10
+//   2. createQuote(bookingId, target) → hệ thống giữ chỗ khung giờ mới 10
 //      phút và trả về BẢNG CHI PHÍ đã chốt (breakdown). Toàn bộ phép tính nằm
 //      ở máy chủ, frontend chỉ hiển thị.
 //   3. confirm(transferId) → nếu phải bù tiền thì trả về hướng dẫn chuyển
 //      khoản (số tài khoản, mã QR); nếu không thì chuyển xong luôn.
 //   4. Khách chuyển khoản, bấm "Tôi đã chuyển khoản", quản trị viên (hoặc
-//      webhook đối soát tự động) xác nhận — backend mới thực thi bước chuyển.
+//      webhook đối soát tự động) xác nhận — backend mới thực thi bước đổi lịch.
 //
 // Ở MỌI nhánh thất bại, đơn gốc luôn được giữ nguyên hiệu lực.
 // ============================================================
@@ -21,8 +21,6 @@ import api from './api'
 export const transferService = {
   // ── Khách hàng ──
   getEligibility: (bookingId) => api.get(`/bookings/${bookingId}/transfer/eligibility`),
-  // Gợi ý sân thay thế còn trống (cùng môn, cùng ngày, giờ gần giờ gốc, cùng độ dài)
-  getSuggestions: (bookingId) => api.get(`/bookings/${bookingId}/transfer/suggestions`),
   createQuote: (bookingId, target) => api.post(`/bookings/${bookingId}/transfer/quote`, target),
   confirm: (transferId) => api.post(`/transfers/${transferId}/confirm`),
   cancel: (transferId) => api.post(`/transfers/${transferId}/cancel`),
@@ -33,8 +31,8 @@ export const transferService = {
   getOwnerTransfers: (params = {}) => api.get('/owner/transfers', { params }),
   approve: (id) => api.post(`/owner/transfers/${id}/approve`),
   reject: (id, reason) => api.post(`/owner/transfers/${id}/reject`, { reason }),
-  // value: boolean (tương thích cũ — duyệt chuyển đến) hoặc object { transferRequiresApproval?, rescheduleRequiresApproval? }
-  // rescheduleRequiresApproval: true = luôn duyệt đổi lịch · false = tự chấp nhận · null = theo cài đặt "chuyển đến"
+  // value: boolean (tương thích cũ — duyệt yêu cầu đổi lịch) hoặc object { transferRequiresApproval?, rescheduleRequiresApproval? }
+  // rescheduleRequiresApproval: true = luôn duyệt đổi lịch · false = tự chấp nhận · null = theo cài đặt chung
   setVenuePolicy: (venueId, value) =>
     api.patch(`/owner/venues/${venueId}/transfer-policy`, typeof value === 'object' && value !== null ? value : { transferRequiresApproval: value }),
   setRescheduleApproval: (venueId, rescheduleRequiresApproval) =>
@@ -42,7 +40,7 @@ export const transferService = {
 
 }
 
-// Nhãn tiếng Việt cho từng trạng thái yêu cầu chuyển sân.
+// Nhãn tiếng Việt cho từng trạng thái yêu cầu đổi lịch.
 export const TRANSFER_STATUS = {
   quoted: { label: 'Chờ xác nhận', color: '#F59E0B', bg: '#FEF3C7' },
   awaiting_payment: { label: 'Chờ thanh toán', color: '#F59E0B', bg: '#FEF3C7' },
@@ -58,6 +56,4 @@ export const TRANSFER_STATUS = {
 export const TRANSFER_TYPE_LABEL = {
   T1: 'Đổi khung giờ',
   T2: 'Đổi sân trong cùng địa điểm',
-  T3: 'Đổi địa điểm (cùng chủ sân)',
-  T4: 'Chuyển sang địa điểm khác',
 }

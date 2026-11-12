@@ -1,5 +1,5 @@
 /**
- * LÕI TÍNH PHÍ CHUYỂN SÂN — hàm THUẦN, không chạm cơ sở dữ liệu.
+ * LÕI TÍNH PHÍ ĐỔI LỊCH — hàm THUẦN, không chạm cơ sở dữ liệu.
  *
  * Tách riêng vì đây là phần dễ sai nhất và cũng là phần cần kiểm thử kỹ nhất:
  * một sai sót nhỏ trong công thức sẽ gây sai lệch tài chính tích luỹ và rất
@@ -12,8 +12,8 @@
  *
  *   P1   = A1 + F1 − D1        đã trả cho đơn gốc
  *   P2   = A2 + F2 − D2        phải trả cho đơn mới
- *   F_tr = clamp(round(A1 × k), feeMin, feeMax)      phí chuyển sân
- *   C_A  = round(A1 × c)                             bồi thường chủ sân cũ
+ *   F_tr = clamp(round(A1 × k), feeMin, feeMax)      phí đổi lịch
+ *   C_A  = 0                                         (đổi lịch cùng chủ sân, không bồi thường)
  *
  *   S > 0 → khách bù thêm · S = 0 → chuyển ngay · S < 0 → khách được hoàn
  *
@@ -40,18 +40,16 @@ function quoteTransfer(input, policy) {
     const oldPaid = oldAmount + oldServiceFee - oldDiscount;
     const newPayable = newAmount + newServiceFee - newDiscount;
 
-    // --- Phí chuyển sân ---
-    const k = policy.type === 'T5' ? 0 : (policy.feeRate || 0);
-    const transferFee = policy.type === 'T5'
-        ? Math.round(policy.fixedFeeT5 || 0)
-        // Chặn dưới để khoản thu đủ bù chi phí giao dịch, chặn trên để đơn giá
-        // trị lớn không phải chịu mức phí vô lý. Phí 0% thì miễn hẳn, không bị
-        // sàn kéo lên — nếu không thì "miễn phí" sẽ hoá ra vẫn mất 5.000đ.
-        : (k <= 0 ? 0 : clamp(Math.round(oldAmount * k), policy.feeMin || 0, policy.feeMax || Infinity));
+    // --- Phí đổi lịch ---
+    const k = policy.feeRate || 0;
+    // Chặn dưới để khoản thu đủ bù chi phí giao dịch, chặn trên để đơn giá
+    // trị lớn không phải chịu mức phí vô lý. Phí 0% thì miễn hẳn, không bị
+    // sàn kéo lên — nếu không thì "miễn phí" sẽ hoá ra vẫn mất 5.000đ.
+    const transferFee = k <= 0 ? 0 : clamp(Math.round(oldAmount * k), policy.feeMin || 0, policy.feeMax || Infinity);
 
-    // --- Bồi thường chủ sân gốc ---
-    const c = policy.compensationRate || 0;
-    const compensation = Math.round(oldAmount * c);
+    // Đổi lịch diễn ra trong cùng một chủ sân nên không có khoản bồi thường.
+    const c = 0;
+    const compensation = 0;
 
     // --- Quyết toán ---
     const settlement = newPayable + transferFee + compensation - oldPaid;
@@ -108,15 +106,9 @@ function buildBreakdown(q, labels = {}) {
     if (q.transferFee > 0) {
         rows.push({
             label: q.transferFeeRate > 0
-                ? `Phí chuyển sân (${Math.round(q.transferFeeRate * 100)}%)`
-                : 'Phí chuyển sân',
+                ? `Phí đổi lịch (${Math.round(q.transferFeeRate * 100)}%)`
+                : 'Phí đổi lịch',
             amount: q.transferFee,
-        });
-    }
-    if (q.compensation > 0) {
-        rows.push({
-            label: `Bồi thường chủ sân cũ (${Math.round(q.compensationRate * 100)}%)`,
-            amount: q.compensation,
         });
     }
     rows.push({ label: 'Đã thanh toán trước đó', amount: -q.oldPaid });

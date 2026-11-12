@@ -65,11 +65,11 @@ const bookingSchema = new mongoose.Schema(
         // vết về gốc mà không phải lần ngược từng mắt xích.
         rootBookingId: { type: mongoose.Schema.Types.ObjectId, ref: 'Booking', default: null },
         transferCount: { type: Number, default: 0 },
-        // Tiền bồi thường chủ sân GỐC nhận khi đơn này bị chuyển đi (chỉ loại T4)
+        // Tiền bồi thường chủ sân GỐC nhận khi đơn này bị chuyển đi (không còn phát sinh mới, giữ lại cho dữ liệu cũ)
         compensationAmount: { type: Number, default: 0 },
         // Phí chuyển sân nền tảng đã thu — ghi trên đơn MỚI
         transferFeeAmount: { type: Number, default: 0 },
-        // Chia phí chuyển sân giữa hai chủ sân (chỉ loại T4, xem utils/transferSplit.js):
+        // Chia phí chuyển sân giữa hai chủ sân (không còn phát sinh mới, giữ lại cho dữ liệu cũ):
         //   ShareIn  — ghi trên đơn GỐC (đã chuyển đi): phần phí chủ sân gốc nhận thêm
         //   ShareOut — ghi trên đơn MỚI: phần phí bị trừ khỏi chủ sân đích để chuyển cho chủ sân gốc
         // Hai số luôn bằng nhau nên tổng quyền lợi của các chủ sân không đổi.

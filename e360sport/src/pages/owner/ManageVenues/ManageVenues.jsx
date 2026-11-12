@@ -70,11 +70,11 @@ export default function ManageVenues() {
     try {
       await transferService.setVenuePolicy(venueId, requiresApproval)
       toast.success(requiresApproval
-        ? 'Từ giờ bạn sẽ tự duyệt các yêu cầu chuyển sân đến địa điểm này'
-        : 'Khách có thể chuyển sân đến địa điểm này ngay, không cần chờ duyệt')
+        ? 'Từ giờ bạn sẽ tự duyệt các yêu cầu đổi lịch tại địa điểm này'
+        : 'Khách có thể đổi lịch tại địa điểm này ngay, không cần chờ duyệt')
     } catch (err) {
       setVenues((list) => list.map((v) => (v._id === venueId ? { ...v, transferRequiresApproval: !requiresApproval } : v)))
-      toast.error(err?.message || 'Không thể cập nhật thiết lập chuyển sân')
+      toast.error(err?.message || 'Không thể cập nhật thiết lập duyệt đổi lịch')
     }
   }
 
@@ -140,13 +140,13 @@ export default function ManageVenues() {
                       checked={!!venue.transferRequiresApproval}
                       onChange={(e) => toggleTransferPolicy(venue._id, e.target.checked)}
                     />
-                    <span>Tự duyệt từng yêu cầu chuyển sân đến địa điểm này</span>
+                    <span>Tự duyệt từng yêu cầu đổi lịch tại địa điểm này</span>
                   </label>
                   {/* Đổi lịch = khách đổi giờ/đổi sân trong CHÍNH địa điểm này. Mặc định theo ô tích bên trên. */}
                   <label className={styles.transferPolicy}>
                     <span>Yêu cầu đổi lịch của khách:</span>
                     <select value={rescheduleMode(venue)} onChange={(e) => changeRescheduleMode(venue._id, e.target.value)}>
-                      <option value="follow">Theo cài đặt chuyển sân ở trên</option>
+                      <option value="follow">Theo cài đặt ở trên</option>
                       <option value="always">Luôn chờ tôi duyệt</option>
                       <option value="auto">Tự chấp nhận ngay</option>
                     </select>

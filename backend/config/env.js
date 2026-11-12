@@ -4,7 +4,7 @@
  * Lý do tồn tại: những lỗi cấu hình nguy hiểm nhất đều KHÔNG làm ứng dụng sập —
  * nó vẫn chạy bình thường và chỉ sai âm thầm. JWT_SECRET để nguyên giá trị mẫu
  * thì ai cũng ký được token admin. Thiếu TZ thì lead time lệch 7 tiếng và tra
- * sai bậc phí chuyển sân. Thiếu thông tin tài khoản ngân hàng thì khách không
+ * sai bậc phí đổi lịch. Thiếu thông tin tài khoản ngân hàng thì khách không
  * biết chuyển tiền vào đâu.
  *
  * Nguyên tắc: ở production, sai cấu hình thì DỪNG HẲN. Ở development chỉ cảnh
@@ -61,7 +61,7 @@ function check() {
 
         if (!/replicaSet=/.test(process.env.MONGO_URI || '')) {
             errors.push(
-                'MONGO_URI không trỏ tới replica set. Nghiệp vụ chuyển sân đụng tiền của ba bên\n' +
+                'MONGO_URI không trỏ tới replica set. Nghiệp vụ đổi lịch đụng tiền của ba bên\n' +
                 '        nên bắt buộc phải có giao dịch (transaction), mà giao dịch của MongoDB chỉ\n' +
                 '        hoạt động trên replica set. Ví dụ:\n' +
                 '        MONGO_URI=mongodb://mongo:27017/esport360?replicaSet=rs0'
@@ -96,7 +96,7 @@ function check() {
 
     // ===== Múi giờ =====
     // Đây là lỗi tiền bạc chứ không phải lỗi hiển thị: toàn bộ việc tra bậc phí
-    // chuyển sân và bậc bồi thường đều dựa trên "còn bao nhiêu giờ nữa tới giờ
+    // đổi lịch và bậc hoàn tiền đều dựa trên "còn bao nhiêu giờ nữa tới giờ
     // đá". Lệch múi giờ 7 tiếng là tra nhầm bậc và thu sai tiền.
     const offset = Number(process.env.APP_TZ_OFFSET_MINUTES ?? 420);
     if (Number.isNaN(offset)) {

@@ -73,20 +73,14 @@ test('RS-08 · API eligibility trả venueId/courtId để trang đổi lịch b
     const ctrl = fs.readFileSync(path.join(root, 'backend', 'controllers', 'transferController.js'), 'utf8');
     assert.ok(ctrl.includes('venueId: booking.venueId, courtId: booking.courtId'));
     const routes = fs.readFileSync(path.join(root, 'e360sport', 'src', 'routes', 'AppRoutes.jsx'), 'utf8');
-    assert.ok(routes.includes('/bookings/:bookingId/reschedule') && routes.includes('mode="reschedule"'));
+    assert.ok(routes.includes('/bookings/:bookingId/reschedule') && !routes.includes('/bookings/:bookingId/transfer'), 'chỉ còn route đổi lịch');
 });
 
-test('RS-09 · chuyển sân cho chọn NHIỀU giờ liền nhau (đổi lịch vẫn khoá độ dài)', async () => {
+test('RS-09 · đổi lịch luôn khoá độ dài; backend chỉ nhận đổi lịch trong cùng địa điểm', async () => {
     const page = fs.readFileSync(path.join(root, 'e360sport', 'src', 'pages', 'customer', 'TransferBooking', 'TransferBooking.jsx'), 'utf8');
-    assert.ok(page.includes('toggleSlotSelection') && page.includes('summarizeSlots(selectedSlots)'), 'chuyển sân dùng chọn nhiều ô');
-    assert.ok(page.includes('isReschedule && bk'), 'đổi lịch vẫn dùng khung cố định độ dài');
-    const sel = await import(path.join(root, 'e360sport', 'src', 'utils', 'slotSelection.js'));
-    const slots = ['15:00', '16:00', '17:00', '18:00'].map((st, i) => ({ start: st, end: ['16:00', '17:00', '18:00', '19:00'][i], isBooked: false, isPast: false }));
-    let picked = sel.toggleSlotSelection([], slots[0], slots);
-    picked = sel.toggleSlotSelection(picked, slots[2], slots);
-    assert.deepStrictEqual(sel.summarizeSlots(picked), { start: '15:00', end: '18:00', hours: 3 });
+    assert.ok(page.includes('buildRescheduleSlots') && !page.includes('toggleSlotSelection'), 'đổi lịch dùng khung cố định độ dài');
     const svc = fs.readFileSync(path.join(root, 'backend', 'services', 'transferService.js'), 'utf8');
-    assert.ok(!svc.includes('phải giữ nguyên độ dài'), 'backend không ép độ dài khi chuyển sân');
+    assert.ok(svc.includes('Chỉ có thể đổi lịch trong cùng địa điểm đã đặt'), 'backend từ chối địa điểm khác');
 });
 test('RS-10 · khách không huỷ được đơn đã qua giờ bắt đầu (backend + ẩn nút ở frontend); đơn quên "Hoàn thành" tự đóng sau thời gian ân hạn', async () => {
     const ctrl = fs.readFileSync(path.join(root, 'backend', 'controllers', 'bookingController.js'), 'utf8');

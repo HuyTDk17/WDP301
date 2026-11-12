@@ -1,11 +1,10 @@
-import { useState, useEffect, useCallback, useMemo } from 'react'
+import { useState, useEffect, useMemo } from 'react'
 import { useParams, useNavigate, Link } from 'react-router-dom'
 import {
-  ArrowLeft, ArrowRight, Calendar, Clock, MapPin, Search, Trophy,
+  ArrowLeft, ArrowRight, Calendar, Clock, Trophy,
   AlertTriangle, Info, CheckCircle2, Wallet, ShieldCheck,
 } from 'lucide-react'
 import Button from '@/components/ui/Button/Button'
-import Input from '@/components/ui/Input/Input'
 import Spinner from '@/components/ui/Spinner/Spinner'
 import Modal from '@/components/ui/Modal/Modal'
 import EmptyState from '@/components/ui/EmptyState/EmptyState'
@@ -14,25 +13,20 @@ import TimeSlotPicker from '@/components/venue/TimeSlotPicker/TimeSlotPicker'
 import { transferService } from '@/services/transferService'
 import { venueService } from '@/services/venueService'
 import { useToast } from '@/contexts/ToastContext'
-import { useDebounce } from '@/hooks'
-import { formatCurrency, formatDate, formatTime, buildAvailableSlots, getNext30Days, toLocalISODate } from '@/utils'
+import { formatCurrency, formatDate, formatTime, getNext30Days, toLocalISODate } from '@/utils'
 import { buildRescheduleSlots, durationMinutes } from '@/utils/rescheduleSlots'
-import { toggleSlotSelection, summarizeSlots, MAX_BOOKING_SLOTS } from '@/utils/slotSelection'
 import styles from './TransferBooking.module.css'
 
 const toISODate = (d) => toLocalISODate(d)
 
 /**
- * Trang CHUYỂN SÂN, ba bước:
- *   1. Xem chính sách phí sẽ áp dụng — cố tình đặt TRƯỚC bước tìm sân, để khách
- *      biết mình sẽ mất bao nhiêu trước khi mất công chọn sân mới.
- *   2. Tìm và chọn sân/khung giờ đích.
+ * Trang ĐỔI LỊCH, ba bước:
+ *   1. Xem chính sách phí sẽ áp dụng — cố tình đặt TRƯỚC bước chọn giờ, để khách
+ *      biết mình sẽ mất bao nhiêu trước khi mất công chọn.
+ *   2. Chọn ngày/giờ (hoặc sân khác) trong CÙNG địa điểm; giữ nguyên độ dài lượt đặt.
  *   3. Xem bảng chi phí do máy chủ tính và xác nhận.
  */
-export default function TransferBooking({ mode = 'transfer' }) {
-  // 'reschedule' = ĐỔI LỊCH: cố định địa điểm hiện tại, giữ nguyên độ dài lượt đặt, chỉ đổi ngày/giờ (hoặc sân
-  // trong cùng địa điểm). Dùng lại toàn bộ báo giá/giữ chỗ/thu chi của chuyển sân (loại T1/T2).
-  const isReschedule = mode === 'reschedule'
+export default function TransferBooking() {
   const { bookingId } = useParams()
   const navigate = useNavigate()
   const { toast } = useToast()
@@ -41,21 +35,12 @@ export default function TransferBooking({ mode = 'transfer' }) {
   const [eligibility, setEligibility] = useState(null)
   const [loading, setLoading] = useState(true)
 
-  // Bước 2 — tìm sân
-  const [search, setSearch] = useState('')
-  const [city, setCity] = useState('')
-  const debouncedSearch = useDebounce(search, 400)
-  const [venues, setVenues] = useState([])
-  const [searching, setSearching] = useState(false)
+  // Bước 2 — chọn giờ mới
   const [venue, setVenue] = useState(null)
   const [court, setCourt] = useState(null)
   const [date, setDate] = useState('')
-  const [slot, setSlot] = useState(null)                  // đổi lịch: một khung cố định độ dài
-  const [selectedSlots, setSelectedSlots] = useState([])    // chuyển sân: nhiều ô 1 giờ LIỀN NHAU
-  const [suggestions, setSuggestions] = useState([])         // gợi ý sân thay thế còn trống (chỉ chuyển sân)
-  const [pendingPick, setPendingPick] = useState(null)       // khung giờ của gợi ý vừa bấm, chờ lưới giờ tải xong để chọn sẵn
+  const [slot, setSlot] = useState(null)                  // một khung cố định độ dài
   const [slotsData, setSlotsData] = useState(null)
-  const [slotsKey, setSlotsKey] = useState('')   // 'sân|ngày' mà slotsData đang giữ — để biết dữ liệu có phải của lần chọn hiện tại
   const [loadingSlots, setLoadingSlots] = useState(false)
 
   // Bước 3 — báo giá
@@ -63,12 +48,12 @@ export default function TransferBooking({ mode = 'transfer' }) {
   const [quote, setQuote] = useState(null)
   const [confirming, setConfirming] = useState(false)
 
-  // ── Tải điều kiện chuyển ────────────────────────────────
+  // ── Tải điều kiện đổi lịch ───────────────────────────────
   useEffect(() => {
     transferService.getEligibility(bookingId)
       .then((res) => {
         setEligibility(res)
-        // Mặc định giữ nguyên ngày cũ — phần lớn khách chỉ đổi địa điểm
+        // Mặc định giữ nguyên ngày cũ — phần lớn khách chỉ đổi giờ
         setDate(res.booking?.date || toISODate(new Date()))
       })
       .catch((err) => {
@@ -78,10 +63,10 @@ export default function TransferBooking({ mode = 'transfer' }) {
       .finally(() => setLoading(false))
   }, [bookingId])
 
-  // Đổi lịch: không cần tìm địa điểm — mở thẳng địa điểm và sân của lượt đặt hiện tại.
+  // Mở thẳng địa điểm và sân của lượt đặt hiện tại.
   useEffect(() => {
     const bk = eligibility?.booking
-    if (!isReschedule || !bk?.venueId) return
+    if (!bk?.venueId) return
     venueService.getVenueById(bk.venueId)
       .then((res) => {
         const full = res.venue
@@ -90,111 +75,41 @@ export default function TransferBooking({ mode = 'transfer' }) {
         setCourt(active.find((c) => String(c._id) === String(bk.courtId)) || active[0] || null)
       })
       .catch(() => toast.error('Không thể tải thông tin địa điểm'))
-  }, [isReschedule, eligibility])
-
-  // ── Tìm địa điểm ────────────────────────────────────────
-  const loadVenues = useCallback(() => {
-    setSearching(true)
-    venueService.getVenues({
-      search: debouncedSearch || undefined,
-      city: city || undefined,
-      sport: eligibility?.booking?.sport || undefined,
-      limit: 12,
-    })
-      .then((res) => setVenues(res.venues || []))
-      .catch(() => toast.error('Không thể tải danh sách địa điểm'))
-      .finally(() => setSearching(false))
-  }, [debouncedSearch, city, eligibility])
-
-  useEffect(() => { if (step === 2 && !isReschedule) loadVenues() }, [step, loadVenues, isReschedule])
-
-  // Gợi ý sân thay thế còn trống — lỗi không chặn luồng (khách vẫn tự tìm được)
-  useEffect(() => {
-    if (step !== 2 || isReschedule) return
-    transferService.getSuggestions(bookingId)
-      .then((res) => setSuggestions(res.suggestions || []))
-      .catch(() => setSuggestions([]))
-  }, [step, isReschedule, bookingId])
-
-  const pickSuggestion = async (sg) => {
-    try {
-      const res = await venueService.getVenueById(sg.venueId)
-      const full = res.venue
-      setVenue(full)
-      setCourt((full.courts || []).find((c) => String(c._id) === String(sg.courtId)) || null)
-      setDate(sg.date)
-      setPendingPick({ start: sg.startTime, end: sg.endTime, courtId: sg.courtId, date: sg.date })
-    } catch {
-      toast.error('Không thể tải thông tin địa điểm gợi ý')
-    }
-  }
+  }, [eligibility])
 
   // ── Tải khung giờ của sân đã chọn ───────────────────────
   useEffect(() => {
     if (!venue || !court || !date) return
     setLoadingSlots(true)
     setSlot(null)
-    setSelectedSlots([])
     venueService.getCourtSlots(venue._id, court._id, date)
-      .then((d) => { setSlotsData(d); setSlotsKey(`${court._id}|${date}`) })
-      .catch(() => { setSlotsData({ bookedSlots: [] }); setSlotsKey(`${court._id}|${date}`) })
+      .then((d) => setSlotsData(d))
+      .catch(() => setSlotsData({ bookedSlots: [] }))
       .finally(() => setLoadingSlots(false))
   }, [venue, court, date])
 
   const slots = useMemo(() => {
     if (!venue || !court) return []
     const bk = eligibility?.booking
-    if (isReschedule && bk) {
-      // ĐỔI LỊCH giữ nguyên độ dài lượt đặt (lượt 2 giờ → khung 2 giờ), chọn giờ bắt đầu mới.
-      const now = new Date()
-      return buildRescheduleSlots({
-        open: venue.openHours?.open || '06:00',
-        close: venue.openHours?.close || '22:00',
-        durationMin: durationMinutes(bk.startTime, bk.endTime) || 60,
-        date,
-        courtId: court._id,
-        bookedSlots: slotsData?.bookedSlots || [],
-        original: { date: bk.date, courtId: bk.courtId, startTime: bk.startTime, endTime: bk.endTime },
-        today: toLocalISODate(),
-        nowMinutes: now.getHours() * 60 + now.getMinutes(),
-      })
-    }
-    // CHUYỂN SÂN: khách tự chọn số giờ (nhiều ô 1 giờ liền nhau). Lượt đặt hiện tại không tự chặn chính nó khi chuyển trong cùng sân/ngày.
-    const sameDayAndCourt = bk && date === bk.date && String(court._id) === String(bk.courtId)
-    const booked = (slotsData?.bookedSlots || []).filter((b) => !(sameDayAndCourt && b.start === bk.startTime && b.end === bk.endTime))
-    return buildAvailableSlots(
-      venue.openHours?.open || '06:00',
-      venue.openHours?.close || '22:00',
-      60, date, booked
-    )
+    if (!bk) return []
+    // Giữ nguyên độ dài lượt đặt (lượt 2 giờ → khung 2 giờ), chọn giờ bắt đầu mới.
+    const now = new Date()
+    return buildRescheduleSlots({
+      open: venue.openHours?.open || '06:00',
+      close: venue.openHours?.close || '22:00',
+      durationMin: durationMinutes(bk.startTime, bk.endTime) || 60,
+      date,
+      courtId: court._id,
+      bookedSlots: slotsData?.bookedSlots || [],
+      original: { date: bk.date, courtId: bk.courtId, startTime: bk.startTime, endTime: bk.endTime },
+      today: toLocalISODate(),
+      nowMinutes: now.getHours() * 60 + now.getMinutes(),
+    })
   }, [venue, court, date, slotsData, eligibility])
-
-  // Sau khi bấm một gợi ý: khi lưới giờ của sân/ngày đó đã tải xong thì chọn sẵn các ô nằm trong khung được gợi ý
-  useEffect(() => {
-    if (!pendingPick || loadingSlots || !slotsData || slots.length === 0) return
-    if (slotsKey !== `${pendingPick.courtId}|${pendingPick.date}`) return   // lưới đang hiện là của sân/ngày khác
-    const toMin = (t) => { const [h, m] = String(t).split(':').map(Number); return h * 60 + (m || 0) }
-    const cells = slots.filter((x) => toMin(x.start) >= toMin(pendingPick.start) && toMin(x.end) <= toMin(pendingPick.end))
-    if (cells.length && cells.every((x) => !x.isBooked && !x.isPast)) setSelectedSlots(cells)
-    setPendingPick(null)
-  }, [pendingPick, loadingSlots, slotsData, slotsKey, slots])
-
-  const selectVenue = async (v) => {
-    try {
-      const res = await venueService.getVenueById(v._id)
-      const full = res.venue
-      setVenue(full)
-      // Tự chọn sân đầu tiên đang hoạt động cho đỡ một bước bấm
-      const activeCourts = (full.courts || []).filter((c) => c.status === 'active')
-      setCourt(activeCourts[0] || null)
-    } catch {
-      toast.error('Không thể tải chi tiết địa điểm')
-    }
-  }
 
   // ── Lấy báo giá ─────────────────────────────────────────
   const requestQuote = async () => {
-    const chosen = isReschedule ? slot : summarizeSlots(selectedSlots)
+    const chosen = slot
     if (!venue || !court || !chosen) return
     setQuoting(true)
     try {
@@ -208,7 +123,7 @@ export default function TransferBooking({ mode = 'transfer' }) {
       setQuote(res)
       setStep(3)
     } catch (err) {
-      toast.error(err?.message || (isReschedule ? 'Không thể tạo báo giá đổi lịch' : 'Không thể tạo báo giá chuyển sân'))
+      toast.error(err?.message || 'Không thể tạo báo giá đổi lịch')
     } finally {
       setQuoting(false)
     }
@@ -227,15 +142,15 @@ export default function TransferBooking({ mode = 'transfer' }) {
         return
       }
       if (res.status === 'awaiting_owner_approval') {
-        toast.success('Đã gửi yêu cầu, đang chờ chủ sân đích duyệt')
+        toast.success('Đã gửi yêu cầu, đang chờ chủ sân duyệt')
         navigate(`/transfers/${quote.transfer._id}`)
         return
       }
-      toast.success(isReschedule ? 'Đã đổi lịch thành công' : 'Đã chuyển sân thành công')
+      toast.success('Đã đổi lịch thành công')
       navigate('/bookings')
     } catch (err) {
-      toast.error(err?.message || (isReschedule ? 'Không thể hoàn tất đổi lịch' : 'Không thể hoàn tất chuyển sân'))
-      // Báo giá hết hạn hoặc khung giờ bị mất — quay lại bước chọn sân
+      toast.error(err?.message || 'Không thể hoàn tất đổi lịch')
+      // Báo giá hết hạn hoặc khung giờ bị mất — quay lại bước chọn giờ
       if ([409, 410].includes(err?.status)) { setQuote(null); setStep(2) }
     } finally {
       setConfirming(false)
@@ -247,7 +162,7 @@ export default function TransferBooking({ mode = 'transfer' }) {
 
   const b = eligibility.booking
 
-  // ── Không đủ điều kiện chuyển ───────────────────────────
+  // ── Không đủ điều kiện đổi lịch ───────────────────────────
   if (!eligibility.eligible) {
     return (
       <div className={styles.page}>
@@ -255,7 +170,7 @@ export default function TransferBooking({ mode = 'transfer' }) {
           <Link to="/bookings" className={styles.back}><ArrowLeft size={15} /> Quay lại lịch sử đặt sân</Link>
           <EmptyState
             icon={<AlertTriangle size={48} />}
-            title={isReschedule ? 'Lượt đặt này không thể đổi lịch' : 'Lượt đặt này không thể chuyển'}
+            title="Lượt đặt này không thể đổi lịch"
             description={eligibility.reasons.join('. ')}
             action={() => navigate('/bookings')}
             actionLabel="Về lịch sử đặt sân"
@@ -271,11 +186,11 @@ export default function TransferBooking({ mode = 'transfer' }) {
         <Link to="/bookings" className={styles.back}><ArrowLeft size={15} /> Quay lại lịch sử đặt sân</Link>
 
         <div className={styles.header}>
-          <h1 className={styles.title}>{isReschedule ? 'Đổi lịch' : 'Chuyển sân'}</h1>
-          <p className={styles.sub}>{isReschedule ? 'Đổi ngày hoặc giờ chơi trong cùng địa điểm thay vì huỷ lượt đặt' : 'Đổi sang sân hoặc địa điểm khác thay vì huỷ lượt đặt'}</p>
+          <h1 className={styles.title}>Đổi lịch</h1>
+          <p className={styles.sub}>Đổi ngày hoặc giờ chơi trong cùng địa điểm thay vì huỷ lượt đặt</p>
         </div>
 
-        <Stepper step={step} reschedule={isReschedule} />
+        <Stepper step={step} />
 
         {/* ══════════ BƯỚC 1 — CHÍNH SÁCH ══════════ */}
         {step === 1 && (
@@ -297,7 +212,7 @@ export default function TransferBooking({ mode = 'transfer' }) {
             </div>
 
             <div className={styles.card}>
-              <h2 className={styles.cardTitle}>{isReschedule ? 'Chi phí nếu đổi lịch bây giờ' : 'Chi phí nếu chuyển bây giờ'}</h2>
+              <h2 className={styles.cardTitle}>Chi phí nếu đổi lịch bây giờ</h2>
               <div className={styles.leadBox}>
                 <Clock size={18} />
                 <div>
@@ -309,136 +224,47 @@ export default function TransferBooking({ mode = 'transfer' }) {
               <PolicyTable
                 leadHours={eligibility.leadTimeHours}
                 feeTiers={eligibility.feePolicy?.transferFeeTiers || []}
-                compTiers={eligibility.feePolicy?.compensationTiers || []}
               />
 
               {eligibility.monthly?.limit > 0 && (
                 <div className={styles.noteBox}>
                   <Info size={15} />
-                  <p>Bạn đã dùng <strong>{eligibility.monthly.used}/{eligibility.monthly.limit}</strong> lượt đổi lịch/chuyển sân trong tháng này. Hạn mức mở lại từ đầu tháng sau.</p>
-                </div>
-              )}
-
-              {!isReschedule && eligibility.network?.required && (
-                <div className={styles.noteBox}>
-                  <Info size={15} />
-                  <p>
-                    {eligibility.network.fromOwnerMember
-                      ? <>Chuyển sang <strong>chủ sân khác</strong> chỉ áp dụng với các chủ sân thuộc mạng lưới chuyển sân. Nếu địa điểm bạn chọn chưa tham gia, hệ thống sẽ báo ở bước xem chi phí.</>
-                      : <>Chủ sân hiện tại của bạn <strong>chưa tham gia mạng lưới chuyển sân</strong>, nên bạn chỉ chuyển được trong cùng chủ sân (đổi giờ, đổi sân, hoặc sang địa điểm khác của chủ sân đó).</>}
-                  </p>
+                  <p>Bạn đã dùng <strong>{eligibility.monthly.used}/{eligibility.monthly.limit}</strong> lượt đổi lịch trong tháng này. Hạn mức mở lại từ đầu tháng sau.</p>
                 </div>
               )}
 
               <div className={styles.noteBox}>
                 <Info size={15} />
-                {isReschedule ? (
-                  <p>
-                    Bạn giữ nguyên địa điểm và độ dài lượt đặt, chỉ đổi ngày hoặc giờ. Phí đổi lịch lấy theo cột
-                    {' '}<strong>&quot;Cùng địa điểm&quot;</strong> ở bảng trên (thường miễn phí khi còn nhiều thời gian), cộng thêm
-                    phần chênh lệch giá nếu giờ mới đắt hơn. Mỗi lượt đặt chỉ được đổi lịch hoặc chuyển sân
-                    {' '}<strong>{(eligibility.remainingTransfers ?? 1)} lần</strong> nữa.
-                  </p>
-                ) : (
                 <p>
-                  Bạn được chọn số giờ ở khung mới. Phí chuyển tính trên giá sân của lượt đặt hiện tại. Nếu chuyển sang địa điểm của chủ sân
-                  khác và sát giờ, bạn còn phải trả thêm khoản bồi thường cho chủ sân cũ vì họ không kịp
-                  bán lại khung giờ. Đổi giờ hoặc đổi sân trong cùng địa điểm thường <strong>miễn phí</strong>.
+                  Bạn giữ nguyên địa điểm và độ dài lượt đặt, chỉ đổi ngày hoặc giờ (hoặc sang sân khác trong cùng địa điểm).
+                  Phí đổi lịch lấy theo bảng trên (thường miễn phí khi còn nhiều thời gian), cộng thêm
+                  phần chênh lệch giá nếu giờ mới đắt hơn. Mỗi lượt đặt chỉ được đổi lịch
+                  {' '}<strong>{(eligibility.remainingTransfers ?? 1)} lần</strong> nữa.
                 </p>
-                )}
               </div>
 
               <Button fullWidth iconRight={<ArrowRight size={16} />} onClick={() => setStep(2)}>
-                {isReschedule ? 'Chọn giờ mới' : 'Tìm sân mới'}
+                Chọn giờ mới
               </Button>
             </div>
           </div>
         )}
 
-        {/* ══════════ BƯỚC 2 — CHỌN SÂN ĐÍCH ══════════ */}
+        {/* ══════════ BƯỚC 2 — CHỌN GIỜ MỚI ══════════ */}
         {step === 2 && (
-          <div className={isReschedule ? styles.gridSingle : styles.grid2}>
-            {!isReschedule && (
+          <div className={styles.gridSingle}>
             <div className={styles.card}>
-              <h2 className={styles.cardTitle}>Chọn địa điểm mới</h2>
-              {suggestions.length > 0 && (
-                <div className={styles.noteBox} style={{ flexDirection: 'column', alignItems: 'stretch', gap: 8 }}>
-                  <p><strong>Gợi ý sân còn trống</strong> (cùng môn, cùng ngày, giờ gần giờ cũ) — bấm để chọn nhanh:</p>
-                  {suggestions.slice(0, 6).map((sg) => (
-                    <button
-                      key={`${sg.courtId}-${sg.startTime}`}
-                      type="button"
-                      className={styles.venueItem}
-                      onClick={() => pickSuggestion(sg)}
-                    >
-                      <div>
-                        <p className={styles.venueItemName}>{sg.venueName} · {sg.courtName}</p>
-                        <p className={styles.venueItemAddr}>{formatTime(sg.startTime)}–{formatTime(sg.endTime)}{sg.address ? ` · ${sg.address}` : ''}</p>
-                      </div>
-                      <span className={styles.venueItemPrice}>{formatCurrency(sg.pricePerHour)}/giờ</span>
-                    </button>
-                  ))}
-                </div>
-              )}
-              <div className={styles.filters}>
-                <Input
-                  placeholder="Tìm theo tên địa điểm..."
-                  value={search}
-                  onChange={(e) => setSearch(e.target.value)}
-                  icon={<Search size={15} />}
-                />
-                <Input
-                  placeholder="Quận / Thành phố"
-                  value={city}
-                  onChange={(e) => setCity(e.target.value)}
-                  icon={<MapPin size={15} />}
-                />
-              </div>
-
-              {searching ? (
-                <div className={styles.loadingInline}><Spinner /></div>
-              ) : venues.length === 0 ? (
-                <p className={styles.emptyText}>Không tìm thấy địa điểm phù hợp</p>
-              ) : (
-                <div className={styles.venueList}>
-                  {venues.map((v) => (
-                    <button
-                      key={v._id}
-                      className={`${styles.venueItem} ${venue?._id === v._id ? styles.venueItemActive : ''}`}
-                      onClick={() => selectVenue(v)}
-                    >
-                      <div>
-                        <p className={styles.venueItemName}>{v.name}</p>
-                        <p className={styles.venueItemAddr}>
-                          <MapPin size={11} /> {[v.address?.district, v.address?.city].filter(Boolean).join(', ') || 'Chưa có địa chỉ'}
-                        </p>
-                      </div>
-                      <span className={styles.venueItemPrice}>
-                        {v.minPricePerHour ? `từ ${formatCurrency(v.minPricePerHour)}` : '—'}
-                      </span>
-                    </button>
-                  ))}
-                </div>
-              )}
-            </div>
-            )}
-
-            <div className={styles.card}>
-              <h2 className={styles.cardTitle}>{isReschedule ? 'Chọn ngày và giờ mới' : 'Chọn sân và khung giờ'}</h2>
+              <h2 className={styles.cardTitle}>Chọn ngày và giờ mới</h2>
 
               {!venue ? (
-                isReschedule
-                  ? <div className={styles.loadingInline}><Spinner /></div>
-                  : <p className={styles.emptyText}>Chọn một địa điểm ở bên trái để xem khung giờ trống</p>
+                <div className={styles.loadingInline}><Spinner /></div>
               ) : (
                 <>
                   <div className={styles.noteBox}>
                     <Info size={15} />
                     <p>
                       Lịch hiện tại: <strong>{formatDate(b.date)} · {formatTime(b.startTime)}–{formatTime(b.endTime)}</strong> tại {b.venueName}.
-                      {' '}{isReschedule
-                        ? `Giờ mới giữ nguyên độ dài ${Math.round((durationMinutes(b.startTime, b.endTime) / 60) * 10) / 10} giờ.`
-                        : 'Bạn có thể chọn nhiều khung giờ liền nhau; tiền sân tính theo số giờ mới, chênh lệch sẽ hiện ở bước xem chi phí.'}
+                      {' '}Giờ mới giữ nguyên độ dài {Math.round((durationMinutes(b.startTime, b.endTime) / 60) * 10) / 10} giờ.
                     </p>
                   </div>
                   <div className={styles.fieldGroup}>
@@ -482,39 +308,17 @@ export default function TransferBooking({ mode = 'transfer' }) {
                   {court && (
                     <div className={styles.fieldGroup}>
                       <label className={styles.label}>Khung giờ</label>
-                      {isReschedule ? (
-                        <>
-                          <TimeSlotPicker
-                            slots={slots}
-                            selected={slot ? [slot] : []}
-                            onToggle={(s) => setSlot(slot?.start === s.start ? null : s)}
-                            loading={loadingSlots}
-                            maxSlots={1}
-                          />
-                          {slot && (
-                            <p className={styles.slotSummary}>
-                              Lịch mới: <strong>{formatDate(date)} · {formatTime(slot.start)}–{formatTime(slot.end)}</strong>
-                            </p>
-                          )}
-                        </>
-                      ) : (
-                        <>
-                          <TimeSlotPicker
-                            slots={slots}
-                            selected={selectedSlots}
-                            onToggle={(s) => setSelectedSlots((prev) => toggleSlotSelection(prev, s, slots))}
-                            loading={loadingSlots}
-                            maxSlots={MAX_BOOKING_SLOTS}
-                          />
-                          {selectedSlots.length > 0 && (() => {
-                            const sum = summarizeSlots(selectedSlots)
-                            return (
-                              <p className={styles.slotSummary}>
-                                Khung giờ mới: <strong>{formatDate(date)} · {formatTime(sum.start)}–{formatTime(sum.end)}</strong> ({sum.hours} giờ)
-                              </p>
-                            )
-                          })()}
-                        </>
+                      <TimeSlotPicker
+                        slots={slots}
+                        selected={slot ? [slot] : []}
+                        onToggle={(s) => setSlot(slot?.start === s.start ? null : s)}
+                        loading={loadingSlots}
+                        maxSlots={1}
+                      />
+                      {slot && (
+                        <p className={styles.slotSummary}>
+                          Lịch mới: <strong>{formatDate(date)} · {formatTime(slot.start)}–{formatTime(slot.end)}</strong>
+                        </p>
                       )}
                     </div>
                   )}
@@ -524,12 +328,12 @@ export default function TransferBooking({ mode = 'transfer' }) {
               <div className={styles.actions}>
                 <Button variant="outline" onClick={() => setStep(1)} icon={<ArrowLeft size={15} />}>Quay lại</Button>
                 <Button
-                  disabled={!venue || !court || (isReschedule ? !slot : selectedSlots.length === 0)}
+                  disabled={!venue || !court || !slot}
                   loading={quoting}
                   onClick={requestQuote}
                   iconRight={<ArrowRight size={16} />}
                 >
-                  {isReschedule ? 'Xem chi phí đổi lịch' : 'Xem chi phí chuyển'}
+                  Xem chi phí đổi lịch
                 </Button>
               </div>
             </div>
@@ -539,7 +343,6 @@ export default function TransferBooking({ mode = 'transfer' }) {
         {/* ══════════ BƯỚC 3 — BẢNG CHI PHÍ ══════════ */}
         {step === 3 && quote && (
           <QuoteConfirm
-            reschedule={isReschedule}
             quote={quote}
             confirming={confirming}
             onBack={() => { setQuote(null); setStep(2) }}
@@ -559,8 +362,8 @@ export default function TransferBooking({ mode = 'transfer' }) {
 // THÀNH PHẦN PHỤ
 // ============================================================
 
-function Stepper({ step, reschedule }) {
-  const steps = reschedule ? ['Chi phí', 'Chọn giờ mới', 'Xác nhận'] : ['Chính sách phí', 'Chọn sân mới', 'Xác nhận']
+function Stepper({ step }) {
+  const steps = ['Chi phí', 'Chọn giờ mới', 'Xác nhận']
   return (
     <div className={styles.stepper}>
       {steps.map((label, i) => (
@@ -579,29 +382,21 @@ const formatLead = (hours) => {
   return `${Math.round(hours * 60)} phút`
 }
 
-/** Bảng biểu phí, tô đậm bậc đang áp dụng cho khách. */
-function PolicyTable({ leadHours, feeTiers, compTiers }) {
+/** Bảng biểu phí đổi lịch, tô đậm bậc đang áp dụng cho khách. */
+function PolicyTable({ leadHours, feeTiers }) {
   const sorted = [...feeTiers].sort((a, b) => b.minLeadHours - a.minLeadHours)
   const activeIndex = sorted.findIndex((t) => leadHours >= t.minLeadHours)
-  const compByLead = (min) => {
-    const t = [...compTiers].sort((a, b) => b.minLeadHours - a.minLeadHours).find((x) => min >= x.minLeadHours)
-    return t ? t.rate : 0
-  }
 
   return (
     <div className={styles.policyTable}>
       <div className={styles.policyHead}>
         <span>Thời gian còn lại</span>
-        <span>Cùng địa điểm</span>
-        <span>Khác địa điểm</span>
-        <span>Bồi thường</span>
+        <span>Phí đổi lịch</span>
       </div>
       {sorted.map((t, i) => (
         <div key={t.minLeadHours} className={`${styles.policyRow} ${i === activeIndex ? styles.policyRowActive : ''}`}>
           <span>{t.minLeadHours > 0 ? `Từ ${t.minLeadHours} giờ` : 'Dưới ngưỡng trên'}</span>
           <span>{pct(t.sameVenueRate)}</span>
-          <span>{pct(t.crossOwnerRate)}</span>
-          <span>{pct(compByLead(t.minLeadHours))}</span>
         </div>
       ))}
     </div>
@@ -611,7 +406,7 @@ function PolicyTable({ leadHours, feeTiers, compTiers }) {
 const pct = (r) => (r > 0 ? `${Math.round(r * 100)}%` : 'Miễn phí')
 
 /** Bảng chi phí cuối cùng. Mọi con số do máy chủ tính, ở đây chỉ vẽ lại. */
-function QuoteConfirm({ quote, confirming, onBack, onConfirm, onExpire, reschedule = false }) {
+function QuoteConfirm({ quote, confirming, onBack, onConfirm, onExpire }) {
   const { transfer, breakdown, requiresApproval } = quote
   const q = transfer.quote
   const needPay = q.settlement > 0
@@ -620,20 +415,20 @@ function QuoteConfirm({ quote, confirming, onBack, onConfirm, onExpire, reschedu
     <div className={styles.confirmWrap}>
       <div className={styles.card}>
         <div className={styles.confirmHead}>
-          <h2 className={styles.cardTitle}>{reschedule ? 'Xác nhận đổi lịch' : 'Xác nhận chuyển sân'}</h2>
+          <h2 className={styles.cardTitle}>Xác nhận đổi lịch</h2>
           <HoldTimer expiresAt={transfer.quoteExpiresAt} onExpire={onExpire} />
         </div>
 
         <div className={styles.routeBox}>
           <div className={styles.routeSide}>
-            <span className={styles.routeTag}>Từ</span>
+            <span className={styles.routeTag}>Lịch hiện tại</span>
             <p className={styles.routeVenue}>{transfer.fromVenueName}</p>
             <p className={styles.routeCourt}>{transfer.fromCourtName}</p>
             <p className={styles.routeTime}>{formatDate(transfer.fromDate)} · {formatTime(transfer.fromStartTime)}–{formatTime(transfer.fromEndTime)}</p>
           </div>
           <ArrowRight size={20} className={styles.routeArrow} />
           <div className={styles.routeSide}>
-            <span className={`${styles.routeTag} ${styles.routeTagTo}`}>Đến</span>
+            <span className={`${styles.routeTag} ${styles.routeTagTo}`}>Lịch mới</span>
             <p className={styles.routeVenue}>{transfer.toVenueName}</p>
             <p className={styles.routeCourt}>{transfer.toCourtName}</p>
             <p className={styles.routeTime}>{formatDate(transfer.toDate)} · {formatTime(transfer.toStartTime)}–{formatTime(transfer.toEndTime)}</p>
@@ -665,13 +460,13 @@ function QuoteConfirm({ quote, confirming, onBack, onConfirm, onExpire, reschedu
         {requiresApproval && (
           <div className={styles.warnBox}>
             <ShieldCheck size={15} />
-            <p>Chủ sân đích yêu cầu duyệt thủ công. Yêu cầu của bạn sẽ được gửi đi và chờ họ phản hồi.</p>
+            <p>Chủ sân yêu cầu duyệt thủ công. Yêu cầu của bạn sẽ được gửi đi và chờ họ phản hồi.</p>
           </div>
         )}
 
         <div className={styles.safeBox}>
           <ShieldCheck size={15} />
-          <p>Nếu {reschedule ? 'đổi lịch' : 'chuyển'} không thành công vì bất kỳ lý do gì, lượt đặt hiện tại của bạn <strong>vẫn còn nguyên hiệu lực</strong> và mọi khoản đã thu thêm được hoàn lại đầy đủ.</p>
+          <p>Nếu đổi lịch không thành công vì bất kỳ lý do gì, lượt đặt hiện tại của bạn <strong>vẫn còn nguyên hiệu lực</strong> và mọi khoản đã thu thêm được hoàn lại đầy đủ.</p>
         </div>
 
         {needPay && (
@@ -687,7 +482,7 @@ function QuoteConfirm({ quote, confirming, onBack, onConfirm, onExpire, reschedu
         <div className={styles.actions}>
           <Button variant="outline" onClick={onBack} icon={<ArrowLeft size={15} />}>Chọn lại</Button>
           <Button loading={confirming} onClick={onConfirm}>
-            {needPay ? `Tiếp tục — ${formatCurrency(q.settlement)}` : (reschedule ? 'Xác nhận đổi lịch' : 'Xác nhận chuyển sân')}
+            {needPay ? `Tiếp tục — ${formatCurrency(q.settlement)}` : 'Xác nhận đổi lịch'}
           </Button>
         </div>
       </div>

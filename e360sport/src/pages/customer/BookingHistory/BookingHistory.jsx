@@ -17,16 +17,16 @@ const TABS = [
   { value: '', label: 'Tất cả' },
   { value: 'confirmed', label: 'Sắp tới' },
   { value: 'completed', label: 'Hoàn tất' },
-  { value: 'transferred', label: 'Đã chuyển' },
+  { value: 'transferred', label: 'Đã đổi lịch' },
   { value: 'cancelled', label: 'Đã hủy' },
 ]
 
-// Chính sách chuyển sân lấy từ cài đặt nền tảng (GET /settings/public); đây chỉ là giá trị dự phòng khi chưa tải được.
+// Chính sách đổi lịch lấy từ cài đặt nền tảng (GET /settings/public); đây chỉ là giá trị dự phòng khi chưa tải được.
 const DEFAULT_TRANSFER_POLICY = { enabled: true, minLeadHours: 2 }
 const startOf = (b) => new Date(`${b.date}T${b.startTime}:00+07:00`)
 
 /**
- * Trạng thái các nút Chuyển sân / Đổi lịch của một lượt đặt:
+ * Trạng thái nút Đổi lịch của một lượt đặt:
  *   null            → không áp dụng (đơn chưa xác nhận, đã qua giờ, đơn không có chủ tài khoản) — không hiện nút
  *   { ok: true }    → dùng được
  *   { ok: false, reason } → hiện nút mờ kèm lý do, để khách biết vì sao chưa chuyển được thay vì không thấy nút đâu cả.
@@ -36,8 +36,8 @@ const transferState = (b, policy) => {
   if (b.status !== 'confirmed' || !b.customerId) return null
   const hoursLeft = (startOf(b).getTime() - Date.now()) / 3600000
   if (hoursLeft <= 0) return null
-  if (!policy.enabled) return { ok: false, reason: 'Chức năng chuyển sân đang tạm ngưng' }
-  if (hoursLeft < policy.minLeadHours) return { ok: false, reason: `Sắp đến giờ chơi nên không thể đổi nữa — cần đổi lịch/chuyển sân trước giờ chơi ít nhất ${policy.minLeadHours} tiếng` }
+  if (!policy.enabled) return { ok: false, reason: 'Chức năng đổi lịch đang tạm ngưng' }
+  if (hoursLeft < policy.minLeadHours) return { ok: false, reason: `Sắp đến giờ chơi nên không thể đổi nữa — cần đổi lịch trước giờ chơi ít nhất ${policy.minLeadHours} tiếng` }
   return { ok: true }
 }
 
@@ -66,7 +66,7 @@ export default function BookingHistory() {
   const [expandedId, setExpandedId] = useState(null)
   const [cancelTarget, setCancelTarget] = useState(null)
   // Chính sách huỷ do máy chủ tính — hiển thị TRƯỚC khi khách bấm huỷ để họ
-  // thấy rõ mất bao nhiêu, và thấy chuyển sân thường rẻ hơn.
+  // thấy rõ mất bao nhiêu, và thấy đổi lịch thường rẻ hơn.
   const [cancelPreview, setCancelPreview] = useState(null)
   // Trạng thái giao dịch của các đơn đang 'Chờ thanh toán' (tải khi mở chi tiết):
   // { [bookingId]: payment | null }. Để phân biệt "chưa chuyển khoản" với "đã báo
@@ -128,7 +128,7 @@ export default function BookingHistory() {
         <div className={styles.header}>
           <div><h1 className={styles.title}>Lịch sử đặt sân</h1><p className={styles.sub}>{loading ? 'Đang tải...' : `Tổng cộng ${bookings.length} lượt đặt sân`}</p></div>
           <div className={styles.headerActions}>
-            <Link to="/transfers"><Button icon={<Repeat size={16} />} variant="ghost">Yêu cầu đổi/chuyển</Button></Link>
+            <Link to="/transfers"><Button icon={<Repeat size={16} />} variant="ghost">Yêu cầu đổi lịch</Button></Link>
             <Link to="/venues"><Button icon={<Plus size={16} />} variant="outline">Đặt sân mới</Button></Link>
           </div>
         </div>
@@ -173,16 +173,13 @@ export default function BookingHistory() {
                     <div className={styles.quickActions}>
                       {transfer.ok ? (
                         <>
-                          <Link to={`/bookings/${booking._id}/transfer`}>
-                            <Button size="sm" icon={<Repeat size={13} />}>Chuyển sân</Button>
-                          </Link>
                           <Link to={`/bookings/${booking._id}/reschedule`}>
-                            <Button size="sm" variant="outline" icon={<CalendarClock size={13} />}>Đổi lịch</Button>
+                            <Button size="sm" icon={<CalendarClock size={13} />}>Đổi lịch</Button>
                           </Link>
                         </>
                       ) : (
                         <>
-                          <Button size="sm" icon={<Repeat size={13} />} disabled title={transfer.reason}>Chuyển sân</Button>
+                          <Button size="sm" icon={<Repeat size={13} />} disabled title={transfer.reason}>Đổi lịch</Button>
                           <span className={styles.quickHint}>{transfer.reason}</span>
                         </>
                       )}

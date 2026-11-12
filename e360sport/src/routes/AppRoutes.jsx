@@ -53,7 +53,6 @@ import BannerManagement from '@/pages/admin/BannerManagement/BannerManagement'
 import NewsManagement from '@/pages/admin/NewsManagement/NewsManagement'
 import PolicyManagement from '@/pages/admin/PolicyManagement/PolicyManagement'
 import SportCategoryManagement from '@/pages/admin/SportCategoryManagement/SportCategoryManagement'
-import NetworkManagement from '@/pages/admin/NetworkManagement/NetworkManagement'
 import NewsList from '@/pages/news/NewsList'
 import PlayerList from '@/pages/players/PlayerList'
 import MyPlayers from '@/pages/players/MyPlayers'
@@ -111,8 +110,7 @@ export default function AppRoutes() {
         <Route path="/booking/:venueId" element={<ProtectedRoute roles={['customer']}><Booking /></ProtectedRoute>} />
         <Route path="/payment" element={<ProtectedRoute roles={['customer']}><Payment /></ProtectedRoute>} />
         <Route path="/bookings" element={<ProtectedRoute roles={['customer']}><BookingHistory /></ProtectedRoute>} />
-        <Route path="/bookings/:bookingId/transfer" element={<ProtectedRoute roles={['customer']}><TransferBooking /></ProtectedRoute>} />
-        <Route path="/bookings/:bookingId/reschedule" element={<ProtectedRoute roles={['customer']}><TransferBooking mode="reschedule" /></ProtectedRoute>} />
+        <Route path="/bookings/:bookingId/reschedule" element={<ProtectedRoute roles={['customer']}><TransferBooking /></ProtectedRoute>} />
         <Route path="/bookings/:bookingId/invoice" element={<ProtectedRoute roles={['customer']}><Invoice /></ProtectedRoute>} />
         {/* Cũng là địa chỉ cổng thanh toán chuyển hướng về sau khi khách trả khoản chênh lệch */}
         <Route path="/transfers" element={<ProtectedRoute roles={['customer']}><MyTransfers /></ProtectedRoute>} />
@@ -165,7 +163,6 @@ export default function AppRoutes() {
         <Route path="news" element={<NewsManagement />} />
         <Route path="policies" element={<PolicyManagement />} />
         <Route path="sports" element={<SportCategoryManagement />} />
-        <Route path="network" element={<NetworkManagement />} />
         <Route path="commissions" element={<CommissionReport />} />
         <Route path="settlements" element={<AdminSettlements />} />
         <Route path="reports" element={<RevenueReports />} />

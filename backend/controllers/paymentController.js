@@ -28,7 +28,7 @@ const { OPEN_STATUSES, findOpenForBooking, voidOpenForBooking } = require('../ut
  *   3. markTransferred() — khách bấm "Tôi đã chuyển khoản", payment chuyển
  *      sang 'awaiting_confirmation'. Từ lúc này đơn KHÔNG bị tác vụ nền tự huỷ
  *      (xem jobs/index.js).
- *   4. Xác nhận — MỌI khoản (đặt sân, bù tiền/phí chuyển sân) khách đều chuyển
+ *   4. Xác nhận — MỌI khoản (đặt sân, bù tiền/phí đổi lịch) khách đều chuyển
  *      THẲNG vào tài khoản của CHỦ SÂN (lưu ở payment.receiver). Chủ sân tự đối
  *      chiếu sao kê và bấm xác nhận/từ chối (ownerConfirmBankTransfer /
  *      ownerRejectBankTransfer). Quản trị viên chỉ vận hành hệ thống và thu hoa
@@ -52,7 +52,7 @@ async function onPaymentSucceeded(payment, method) {
             await require('../services/transferService').execute(transfer);
         } catch (err) {
             await require('../services/transferService').abort(
-                transfer, 'failed', err.message || 'Không thể hoàn tất chuyển sân'
+                transfer, 'failed', err.message || 'Không thể hoàn tất đổi lịch'
             );
         }
         return;
@@ -67,7 +67,7 @@ async function onPaymentSucceeded(payment, method) {
     booking.status = 'confirmed';
     booking.paymentMethod = method;
     // Tổng giá trị khách đã bỏ ra, TÍNH CẢ phần trả bằng số dư — dùng để áp
-    // trần hoàn tiền khi chuyển sân sau này.
+    // trần hoàn tiền khi đổi lịch sau này.
     booking.originalPaidAmount = gross;
     await booking.save();
 
@@ -283,9 +283,8 @@ async function loadOwnPayment(paymentId, user) {
             return { error: [403, 'Bạn không có quyền với giao dịch này'] };
         }
     } else if (payment.transferId) {
-        const transfer = await TransferRequest.findById(payment.transferId).select('customerId toCustomerId');
-        const isOwner = transfer && [transfer.customerId, transfer.toCustomerId]
-            .some((id) => String(id || '') === String(user._id));
+        const transfer = await TransferRequest.findById(payment.transferId).select('customerId');
+        const isOwner = transfer && String(transfer.customerId || '') === String(user._id);
         if (!isOwner) return { error: [403, 'Bạn không có quyền với giao dịch này'] };
     } else {
         return { error: [403, 'Bạn không có quyền với giao dịch này'] };
@@ -347,7 +346,7 @@ async function bookingBlocksConfirm(payment) {
     if (payment.purpose === 'transfer_topup') {
         const transfer = payment.transferId ? await TransferRequest.findById(payment.transferId).select('status') : null;
         if (transfer?.status === 'awaiting_payment') return null;
-        return 'Yêu cầu chuyển sân này đã bị huỷ hoặc hết hạn nên không thể xác nhận. '
+        return 'Yêu cầu đổi lịch này đã bị huỷ hoặc hết hạn nên không thể xác nhận. '
             + 'Nếu khách đã chuyển tiền, hãy hoàn lại cho khách rồi bấm Từ chối để đóng giao dịch.';
     }
     if (payment.purpose !== 'booking' || !payment.bookingId) return null;

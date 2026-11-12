@@ -1,15 +1,15 @@
 /**
- * Kiểm thử công thức tính phí chuyển sân.
+ * Kiểm thử công thức tính phí đổi lịch.
  * Chạy: npm test    (không cần cơ sở dữ liệu — transferPricing là hàm thuần)
  *
- * Bốn kịch bản đầu tương ứng đúng bốn ví dụ trong tài liệu đặc tả.
+ * Các kịch bản đầu là ví dụ trong tài liệu đặc tả (chỉ còn đổi lịch T1/T2).
  */
 const assert = require('assert');
 const { quoteTransfer, verifyBalance } = require('../utils/transferPricing');
 const { resolveTransferType, pickTier } = require('../utils/transferPolicy');
 
 const P = (o) => ({
-    feeMin: 5000, feeMax: 100000, fixedFeeT5: 10000,
+    feeMin: 5000, feeMax: 100000,
     maxRefundRatio: 0.5, refundToCreditEnabled: true, ...o,
 });
 
@@ -29,10 +29,10 @@ test('UT-01 · T1 đổi giờ cùng sân, còn 40h → miễn phí hoàn toàn'
     assert.strictEqual(q.direction, 'none');
 });
 
-test('UT-02 · T4 sang sân đắt hơn, còn 30h → bù thêm 115.000đ', () => {
+test('UT-02 · T2 sang sân đắt hơn, còn 30h → bù thêm 115.000đ', () => {
     const q = quoteTransfer(
         { oldAmount: 200000, oldServiceFee: 10000, oldDiscount: 0, newAmount: 300000, newServiceFee: 15000, newDiscount: 0 },
-        P({ type: 'T4', leadHours: 30, feeRate: 0.05, compensationRate: 0 })
+        P({ type: 'T2', leadHours: 30, feeRate: 0.05, compensationRate: 0 })
     );
     assert.strictEqual(q.transferFee, 10000);
     assert.strictEqual(q.compensation, 0);
@@ -40,22 +40,22 @@ test('UT-02 · T4 sang sân đắt hơn, còn 30h → bù thêm 115.000đ', () =
     assert.strictEqual(q.direction, 'topup');
 });
 
-test('UT-03 · T4 sang sân rẻ hơn, còn 8h → chỉ được hoàn 10.000đ', () => {
+test('UT-03 · T2 sang sân rẻ hơn, còn 8h → hoàn 70.000đ, không có bồi thường', () => {
     const q = quoteTransfer(
         { oldAmount: 300000, oldServiceFee: 15000, oldDiscount: 5000, newAmount: 200000, newServiceFee: 10000, newDiscount: 0 },
-        P({ type: 'T4', leadHours: 8, feeRate: 0.10, compensationRate: 0.20 })
+        P({ type: 'T2', leadHours: 8, feeRate: 0.10, compensationRate: 0.20 })
     );
     assert.strictEqual(q.transferFee, 30000);
-    assert.strictEqual(q.compensation, 60000);
-    assert.strictEqual(q.settlement, -10000);
-    assert.strictEqual(q.refundCash, 10000);
+    assert.strictEqual(q.compensation, 0, 'đổi lịch cùng chủ sân nên không bồi thường');
+    assert.strictEqual(q.settlement, -70000);
+    assert.strictEqual(q.refundCash, 70000);
     assert.strictEqual(q.refundCredit, 0);
 });
 
-test('UT-04 · T4 chênh lệch lớn → kích hoạt trần hoàn tiền mặt 50%', () => {
+test('UT-04 · T2 chênh lệch lớn → kích hoạt trần hoàn tiền mặt 50%', () => {
     const q = quoteTransfer(
         { oldAmount: 600000, oldServiceFee: 30000, oldDiscount: 0, newAmount: 150000, newServiceFee: 7500, newDiscount: 0 },
-        P({ type: 'T4', leadHours: 30, feeRate: 0.05, compensationRate: 0 })
+        P({ type: 'T2', leadHours: 30, feeRate: 0.05, compensationRate: 0 })
     );
     assert.strictEqual(q.settlement, -442500);
     assert.strictEqual(q.refundCash, 315000);
@@ -68,7 +68,7 @@ test('UT-04 · T4 chênh lệch lớn → kích hoạt trần hoàn tiền mặt
 test('UT-05 · Phí tính ra quá nhỏ → nâng lên mức tối thiểu', () => {
     const q = quoteTransfer(
         { oldAmount: 50000, oldServiceFee: 2500, oldDiscount: 0, newAmount: 50000, newServiceFee: 2500, newDiscount: 0 },
-        P({ type: 'T4', leadHours: 30, feeRate: 0.05, compensationRate: 0 })
+        P({ type: 'T2', leadHours: 30, feeRate: 0.05, compensationRate: 0 })
     );
     assert.strictEqual(q.transferFee, 5000, '50.000 × 5% = 2.500 → nâng lên sàn 5.000');
 });
@@ -76,18 +76,9 @@ test('UT-05 · Phí tính ra quá nhỏ → nâng lên mức tối thiểu', () 
 test('UT-06 · Phí tính ra quá lớn → hạ xuống mức tối đa', () => {
     const q = quoteTransfer(
         { oldAmount: 5000000, oldServiceFee: 250000, oldDiscount: 0, newAmount: 5000000, newServiceFee: 250000, newDiscount: 0 },
-        P({ type: 'T4', leadHours: 30, feeRate: 0.05, compensationRate: 0 })
+        P({ type: 'T2', leadHours: 30, feeRate: 0.05, compensationRate: 0 })
     );
     assert.strictEqual(q.transferFee, 100000, '5.000.000 × 5% = 250.000 → hạ xuống trần 100.000');
-});
-
-test('UT-08 · T5 sang tên → phí cố định, không theo tỉ lệ', () => {
-    const q = quoteTransfer(
-        { oldAmount: 900000, oldServiceFee: 45000, oldDiscount: 0, newAmount: 900000, newServiceFee: 45000, newDiscount: 0 },
-        P({ type: 'T5', leadHours: 5, feeRate: 0.15, compensationRate: 0 })
-    );
-    assert.strictEqual(q.transferFee, 10000);
-    assert.strictEqual(q.settlement, 10000);
 });
 
 // ---------- Đẳng thức cân đối ----------
@@ -105,7 +96,7 @@ test('UT-09 · Đẳng thức cân đối đúng tuyệt đối trên 2.000 tổ
             newServiceFee: Math.round(newAmount * rate),
             newDiscount: Math.round(Math.random() * newAmount * rate),
         }, P({
-            type: 'T4',
+            type: 'T2',
             leadHours: Math.random() * 48,
             feeRate: [0.05, 0.08, 0.10, 0.15][i % 4],
             compensationRate: [0, 0.1, 0.2, 0.4][i % 4],
@@ -121,12 +112,11 @@ test('UT-09 · Đẳng thức cân đối đúng tuyệt đối trên 2.000 tổ
 
 // ---------- Phân loại và tra bậc ----------
 
-test('UT-10 · Phân loại chuyển đúng bốn trường hợp', () => {
-    const base = { fromVenueId: 'V1', fromCourtId: 'C1', fromOwnerId: 'O1' };
-    assert.strictEqual(resolveTransferType({ ...base, toVenueId: 'V1', toCourtId: 'C1', toOwnerId: 'O1' }), 'T1');
-    assert.strictEqual(resolveTransferType({ ...base, toVenueId: 'V1', toCourtId: 'C2', toOwnerId: 'O1' }), 'T2');
-    assert.strictEqual(resolveTransferType({ ...base, toVenueId: 'V2', toCourtId: 'C9', toOwnerId: 'O1' }), 'T3');
-    assert.strictEqual(resolveTransferType({ ...base, toVenueId: 'V2', toCourtId: 'C9', toOwnerId: 'O2' }), 'T4');
+test('UT-10 · Phân loại: chỉ còn đổi giờ (T1) và đổi sân cùng địa điểm (T2)', () => {
+    const base = { fromVenueId: 'V1', fromCourtId: 'C1' };
+    assert.strictEqual(resolveTransferType({ ...base, toVenueId: 'V1', toCourtId: 'C1' }), 'T1');
+    assert.strictEqual(resolveTransferType({ ...base, toVenueId: 'V1', toCourtId: 'C2' }), 'T2');
+    assert.strictEqual(resolveTransferType({ ...base, toVenueId: 'V2', toCourtId: 'C9' }), null, 'khác địa điểm không còn được hỗ trợ');
 });
 
 test('UT-11 · Tra bậc chọn đúng ngưỡng lớn nhất còn thoả mãn', () => {

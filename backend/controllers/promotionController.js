@@ -5,7 +5,7 @@ const Promotion = require('../models/Promotion');
  * giảm giá cho khách của mình). Không còn route tạo/sửa/xoá hay nhập mã khi đặt sân.
  *
  * Hàm dưới đây CHỈ còn dùng để tính lại giảm giá cho các đơn CŨ đã áp mã khi chúng
- * được chuyển sân (services/transferService.js).
+ * được đổi lịch (services/transferService.js).
  */
 async function validateAndCalculateDiscount(code, bookingAmount, serviceFee) {
     if (!code?.trim()) return { valid: false, message: 'Vui lòng nhập mã khuyến mãi' };

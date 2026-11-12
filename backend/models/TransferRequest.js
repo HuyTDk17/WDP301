@@ -41,9 +41,8 @@ const transferRequestSchema = new mongoose.Schema(
         toBookingId: { type: mongoose.Schema.Types.ObjectId, ref: 'Booking', default: null },
         customerId: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
 
-        // T1 đổi giờ cùng sân · T2 đổi sân cùng địa điểm · T3 khác địa điểm cùng
-        // chủ · T4 khác chủ sân · T5 sang tên cho người khác
-        type: { type: String, enum: ['T1', 'T2', 'T3', 'T4', 'T5'], required: true },
+        // T1 đổi giờ cùng sân · T2 đổi sân cùng địa điểm
+        type: { type: String, enum: ['T1', 'T2'], required: true },
 
         fromVenueId: { type: mongoose.Schema.Types.ObjectId, ref: 'Venue' },
         fromCourtId: { type: mongoose.Schema.Types.ObjectId, ref: 'Court' },
@@ -65,12 +64,6 @@ const transferRequestSchema = new mongoose.Schema(
 
         holdId: { type: mongoose.Schema.Types.ObjectId, ref: 'Hold', default: null },
 
-        // ── Riêng cho loại T5 (sang tên) ──
-        // Mã do người chuyển tạo ra và gửi cho bạn bè. Người nhận nhập mã này
-        // để lấy suất. Chỉ có ý nghĩa khi type = 'T5'.
-        transferCode: { type: String, default: null, uppercase: true, trim: true },
-        toCustomerId: { type: mongoose.Schema.Types.ObjectId, ref: 'User', default: null },
-
         // Báo giá được CHỐT tại thời điểm tạo và không tính lại khi hiển thị —
         // tránh việc khách thấy một con số lúc xem và bị trừ một con số khác.
         quote: { type: quoteSchema, default: () => ({}) },
@@ -88,8 +81,6 @@ const transferRequestSchema = new mongoose.Schema(
         rejectionReason: { type: String, default: '' },
         failureReason: { type: String, default: '' },
         completedAt: { type: Date, default: null },
-        // Chụp tỉ lệ chia phí cho chủ sân gốc LÚC BÁO GIÁ (cài đặt đổi sau đó không làm thay đổi yêu cầu đang chạy)
-        feeOriginSharePct: { type: Number, default: 0, min: 0, max: 100 },
     },
     { timestamps: true }
 );
@@ -98,11 +89,5 @@ transferRequestSchema.index({ fromBookingId: 1 });
 transferRequestSchema.index({ customerId: 1, createdAt: -1 });
 transferRequestSchema.index({ status: 1, quoteExpiresAt: 1 });
 transferRequestSchema.index({ toOwnerId: 1, status: 1 });
-// Mã sang tên phải duy nhất trong số các mã CÒN HIỆU LỰC. Dùng partial index
-// để các yêu cầu không phải T5 (transferCode = null) không bị coi là trùng.
-transferRequestSchema.index(
-    { transferCode: 1 },
-    { unique: true, partialFilterExpression: { transferCode: { $type: 'string' } } }
-);
 
 module.exports = mongoose.model('TransferRequest', transferRequestSchema);

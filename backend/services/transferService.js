@@ -34,28 +34,28 @@ function fail(status, message) {
 
 /**
  * Trả về { eligible, reasons[], leadTimeHours, policy } cho một đơn.
- * Không ném lỗi — dùng cho giao diện hiển thị nút "Chuyển sân" mờ kèm lý do.
+ * Không ném lỗi — dùng cho giao diện hiển thị nút "Đổi lịch" mờ kèm lý do.
  */
 async function checkEligibility(booking, settings) {
     const reasons = [];
     const L = leadTimeHours(booking.date, booking.startTime);
 
-    if (!settings.transferEnabled) reasons.push('Chức năng chuyển sân đang tạm ngưng');
+    if (!settings.transferEnabled) reasons.push('Chức năng đổi lịch đang tạm ngưng');
     // BR-TR-01: chưa thanh toán thì không có gì để quyết toán; đã dùng thì
     // không còn hàng hoá để chuyển.
     if (booking.status !== 'confirmed') {
         reasons.push(booking.status === 'awaiting_payment'
-            ? 'Vui lòng hoàn tất thanh toán trước khi chuyển sân'
+            ? 'Vui lòng hoàn tất thanh toán trước khi đổi lịch'
             : 'Chỉ lượt đặt đã xác nhận mới chuyển được');
     }
     // BR-TR-03: đơn thủ công không có tài khoản để quyết toán tiền
-    if (!booking.customerId) reasons.push('Lượt đặt thủ công không hỗ trợ chuyển sân');
+    if (!booking.customerId) reasons.push('Lượt đặt thủ công không hỗ trợ đổi lịch');
     // BR-TR-04
     const minLead = settings.transferMinLeadTimeHours ?? 2;
     if (L < minLead) {
         reasons.push(L < 0
             ? 'Khung giờ đã trôi qua'
-            : `Sắp đến giờ chơi nên không thể đổi nữa — cần đổi lịch/chuyển sân trước giờ chơi ít nhất ${minLead} tiếng`);
+            : `Sắp đến giờ chơi nên không thể đổi nữa — cần đổi lịch trước giờ chơi ít nhất ${minLead} tiếng`);
     }
     // BR-TR-06
     const maxTransfers = settings.maxTransfersPerBooking ?? 1;
@@ -85,25 +85,29 @@ async function createQuote({ booking, target, user }) {
     // Hạn mức theo tháng của mỗi khách (Admin đặt; 0 = không giới hạn)
     const monthly = await require('../utils/transferLimits').monthlyStatus(booking.customerId, settings);
     if (monthly.reached) {
-        fail(422, `Bạn đã dùng hết ${monthly.limit} lượt đổi lịch/chuyển sân trong tháng này. Lượt mới sẽ mở lại từ đầu tháng sau.`);
+        fail(422, `Bạn đã dùng hết ${monthly.limit} lượt đổi lịch trong tháng này. Lượt mới sẽ mở lại từ đầu tháng sau.`);
     }
 
     const { toVenueId, toCourtId, toDate, toStartTime, toEndTime } = target;
     if (!toVenueId || !toCourtId || !toDate || !toStartTime || !toEndTime) {
-        fail(400, 'Thiếu thông tin sân hoặc khung giờ muốn chuyển đến');
+        fail(400, 'Thiếu thông tin sân hoặc khung giờ muốn đổi sang');
+    }
+    // Chỉ đổi lịch trong CÙNG địa điểm — không còn chuyển sang địa điểm khác
+    if (String(toVenueId) !== String(booking.venueId)) {
+        fail(400, 'Chỉ có thể đổi lịch trong cùng địa điểm đã đặt');
     }
     // Cùng lý do như bookingController.holdSlot: định dạng sai khiến
     // leadTimeHours() trả NaN, và điều kiện "phải còn đủ N tiếng chuẩn bị"
     // bên dưới sẽ bị lách qua vì NaN < minLead luôn là false.
     if (!isValidDateString(toDate) || !isValidTimeString(toStartTime) || !isValidTimeString(toEndTime)) {
-        fail(400, 'Ngày hoặc khung giờ muốn chuyển đến không đúng định dạng');
+        fail(400, 'Ngày hoặc khung giờ muốn đổi sang không đúng định dạng');
     }
     if (durationHours(toStartTime, toEndTime) <= 0) fail(400, 'Khung giờ đến không hợp lệ');
-    // Độ dài khung mới do khách chọn (đổi lịch ở giao diện khoá độ dài; chuyển sân được chọn nhiều giờ) — giá và chênh lệch tính lại bên dưới.
+    // Độ dài khung mới do khách chọn (giao diện đổi lịch khoá độ dài) — giá và chênh lệch tính lại bên dưới.
 
     // BR-TR-07: không chuyển vào sân bảo trì hoặc địa điểm bị tạm ngưng
     const [toVenue, toCourt] = await Promise.all([Venue.findById(toVenueId), Court.findById(toCourtId)]);
-    if (!toVenue || !toCourt) fail(404, 'Không tìm thấy địa điểm hoặc sân muốn chuyển đến');
+    if (!toVenue || !toCourt) fail(404, 'Không tìm thấy địa điểm hoặc sân muốn đổi sang');
     if (String(toCourt.venueId) !== String(toVenue._id)) fail(400, 'Sân không thuộc địa điểm đã chọn');
     if (toCourt.status !== 'active') fail(409, 'Sân này hiện không hoạt động');
     if (toVenue.status !== 'approved' || !toVenue.isActive) fail(409, 'Địa điểm này hiện không nhận đặt sân');
@@ -124,18 +128,13 @@ async function createQuote({ booking, target, user }) {
     const taken = await isTargetTaken({ courtId: toCourtId, date: toDate, startTime: toStartTime, endTime: toEndTime, excludeBookingId: booking._id, userId: user._id });
     if (taken) fail(409, 'Khung giờ này vừa có người đặt hoặc đang được giữ chỗ');
 
-    // --- Xác định loại chuyển ---
+    // --- Xác định loại: T1 đổi giờ cùng sân · T2 đổi sân cùng địa điểm ---
     const fromVenue = await Venue.findById(booking.venueId);
     const type = resolveTransferType({
         fromVenueId: booking.venueId, fromCourtId: booking.courtId,
-        fromOwnerId: fromVenue?.ownerId, toVenueId: toVenue._id,
-        toCourtId: toCourt._id, toOwnerId: toVenue.ownerId,
+        toVenueId: toVenue._id, toCourtId: toCourt._id,
     });
-    // Mạng lưới chuyển sân: chuyển sang CHỦ SÂN KHÁC (T4) chỉ khi cả hai chủ sân là thành viên (nếu Admin bật yêu cầu này)
-    const networkBlock = await require('../utils/transferNetwork').crossOwnerBlocker({
-        type, fromOwnerId: fromVenue?.ownerId, toOwnerId: toVenue.ownerId, settings,
-    });
-    if (networkBlock) fail(403, networkBlock);
+    if (!type) fail(400, 'Chỉ có thể đổi lịch trong cùng địa điểm đã đặt');
 
     // --- Tính giá đơn mới (luôn tính lại ở máy chủ, không tin client) ---
     const { ratePct, customerSharePct } = await getCommissionConfig();
@@ -167,7 +166,7 @@ async function createQuote({ booking, target, user }) {
     quote.newOwnerCommission = newFee.ownerCommission;
 
     const balance = verifyBalance(quote);
-    if (!balance.balanced) fail(500, 'Lỗi tính toán chi phí chuyển sân, vui lòng thử lại');
+    if (!balance.balanced) fail(500, 'Lỗi tính toán chi phí đổi lịch, vui lòng thử lại');
 
     // --- Giữ chỗ khung giờ đích trong thời gian khách cân nhắc ---
     const ttl = settings.quoteTtlMinutes ?? 10;
@@ -189,104 +188,12 @@ async function createQuote({ booking, target, user }) {
         toDate, toStartTime, toEndTime,
         holdId: hold._id,
         quote, quoteExpiresAt: expiresAt,
-        // Chụp tỉ lệ chia phí cho chủ sân gốc (chỉ có nghĩa với T4) tại thời điểm báo giá
-        feeOriginSharePct: type === 'T4' ? (settings.transferFeeOriginSharePct || 0) : 0,
         status: 'quoted',
     });
 
-    return { transfer, breakdown: buildBreakdown(quote), requiresApproval: requiresOwnerApproval(toVenue, type) };
+    return { transfer, breakdown: buildBreakdown(quote), requiresApproval: requiresOwnerApproval(toVenue) };
 }
 
-
-// ============================================================
-// 2b. GỢI Ý SÂN THAY THẾ
-// ============================================================
-
-/**
- * Tìm sân còn trống thay thế cho một lượt đặt: cùng môn, cùng ngày, giờ gần giờ gốc (±2 giờ), cùng độ dài,
- * trong các địa điểm khách chuyển được (đang nhận đặt, chủ sân không bị khoá, và thuộc mạng lưới chuyển sân
- * nếu Admin bật yêu cầu này cho chuyển sang chủ sân khác). Chỉ GỢI Ý — giá chính thức vẫn do bước báo giá tính.
- */
-async function suggestReplacements({ booking, limit = 10 }) {
-    const { candidateWindows, rankSuggestions } = require('../utils/transferSuggestions');
-    const { slotIndices } = require('../utils/timeSlots');
-    const settings = await getSettings();
-
-    const eligibility = await checkEligibility(booking, settings);
-    if (!eligibility.eligible) fail(422, eligibility.reasons[0]);
-
-    const [fromVenue, fromCourt] = await Promise.all([Venue.findById(booking.venueId), Court.findById(booking.courtId)]);
-    const sport = booking.sport || courtRules.sportOf(fromCourt);
-    const courtFilter = { status: 'active' };
-    if (sport) courtFilter.type = sport;
-    const courts = await Court.find(courtFilter).limit(300);
-    if (!courts.length) return { suggestions: [] };
-
-    const venues = await Venue.find({ _id: { $in: [...new Set(courts.map((c) => String(c.venueId)))] }, status: 'approved', isActive: true });
-    const venueById = new Map(venues.map((v) => [String(v._id), v]));
-    const usable = courts.filter((c) => venueById.has(String(c.venueId)));
-    const courtIds = usable.map((c) => c._id);
-
-    // Nạp một lần mọi thứ đang chiếm khung giờ của các sân ứng viên trong ngày đó, rồi kiểm tra trong bộ nhớ
-    const [bookings, locks, holds] = await Promise.all([
-        Booking.find({ courtId: { $in: courtIds }, date: booking.date, _id: { $ne: booking._id }, status: { $nin: ['cancelled', 'transferred'] } }).select('courtId startTime endTime'),
-        require('../models/SlotLock').find({ courtId: { $in: courtIds }, date: booking.date, bookingId: { $ne: booking._id } }).select('courtId slotIndex'),
-        Hold.find({ courtId: { $in: courtIds }, date: booking.date, consumed: false, expiresAt: { $gt: new Date() }, userId: { $ne: booking.customerId } }).select('courtId startTime endTime'),
-    ]);
-    const busy = new Map();   // courtId -> { ranges: [[start,end]], slots: Set }
-    const bucket = (id) => { const k = String(id); if (!busy.has(k)) busy.set(k, { ranges: [], slots: new Set() }); return busy.get(k); };
-    const { toMinutes } = require('../utils/timeSlots');
-    [...bookings, ...holds].forEach((x) => bucket(x.courtId).ranges.push([toMinutes(x.startTime), toMinutes(x.endTime)]));
-    locks.forEach((l) => bucket(l.courtId).slots.add(l.slotIndex));
-    const isBusy = (courtId, startTime, endTime) => {
-        const b = busy.get(String(courtId));
-        if (!b) return false;
-        const s = toMinutes(startTime); const e = toMinutes(endTime);
-        return b.ranges.some(([bs, be]) => bs < e && be > s) || slotIndices(startTime, endTime).some((i) => b.slots.has(i));
-    };
-
-    const ownerOk = new Map();   // ownerId -> có nhận đặt mới / vào được mạng lưới không
-    const checkOwner = async (ownerId, sameOwner) => {
-        const key = `${ownerId}:${sameOwner}`;
-        if (!ownerOk.has(key)) {
-            const blocked = await require('./settlementService').isOwnerBlocked(ownerId);
-            const network = sameOwner ? null : await require('../utils/transferNetwork').crossOwnerBlocker({
-                type: 'T4', fromOwnerId: fromVenue?.ownerId, toOwnerId: ownerId, settings,
-            });
-            ownerOk.set(key, !blocked && !network);
-        }
-        return ownerOk.get(key);
-    };
-
-    const minLead = settings.transferMinLeadTimeHours ?? 2;
-    const items = [];
-    for (const court of usable) {
-        const venue = venueById.get(String(court.venueId));
-        const sameOwner = String(venue.ownerId) === String(fromVenue?.ownerId);
-        if (!(await checkOwner(venue.ownerId, sameOwner))) continue;
-        const windows = candidateWindows({
-            startTime: booking.startTime, endTime: booking.endTime,
-            open: venue.openHours?.open || '06:00', close: venue.openHours?.close || '22:00',
-        });
-        for (const w of windows) {
-            const same = String(court._id) === String(booking.courtId) && w.shiftMinutes === 0;   // đúng khung giờ hiện tại
-            if (same) continue;
-            if (leadTimeHours(booking.date, w.startTime) < minLead) continue;
-            if (isBusy(court._id, w.startTime, w.endTime)) continue;
-            const newAmount = calculateAmount(court.pricePerHour, w.startTime, w.endTime);
-            items.push({
-                venueId: venue._id, venueName: venue.name,
-                address: [venue.address?.district, venue.address?.city].filter(Boolean).join(', '),
-                courtId: court._id, courtName: court.name, pricePerHour: court.pricePerHour,
-                date: booking.date, startTime: w.startTime, endTime: w.endTime, shiftMinutes: w.shiftMinutes,
-                sameVenue: String(venue._id) === String(booking.venueId),
-                sameOwner,
-                priceDiff: newAmount - booking.amount,
-            });
-        }
-    }
-    return { suggestions: rankSuggestions(items, limit) };
-}
 
 /** Khung giờ đích có đang bị chiếm không — xét cả đơn, khoá ô và giữ chỗ. */
 async function isTargetTaken({ courtId, date, startTime, endTime, excludeBookingId, userId }) {
@@ -313,20 +220,14 @@ async function isTargetTaken({ courtId, date, startTime, endTime, excludeBooking
 // ============================================================
 
 async function confirmQuote({ transfer, user }) {
-    if (transfer.status !== 'quoted') fail(409, 'Yêu cầu chuyển sân này không còn ở trạng thái chờ xác nhận');
+    if (transfer.status !== 'quoted') fail(409, 'Yêu cầu đổi lịch này không còn ở trạng thái chờ xác nhận');
     if (transfer.quoteExpiresAt < new Date()) {
         await expire(transfer, 'Báo giá đã hết hạn');
         fail(410, 'Báo giá đã hết hạn, vui lòng chọn lại khung giờ');
     }
-    // Tư cách thành viên có thể bị gỡ giữa lúc báo giá và lúc xác nhận
-    const networkBlock = await require('../utils/transferNetwork').crossOwnerBlocker({
-        type: transfer.type, fromOwnerId: transfer.fromOwnerId, toOwnerId: transfer.toOwnerId, settings: await getSettings(),
-    });
-    if (networkBlock) fail(409, networkBlock);
-
     const toVenue = await Venue.findById(transfer.toVenueId);
-    // BR-TR-14: chủ sân đích có quyền tự tay duyệt từng lượt chuyển đến
-    if (requiresOwnerApproval(toVenue, transfer.type)) {
+    // BR-TR-14: chủ sân đích có quyền tự tay duyệt từng yêu cầu đổi lịch
+    if (requiresOwnerApproval(toVenue)) {
         const settings = await getSettings();
         const timeout = settings.ownerApprovalTimeoutMinutes ?? 30;
         transfer.status = 'awaiting_owner_approval';
@@ -346,12 +247,6 @@ async function confirmQuote({ transfer, user }) {
 
 /** Sau khi (không cần hoặc đã được) duyệt: thu tiền hoặc thực thi luôn. */
 async function proceedAfterApproval({ transfer, user }) {
-    // Chủ sân đích có thể mất tư cách thành viên trong lúc chờ họ duyệt — kiểm tra lại TRƯỚC khi thu tiền.
-    const networkBlock = await require('../utils/transferNetwork').crossOwnerBlocker({
-        type: transfer.type, fromOwnerId: transfer.fromOwnerId, toOwnerId: transfer.toOwnerId, settings: await getSettings(),
-    });
-    if (networkBlock) fail(409, networkBlock);
-
     // S > 0: phải thu thêm trước. Đơn gốc vẫn còn nguyên hiệu lực cho tới khi
     // cổng thanh toán báo thành công.
     if (transfer.quote.settlement > 0) {
@@ -391,9 +286,6 @@ async function execute(transfer) {
         fail(409, 'Địa điểm đích hiện không nhận đặt sân');
     }
 
-    // Chia phí chuyển sân cho chủ sân gốc (T4). Số này ghi cả hai phía để quyết toán luôn cân.
-    const feeShare = require('../utils/transferSplit').originFeeShare({ type: transfer.type, transferFee: q.transferFee, pct: transfer.feeOriginSharePct });
-
     let newBooking;
     await withTransaction(async (session) => {
         const opt = session ? { session } : {};
@@ -417,7 +309,6 @@ async function execute(transfer) {
             rootBookingId: booking.rootBookingId || booking._id,
             transferCount: (booking.transferCount || 0) + 1,
             transferFeeAmount: q.transferFee,
-            transferFeeShareOut: feeShare,
             ...(await require('./cancellationPolicyService').snapshotFor(toVenue.ownerId)),
             originalPaidAmount: (booking.originalPaidAmount || q.oldPaid) + Math.max(0, q.settlement),
         }], opt);
@@ -438,7 +329,6 @@ async function execute(transfer) {
             status: 'transferred',
             transferredToBookingId: newBooking._id,
             compensationAmount: q.compensation,
-            transferFeeShareIn: feeShare,
             rootBookingId: booking.rootBookingId || booking._id,
         }, opt);
 
@@ -460,8 +350,8 @@ async function execute(transfer) {
     // Các bước phụ, thất bại không được phép làm hỏng giao dịch đã chốt
     await settleMoney(transfer, newBooking).catch((e) => console.error('settleMoney:', e.message));
     await notifyAllParties(transfer, newBooking).catch((e) => console.error('notify:', e.message));
-    // Lượt đặt gốc đã chuyển đi → đóng bài "tìm người chơi" gắn với nó (chủ nhóm có thể đăng lại cho lượt đặt mới)
-    await require('./playerService').closeForBooking(booking._id, 'lượt đặt đã được chuyển sang khung giờ/địa điểm khác');
+    // Lượt đặt gốc đã đổi đi → đóng bài "tìm người chơi" gắn với nó (chủ nhóm có thể đăng lại cho lượt đặt mới)
+    await require('./playerService').closeForBooking(booking._id, 'lượt đặt đã được đổi sang khung giờ/sân khác');
 
     return { transfer, newBooking, oldBooking: booking };
 }
@@ -479,7 +369,7 @@ async function settleMoney(transfer, newBooking) {
     if (q.refundCash > 0) {
         const payment = await refundService.createRefund({
             amount: q.refundCash,
-            reason: 'Hoàn chênh lệch khi chuyển sân',
+            reason: 'Hoàn chênh lệch khi đổi lịch',
             bookingId: transfer.fromBookingId,
             transferId: transfer._id,
             customerId: transfer.customerId,
@@ -501,7 +391,7 @@ async function settleMoney(transfer, newBooking) {
             reason: 'transfer_refund',
             transferId: transfer._id,
             bookingId: newBooking._id,
-            note: 'Phần hoàn vượt trần tiền mặt khi chuyển sân',
+            note: 'Phần hoàn vượt trần tiền mặt khi đổi lịch',
         });
     }
 }
@@ -530,7 +420,7 @@ async function abort(transfer, status, reason) {
     if (paid) {
         await refundService.createRefund({
             amount: paid.amount,
-            reason: `Chuyển sân không thành công: ${reason}`,
+            reason: `Đổi lịch không thành công: ${reason}`,
             bookingId: transfer.fromBookingId,
             transferId: transfer._id,
             customerId: transfer.customerId,
@@ -559,5 +449,5 @@ const expire = (transfer, reason = 'Yêu cầu đã hết hạn') => abort(trans
 
 module.exports = {
     checkEligibility, createQuote, confirmQuote, proceedAfterApproval,
-    execute, abort, expire, isTargetTaken, suggestReplacements, fail,
+    execute, abort, expire, isTargetTaken, fail,
 };

@@ -24,22 +24,14 @@ exports.getEligibility = asyncHandler(async (req, res) => {
 
     const settings = await getSettings();
     const result = await transferService.checkEligibility(booking, settings);
-    // Thông tin mạng lưới để giao diện báo sớm: chủ sân hiện tại có là thành viên không (chỉ ảnh hưởng chuyển sang chủ sân khác)
-    const fromVenue = await Venue.findById(booking.venueId).select('ownerId');
     // Hạn mức theo tháng: hết lượt thì báo ngay ở bước kiểm tra để khách không mất công tìm sân
     const monthly = await require('../utils/transferLimits').monthlyStatus(booking.customerId, settings);
     if (monthly.reached && result.eligible) {
         result.eligible = false;
-        result.reasons = [`Bạn đã dùng hết ${monthly.limit} lượt đổi lịch/chuyển sân trong tháng này`, ...result.reasons];
+        result.reasons = [`Bạn đã dùng hết ${monthly.limit} lượt đổi lịch trong tháng này`, ...result.reasons];
     }
-    const network = {
-        required: !!settings.transferNetworkRequired,
-        fromOwnerMember: await require('../utils/transferNetwork').ownerInNetwork(fromVenue?.ownerId, settings),
-    };
-
     res.json({
         ...result,
-        network,
         monthly,
         booking: {
             _id: booking._id, venueId: booking.venueId, courtId: booking.courtId,
@@ -52,23 +44,11 @@ exports.getEligibility = asyncHandler(async (req, res) => {
         // Gửi kèm biểu phí để khách biết chi phí TRƯỚC khi mất công tìm sân
         feePolicy: {
             transferFeeTiers: settings.transferFeeTiers,
-            compensationTiers: settings.compensationTiers,
             transferFeeMin: settings.transferFeeMin,
             transferFeeMax: settings.transferFeeMax,
             maxRefundRatio: settings.maxRefundRatio,
         },
     });
-});
-
-// @route GET /api/bookings/:id/transfer/suggestions
-// Gợi ý sân thay thế còn trống (cùng môn, cùng ngày, giờ gần giờ gốc, cùng độ dài)
-exports.getSuggestions = asyncHandler(async (req, res) => {
-    const booking = await Booking.findById(req.params.id);
-    if (!booking) return res.status(404).json({ message: 'Không tìm thấy lượt đặt sân này' });
-    if (String(booking.customerId || '') !== String(req.user._id)) {
-        return res.status(403).json({ message: 'Bạn không có quyền với lượt đặt này' });
-    }
-    res.json(await transferService.suggestReplacements({ booking }));
 });
 
 // @route POST /api/bookings/:id/transfer/quote
@@ -109,19 +89,16 @@ exports.cancel = asyncHandler(async (req, res) => {
     if (!['quoted', 'awaiting_payment', 'awaiting_owner_approval'].includes(transfer.status)) {
         return res.status(409).json({ message: 'Yêu cầu này không thể huỷ ở trạng thái hiện tại' });
     }
-    await transferService.abort(transfer, 'cancelled', 'Bạn đã huỷ yêu cầu chuyển sân');
+    await transferService.abort(transfer, 'cancelled', 'Bạn đã huỷ yêu cầu đổi lịch');
     res.json({ transfer });
 });
 
 // @route GET /api/transfers/:id
 exports.getById = asyncHandler(async (req, res) => {
     const transfer = await TransferRequest.findById(req.params.id);
-    if (!transfer) return res.status(404).json({ message: 'Không tìm thấy yêu cầu chuyển sân' });
+    if (!transfer) return res.status(404).json({ message: 'Không tìm thấy yêu cầu đổi lịch' });
 
-    // toCustomerId: người NHẬN trong giao dịch sang tên (T5) — họ cũng cần xem
-    // được trang này để chuyển khoản phí, dù không phải người tạo yêu cầu.
-    const isCustomer = [transfer.customerId, transfer.toCustomerId]
-        .some((id) => String(id || '') === String(req.user._id));
+    const isCustomer = String(transfer.customerId || '') === String(req.user._id);
     const isOwner = [transfer.fromOwnerId, transfer.toOwnerId].some((o) => String(o || '') === String(req.user._id));
     if (!isCustomer && !isOwner) {
         return res.status(403).json({ message: 'Bạn không có quyền xem yêu cầu này' });
@@ -155,8 +132,7 @@ exports.getById = asyncHandler(async (req, res) => {
 
 // @route GET /api/transfers/my
 exports.getMine = asyncHandler(async (req, res) => {
-    // Gồm cả các suất được NGƯỜI KHÁC sang tên cho mình (loại T5)
-    const filter = { $or: [{ customerId: req.user._id }, { toCustomerId: req.user._id }] };
+    const filter = { customerId: req.user._id };
     if (req.query.status) filter.status = req.query.status;
     const transfers = await TransferRequest.find(filter).sort({ createdAt: -1 }).limit(50);
     res.json({ transfers, total: transfers.length });
@@ -169,32 +145,26 @@ exports.getMine = asyncHandler(async (req, res) => {
 // @route GET /api/owner/transfers
 exports.getOwnerTransfers = asyncHandler(async (req, res) => {
     const me = req.user._id;
-    const filter = { $or: [{ toOwnerId: me }, { fromOwnerId: me }] };
+    const filter = { toOwnerId: me };
     if (req.query.status) filter.status = req.query.status;
 
     const transfers = await TransferRequest.find(filter)
         .populate('customerId', 'name phone avatar')
         .sort({ createdAt: -1 }).limit(100);
 
-    // Chia sẵn các nhóm để giao diện không phải tự lọc. ĐỔI LỊCH (T1/T2) tách thành nhóm riêng — không còn lẫn
-    // vào "chuyển đến/chuyển đi" (vì đổi lịch luôn cùng một chủ sân nên trước đây hiện ở cả hai tab).
-    const { isReschedule } = require('../utils/transferMessages');
-    const mine = (id) => String(id) === String(me);
-    const waiting = (t) => mine(t.toOwnerId) && t.status === 'awaiting_owner_approval';
+    // Chủ sân chỉ còn yêu cầu ĐỔI LỊCH (luôn cùng một chủ sân)
+    const waiting = (t) => String(t.toOwnerId) === String(me) && t.status === 'awaiting_owner_approval';
     res.json({
         transfers,
-        incoming: transfers.filter((t) => mine(t.toOwnerId) && !isReschedule(t.type)),
-        outgoing: transfers.filter((t) => mine(t.fromOwnerId) && !isReschedule(t.type)),
-        reschedules: transfers.filter((t) => mine(t.toOwnerId) && isReschedule(t.type)),
-        pendingCount: transfers.filter((t) => waiting(t) && !isReschedule(t.type)).length,
-        pendingRescheduleCount: transfers.filter((t) => waiting(t) && isReschedule(t.type)).length,
+        reschedules: transfers,
+        pendingRescheduleCount: transfers.filter(waiting).length,
     });
 });
 
 // @route POST /api/owner/transfers/:id/approve
 exports.approve = asyncHandler(async (req, res) => {
     const transfer = await TransferRequest.findById(req.params.id);
-    if (!transfer) return res.status(404).json({ message: 'Không tìm thấy yêu cầu chuyển sân' });
+    if (!transfer) return res.status(404).json({ message: 'Không tìm thấy yêu cầu đổi lịch' });
     if (String(transfer.toOwnerId) !== String(req.user._id)) {
         return res.status(403).json({ message: 'Yêu cầu này không gửi đến địa điểm của bạn' });
     }
@@ -213,15 +183,14 @@ exports.approve = asyncHandler(async (req, res) => {
 // @route POST /api/owner/transfers/:id/reject
 exports.reject = asyncHandler(async (req, res) => {
     const transfer = await TransferRequest.findById(req.params.id);
-    if (!transfer) return res.status(404).json({ message: 'Không tìm thấy yêu cầu chuyển sân' });
+    if (!transfer) return res.status(404).json({ message: 'Không tìm thấy yêu cầu đổi lịch' });
     if (String(transfer.toOwnerId) !== String(req.user._id)) {
         return res.status(403).json({ message: 'Yêu cầu này không gửi đến địa điểm của bạn' });
     }
     if (transfer.status !== 'awaiting_owner_approval') {
         return res.status(409).json({ message: 'Yêu cầu này không còn chờ duyệt' });
     }
-    const reason = req.body.reason?.trim()
-        || (require('../utils/transferMessages').isReschedule(transfer.type) ? 'Chủ sân từ chối yêu cầu đổi lịch' : 'Chủ sân từ chối yêu cầu chuyển đến');
+    const reason = req.body.reason?.trim() || 'Chủ sân từ chối yêu cầu đổi lịch';
     await transferService.abort(transfer, 'rejected', reason);
     res.json({ transfer });
 });
@@ -237,7 +206,7 @@ exports.setVenueTransferPolicy = asyncHandler(async (req, res) => {
     if (req.body.transferRequiresApproval !== undefined) venue.transferRequiresApproval = !!req.body.transferRequiresApproval;
     if (req.body.rescheduleRequiresApproval !== undefined) {
         const v = req.body.rescheduleRequiresApproval;
-        // true = luôn duyệt · false = tự chấp nhận · null = theo cài đặt "chuyển đến"
+        // true = luôn duyệt · false = tự chấp nhận · null = theo cài đặt chung `transferRequiresApproval`
         if (v !== null && typeof v !== 'boolean') return res.status(400).json({ message: 'Giá trị duyệt đổi lịch không hợp lệ' });
         venue.rescheduleRequiresApproval = v;
     }
@@ -251,7 +220,7 @@ exports.setVenueTransferPolicy = asyncHandler(async (req, res) => {
 
 async function loadOwnTransfer(req, res) {
     const transfer = await TransferRequest.findById(req.params.id);
-    if (!transfer) { res.status(404).json({ message: 'Không tìm thấy yêu cầu chuyển sân' }); return null; }
+    if (!transfer) { res.status(404).json({ message: 'Không tìm thấy yêu cầu đổi lịch' }); return null; }
     if (String(transfer.customerId) !== String(req.user._id)) {
         res.status(403).json({ message: 'Yêu cầu này không thuộc về bạn' }); return null;
     }
@@ -259,7 +228,7 @@ async function loadOwnTransfer(req, res) {
 }
 
 /**
- * Tạo hướng dẫn chuyển khoản cho khoản BÙ THÊM khi chuyển sân (S > 0).
+ * Tạo hướng dẫn chuyển khoản cho khoản BÙ THÊM khi đổi lịch (S > 0).
  *
  * Trước đây hàm này gọi sang VNPay/MoMo để lấy một URL redirect. Chuyển khoản
  * ngân hàng không có "trang thanh toán" nào để redirect tới — thay vào đó trả
@@ -271,8 +240,7 @@ async function createTopupInstructions(transfer) {
     const settings = await getSettings();
     const amount = transfer.quote.settlement;
 
-    // Khoản bù (gồm cả phí chuyển sân) chuyển THẲNG cho chủ sân của địa điểm nhận
-    // — với sang tên (T5) là chủ sân của chính lượt đặt đó. Nền tảng không nhận tiền.
+    // Khoản bù (gồm cả phí đổi lịch) chuyển THẲNG cho chủ sân của địa điểm. Nền tảng không nhận tiền.
     const receiverOwnerId = transfer.toOwnerId || transfer.fromOwnerId;
     const owner = receiverOwnerId
         ? await User.findById(receiverOwnerId).select('name bankName bankBin bankAccount bankAccountName')
@@ -298,7 +266,7 @@ async function createTopupInstructions(transfer) {
     await TransferRequest.updateOne({ _id: transfer._id }, { paymentId: payment._id });
 
     // Chuyển khoản ngân hàng cần nhiều thời gian hơn một cú redirect qua cổng,
-    // nên nới cửa sổ chờ thanh toán của yêu cầu chuyển sân ra bằng đúng cửa sổ
+    // nên nới cửa sổ chờ thanh toán của yêu cầu đổi lịch ra bằng đúng cửa sổ
     // đã cấu hình cho đặt sân thường, thay vì giữ nguyên hạn báo giá ngắn ban đầu.
     const windowMinutes = settings.bankTransferWindowMinutes || 30;
     const newExpiry = new Date(Date.now() + windowMinutes * 60 * 1000);
@@ -309,8 +277,7 @@ async function createTopupInstructions(transfer) {
     // Nếu chỉ nới quoteExpiresAt mà quên Hold, Hold vẫn hết hạn theo mốc CŨ
     // (mốc báo giá 10 phút, hoặc mốc chờ chủ sân duyệt) — trong lúc khách còn
     // đang thao tác chuyển khoản, isTargetTaken() ở nơi khác không còn thấy
-    // Hold này nữa và một khách khác có thể đặt mất đúng khung giờ đó. Loại T5
-    // không đổi khung giờ nên không có holdId, bỏ qua là đúng.
+    // Hold này nữa và một khách khác có thể đặt mất đúng khung giờ đó.
     if (transfer.holdId) {
         await require('../models/Hold').updateOne({ _id: transfer.holdId }, { expiresAt: newExpiry });
     }

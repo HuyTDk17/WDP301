@@ -1,12 +1,12 @@
 /**
- * KIỂM THỬ: LUỒNG CHUYỂN SÂN ĐẦY ĐỦ, TỪ BÁO GIÁ ĐẾN THỰC THI.
+ * KIỂM THỬ: LUỒNG ĐỔI LỊCH ĐẦY ĐỦ, TỪ BÁO GIÁ ĐẾN THỰC THI (chỉ trong cùng địa điểm).
  *
  * Đây là bài test giá trị nhất trong bộ này — nó gọi ĐÚNG các hàm controller
  * thật (transferController.createQuote, .confirm, paymentController.
  * confirmBankTransfer) thay vì gọi thẳng service, nên kiểm tra được cả lớp xử
  * lý HTTP (kiểm tra quyền, định dạng phản hồi) chứ không chỉ nghiệp vụ thuần.
  *
- * Kịch bản 1 (T4 — phải trả thêm tiền) đi thẳng vào đúng chỗ vừa được vá: khi
+ * Kịch bản 1 (T2 đổi sang sân đắt hơn — phải trả thêm tiền) đi thẳng vào đúng chỗ vừa được vá: khi
  * tạo hướng dẫn chuyển khoản, hạn giữ chỗ khung giờ ĐÍCH (Hold) phải được nới
  * theo đúng cửa sổ chờ chuyển khoản — nếu quên bước đó (lỗi đã có trước khi
  * vá), Hold hết hạn sớm hơn hẳn so với thời gian khách còn được phép chuyển
@@ -46,13 +46,32 @@ async function main() {
     const customer = await makeUser({ role: 'customer' });
 
     // ============================================================
-    // KỊCH BẢN 1 — T4: khác chủ sân, đích đắt hơn, phải chuyển khoản thêm
+    // KỊCH BẢN 1 — T2: cùng địa điểm, sân đích đắt hơn, phải chuyển khoản thêm
     // ============================================================
-    await test('T4-01 · Báo giá xác định đúng loại T4 và chờ chuyển khoản', async () => {
+    await test('T2-00 · Chuyển sang địa điểm KHÁC không còn được hỗ trợ (400)', async () => {
         const ownerA = await makeUser({ role: 'owner' });
         const ownerB = await makeUser({ role: 'owner' });
         const { court: courtA } = await makeVenueWithCourt({ ownerId: ownerA._id, pricePerHour: 200000 });
-        const { venue: venueB, court: courtB } = await makeVenueWithCourt({ ownerId: ownerB._id, pricePerHour: 350000 });
+        const { venue: venueB, court: courtB } = await makeVenueWithCourt({ ownerId: ownerB._id, pricePerHour: 200000 });
+        const bookingA = await makeConfirmedBooking({ customer, venue: { _id: courtA.venueId, name: 'V-A' }, court: courtA, hoursFromNow: 48 });
+        const target = futureSlot(60);
+        const res = await call(transferController.createQuote, {
+            params: { id: bookingA._id }, user: customer,
+            body: { toVenueId: venueB._id, toCourtId: courtB._id, toDate: target.date, toStartTime: target.startTime, toEndTime: target.endTime },
+        });
+        assert.strictEqual(res.statusCode, 400, 'Khác địa điểm phải bị từ chối');
+        assert.strictEqual((await Booking.findById(bookingA._id)).status, 'confirmed', 'Đơn gốc phải còn nguyên');
+    });
+
+    await test('T2-02 · Đổi sang sân đắt hơn cùng địa điểm: báo giá chờ chuyển khoản, nới Hold, thực thi sau khi xác nhận', async () => {
+        const ownerA = await makeUser({ role: 'owner' });
+        const { venue: venueB, court: courtA } = await makeVenueWithCourt({ ownerId: ownerA._id, pricePerHour: 200000 });
+        const { court: courtB } = await makeVenueWithCourt({ ownerId: ownerA._id, pricePerHour: 350000 })
+            .then(async (r) => {
+                const Court = require('../../models/Court');
+                await Court.updateOne({ _id: r.court._id }, { venueId: venueB._id });
+                return { ...r, court: await Court.findById(r.court._id) };
+            });
 
         const bookingA = await makeConfirmedBooking({ customer, venue: { _id: courtA.venueId, name: 'V-A' }, court: courtA, hoursFromNow: 48 });
         const target = futureSlot(60);
@@ -63,7 +82,7 @@ async function main() {
         });
         assert.strictEqual(quoteRes.statusCode, 201, quoteRes.body?.message);
         const transfer = quoteRes.body.transfer;
-        assert.strictEqual(transfer.type, 'T4', 'Khác chủ sân phải là loại T4');
+        assert.strictEqual(transfer.type, 'T2', 'Cùng địa điểm, khác sân phải là loại T2');
         assert.ok(transfer.quote.settlement > 0, 'Đích đắt hơn thì phải phát sinh khoản thu thêm (S > 0)');
 
         const confirmRes = await call(transferController.confirm, { params: { id: transfer._id }, user: customer });
@@ -83,7 +102,7 @@ async function main() {
         const minutesLeft = (hold.expiresAt.getTime() - Date.now()) / 60000;
         assert.ok(minutesLeft > 20, `Hold phải còn hơn 20 phút để khách kịp chuyển khoản, thực tế còn ${minutesLeft.toFixed(1)} phút`);
 
-        // ── Admin xác nhận chuyển khoản → toàn bộ giao dịch chuyển sân chạy ──
+        // ── Admin xác nhận chuyển khoản → toàn bộ giao dịch đổi lịch chạy ──
         const confirmBankRes = await call(paymentController.confirmBankTransfer, {
             params: { id: confirmRes.body.paymentId }, user: admin,
         });
@@ -105,8 +124,8 @@ async function main() {
 
         // Sổ cái phải có bút toán cho lần chuyển này
         const entries = await LedgerEntry.find({ transferId: transfer._id });
-        assert.ok(entries.length > 0, 'Phải có ít nhất một bút toán sổ cái cho giao dịch chuyển sân này');
-        assert.ok(entries.some((e) => e.entryType === 'transfer_fee'), 'Phải có bút toán phí chuyển sân');
+        assert.ok(entries.length > 0, 'Phải có ít nhất một bút toán sổ cái cho giao dịch đổi lịch này');
+        assert.ok(entries.some((e) => e.entryType === 'transfer_fee'), 'Phải có bút toán phí đổi lịch');
 
         const finalTransfer = await TransferRequest.findById(transfer._id);
         assert.strictEqual(finalTransfer.status, 'completed');
@@ -126,7 +145,7 @@ async function main() {
         const { court: cheapCourt } = await makeVenueWithCourt({ ownerId: owner._id, pricePerHour: 100000 })
             .then(async (r) => {
                 // Ép sân rẻ về CHUNG một địa điểm với sân đắt, để đúng là loại T2
-                // (cùng venue, khác sân) thay vì T3 (khác venue, cùng chủ).
+                // (cùng venue, khác sân).
                 const Court = require('../../models/Court');
                 await Court.updateOne({ _id: r.court._id }, { venueId: venue._id });
                 return { ...r, court: await Court.findById(r.court._id) };

@@ -22,7 +22,7 @@ const NAV_GROUPS = [
     { to: '/owner/bookings', icon: ClipboardList, label: 'Lịch đặt' },
     { to: '/owner/payments/pending', icon: Landmark, label: 'Xác nhận chuyển khoản' },
     { to: '/owner/refunds', icon: Banknote, label: 'Hoàn tiền cho khách' },
-    { to: '/owner/transfers', icon: Repeat, label: 'Chuyển sân' },
+    { to: '/owner/transfers', icon: Repeat, label: 'Đổi lịch' },
     { to: '/owner/customers', icon: Users, label: 'Khách hàng' },
     { to: '/owner/reviews', icon: Star, label: 'Đánh giá' },
   ]},

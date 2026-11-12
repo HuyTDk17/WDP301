@@ -8,7 +8,7 @@ import { formatCurrency, formatDate, formatTime } from '@/utils'
 import styles from '../TransferDetail/TransferDetail.module.css'
 
 /**
- * Danh sách yêu cầu đổi lịch / chuyển sân của khách — để theo dõi trạng thái (chờ duyệt, đã duyệt/hoàn tất,
+ * Danh sách yêu cầu đổi lịch của khách — để theo dõi trạng thái (chờ duyệt, đã duyệt/hoàn tất,
  * bị từ chối, hết hạn). Bấm một dòng để xem chi tiết (/transfers/:id).
  */
 export default function MyTransfers() {
@@ -26,7 +26,7 @@ export default function MyTransfers() {
     <div className={styles.page}>
       <div className="container">
         <Link to="/bookings" className={styles.back}><ArrowLeft size={15} /> Quay lại lịch sử đặt sân</Link>
-        <h1 style={{ margin: '12px 0 4px' }}>Yêu cầu đổi lịch / chuyển sân</h1>
+        <h1 style={{ margin: '12px 0 4px' }}>Yêu cầu đổi lịch</h1>
         <p style={{ color: 'var(--text-muted, #64748b)', marginBottom: 16 }}>Theo dõi trạng thái các yêu cầu bạn đã gửi.</p>
 
         {loading ? (
@@ -40,7 +40,7 @@ export default function MyTransfers() {
               return (
                 <Link key={t._id} to={`/transfers/${t._id}`} style={{ display: 'block', padding: 14, border: '1px solid var(--border, #e2e8f0)', borderRadius: 12, background: 'var(--bg-surface, #fff)', color: 'inherit', textDecoration: 'none' }}>
                   <div style={{ display: 'flex', justifyContent: 'space-between', gap: 8, alignItems: 'center' }}>
-                    <strong>{TRANSFER_TYPE_LABEL[t.type] || 'Chuyển sân'}</strong>
+                    <strong>{TRANSFER_TYPE_LABEL[t.type] || 'Đổi lịch'}</strong>
                     <span style={{ padding: '2px 10px', borderRadius: 999, fontSize: 12, fontWeight: 600, color: st.color, background: st.bg }}>{st.label}</span>
                   </div>
                   <p style={{ margin: '8px 0 0', fontSize: 14 }}>

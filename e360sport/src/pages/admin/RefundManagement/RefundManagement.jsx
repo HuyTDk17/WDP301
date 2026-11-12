@@ -11,7 +11,7 @@ import { formatCurrency } from '@/utils'
 import styles from './RefundManagement.module.css'
 
 /**
- * Các khoản NỀN TẢNG phải hoàn: chênh lệch khi chuyển sân và giao dịch cũ nhận bằng tài khoản
+ * Các khoản NỀN TẢNG phải hoàn: chênh lệch khi đổi lịch và giao dịch cũ nhận bằng tài khoản
  * nền tảng. Hoàn tiền của đơn đặt sân (khách chuyển thẳng cho chủ sân) do CHỦ SÂN thực hiện ở
  * mục "Hoàn tiền cho khách" — không hiện ở đây. Chuyển khoản ngân hàng không có API hoàn tự
  * động, nên quản trị viên tự chuyển khoản lại cho khách rồi bấm đánh dấu đã hoàn.
@@ -53,7 +53,7 @@ export default function RefundManagement() {
         title="Hoàn tiền"
         subtitle={payments.length
           ? `${payments.length} khoản chờ xử lý · tổng ${formatCurrency(total)}`
-          : 'Khoản nền tảng phải hoàn (chuyển sân…) sẽ hiện ở đây. Hoàn tiền đơn đặt sân do chủ sân thực hiện.'}
+          : 'Khoản nền tảng phải hoàn (đổi lịch…) sẽ hiện ở đây. Hoàn tiền đơn đặt sân do chủ sân thực hiện.'}
       />
 
       {loading ? (

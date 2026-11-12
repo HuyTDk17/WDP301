@@ -9,12 +9,12 @@ function monthStartVN(now = new Date()) {
 }
 
 /**
- * Số lượt đổi lịch / chuyển sân ĐÃ HOÀN TẤT của khách trong tháng hiện tại (giờ Việt Nam).
- * Không tính sang tên (T5) vì không đổi sân/khung giờ. Yêu cầu bỏ dở, hết hạn hay bị từ chối không tính.
+ * Số lượt đổi lịch ĐÃ HOÀN TẤT của khách trong tháng hiện tại (giờ Việt Nam).
+ * Yêu cầu bỏ dở, hết hạn hay bị từ chối không tính.
  */
 async function transfersUsedThisMonth(customerId, now = new Date()) {
     return TransferRequest.countDocuments({
-        customerId, status: 'completed', type: { $ne: 'T5' }, completedAt: { $gte: monthStartVN(now) },
+        customerId, status: 'completed', type: { $in: ['T1', 'T2'] }, completedAt: { $gte: monthStartVN(now) },
     });
 }
 

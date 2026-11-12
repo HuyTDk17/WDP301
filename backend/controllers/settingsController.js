@@ -47,13 +47,12 @@ exports.getPublicSettings = asyncHandler(async (req, res) => {
         commissionRate: settings.commissionRate,
         // Phần % hoa hồng khách chịu — để trang đặt sân hiển thị đúng phí khách phải trả
         commissionCustomerSharePct: settings.commissionCustomerSharePct ?? 0,
-        // Giao diện đặt sân và chuyển sân cần biết chính sách để hiển thị đúng
+        // Giao diện đặt sân và đổi lịch cần biết chính sách để hiển thị đúng
         // chi phí cho khách TRƯỚC khi họ thao tác.
         transferEnabled: settings.transferEnabled,
         transferMinLeadTimeHours: settings.transferMinLeadTimeHours,
         maxTransfersPerBooking: settings.maxTransfersPerBooking,
         transferFeeTiers: settings.transferFeeTiers,
-        compensationTiers: settings.compensationTiers,
         transferFeeMin: settings.transferFeeMin,
         transferFeeMax: settings.transferFeeMax,
         maxRefundRatio: settings.maxRefundRatio,
@@ -79,12 +78,10 @@ const NUMERIC_FIELDS = {
     transferMinLeadTimeHours: { min: 0, max: 72 },
     maxTransfersPerBooking: { min: 0, max: 10 },
     maxTransfersPerMonth: { min: 0, max: 100 },
-    transferFeeOriginSharePct: { min: 0, max: 100 },
     quoteTtlMinutes: { min: 1, max: 60 },
     ownerApprovalTimeoutMinutes: { min: 1, max: 1440 },
     transferFeeMin: { min: 0 },
     transferFeeMax: { min: 0 },
-    transferFixedFeeT5: { min: 0 },
     maxRefundRatio: { min: 0, max: 1 },
     // Đối soát hoa hồng với chủ sân
     commissionDueDays: { min: 1, max: 90 },
@@ -155,7 +152,7 @@ exports.updatePlatformSettings = asyncHandler(async (req, res) => {
         settings.bankTransferWindowMinutes = w;
     }
 
-    // --- Tham số chuyển sân, huỷ đơn và kế toán ---
+    // --- Tham số đổi lịch, huỷ đơn và kế toán ---
     for (const [field, rule] of Object.entries(NUMERIC_FIELDS)) {
         if (req.body[field] === undefined) continue;
         const v = Number(req.body[field]);
@@ -165,11 +162,10 @@ exports.updatePlatformSettings = asyncHandler(async (req, res) => {
         settings[field] = v;
     }
     if (settings.transferFeeMax < settings.transferFeeMin) {
-        return res.status(400).json({ message: 'Phí chuyển sân tối đa phải lớn hơn hoặc bằng phí tối thiểu' });
+        return res.status(400).json({ message: 'Phí đổi lịch tối đa phải lớn hơn hoặc bằng phí tối thiểu' });
     }
 
     if (req.body.transferEnabled !== undefined) settings.transferEnabled = !!req.body.transferEnabled;
-    if (req.body.transferNetworkRequired !== undefined) settings.transferNetworkRequired = !!req.body.transferNetworkRequired;
     if (req.body.ownerCancellationPolicyAllowed !== undefined) settings.ownerCancellationPolicyAllowed = !!req.body.ownerCancellationPolicyAllowed;
     if (req.body.cancellationFloorTiers !== undefined) {
         // Cùng quy tắc với biểu của chủ sân (1–8 bậc, có bậc 0 giờ, báo sớm hoàn không ít hơn)
@@ -182,14 +178,9 @@ exports.updatePlatformSettings = asyncHandler(async (req, res) => {
     if (req.body.refundToCreditEnabled !== undefined) settings.refundToCreditEnabled = !!req.body.refundToCreditEnabled;
 
     if (req.body.transferFeeTiers !== undefined) {
-        const err = validateTiers(req.body.transferFeeTiers, ['sameVenueRate', 'sameOwnerRate', 'crossOwnerRate'], 'Biểu phí chuyển sân');
+        const err = validateTiers(req.body.transferFeeTiers, ['sameVenueRate'], 'Biểu phí đổi lịch');
         if (err) return res.status(400).json({ message: err });
         settings.transferFeeTiers = req.body.transferFeeTiers;
-    }
-    if (req.body.compensationTiers !== undefined) {
-        const err = validateTiers(req.body.compensationTiers, ['rate'], 'Biểu bồi thường chủ sân');
-        if (err) return res.status(400).json({ message: err });
-        settings.compensationTiers = req.body.compensationTiers;
     }
     if (req.body.cancellationTiers !== undefined) {
         const err = validateTiers(req.body.cancellationTiers, ['refundRate'], 'Biểu hoàn tiền khi huỷ');
