@@ -46,7 +46,7 @@ exports.createMatch = asyncHandler(async (req, res) => {
         return res.status(400).json({ message: 'Số người chơi tối đa phải từ 2 đến 30' });
     }
     if (normalizedDescription === null || normalizedDescription.length > 300) {
-        return res.status(400).json({ message: 'Ghi chú tối đa 300 ký tự' });
+        return res.status(400).json({ message: 'Ghii chú tối đa 300 ký tự' });
     }
 
     const match = await PlayerMatch.create({
